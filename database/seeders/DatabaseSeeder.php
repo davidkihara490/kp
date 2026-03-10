@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             // FleetSeeder::class,
             // DriverFleetAssignmentSeeder::class,
             // ParcelHandlingAssistantPickUpAndDropOffPointAssignmentSeeder::class,
-            BankSeeder::class,
+            // BankSeeder::class,
             // CountySeeder::class,
             // SubCountySeeder::class,
             // TownSeeder::class,

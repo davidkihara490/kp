@@ -138,8 +138,4 @@ class Partner extends Model
     {
         return $this->hasMany(Fleet::class,'partner_id');
     }
-    // public function totalParcelsHandled(){
-    //     $totalParcelsHandled = 0;
-    //     $to = Parcel::where('delivery_partner_id', )->count();
-    // }
 }

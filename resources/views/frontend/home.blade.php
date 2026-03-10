@@ -335,7 +335,7 @@
                         <div class="mt-4">
                             <p class="small opacity-75 mb-0 d-flex align-items-center justify-content-center gap-2 flex-wrap">
                                 <i class="bi bi-info-circle"></i>
-                                Try sample:
+                                Try sample: 
                                 <button class="btn btn-sm btn-outline-light tracking-example"
                                     data-phone="0712345678" data-id="KP78945">0712345678 / KP78945</button>
                                 <button class="btn btn-sm btn-outline-light tracking-example"
@@ -759,8 +759,6 @@
             </div>
         </div>
     </footer>
-
-
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
@@ -2109,21 +2107,21 @@
             .points-container {
                 padding: 15px;
             }
-
+            
             .tracking-card {
                 padding: 25px;
             }
-
+            
             .tracking-form-wrapper .row {
                 flex-direction: column;
             }
-
+            
             .tracking-form-wrapper .col-md-5,
             .tracking-form-wrapper .col-md-2 {
                 width: 100%;
                 margin-bottom: 10px;
             }
-
+            
             .tracking-btn {
                 width: 100%;
             }
@@ -2240,139 +2238,6 @@
 
         .animate-fade-up {
             animation: fadeInUp 0.6s ease-out;
-        }
-    </style>
-
-    <a href="https://wa.me/254700130759?text=Hello%20Karibu%20Parcels,%20I%20have%20a%20question%20about%20your%20services"
-        class="whatsapp-float"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Chat with us on WhatsApp">
-        <i class="bi bi-whatsapp"></i>
-    </a>
-
-    <style>
-        /* Floating WhatsApp Button */
-        .whatsapp-float {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #25D366;
-            color: white;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            text-align: center;
-            font-size: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
-            z-index: 1000;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            animation: pulse 2s infinite;
-        }
-
-        .whatsapp-float:hover {
-            background: #20B859;
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 12px 30px rgba(37, 211, 102, 0.5);
-            color: white;
-        }
-
-        .whatsapp-float i {
-            font-size: 32px;
-            line-height: 1;
-        }
-
-        /* Pulse animation */
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.6);
-            }
-
-            70% {
-                box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
-            }
-        }
-
-        /* Tooltip on hover */
-        .whatsapp-float::after {
-            content: "Chat with us";
-            position: absolute;
-            right: 70px;
-            background: #333;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            pointer-events: none;
-            font-family: 'Roboto', sans-serif;
-            font-weight: 400;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .whatsapp-float:hover::after {
-            opacity: 1;
-            visibility: visible;
-            right: 80px;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .whatsapp-float {
-                bottom: 20px;
-                right: 20px;
-                width: 55px;
-                height: 55px;
-                font-size: 28px;
-            }
-
-            .whatsapp-float i {
-                font-size: 30px;
-            }
-
-            .whatsapp-float::after {
-                display: none;
-                /* Hide tooltip on mobile */
-            }
-        }
-
-        /* Make sure it doesn't overlap with footer on mobile */
-        @media (max-width: 576px) {
-            .whatsapp-float {
-                bottom: 15px;
-                right: 15px;
-            }
-        }
-
-        /* Optional: Add a notification badge */
-        .whatsapp-float .badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ff4444;
-            color: white;
-            font-size: 12px;
-            padding: 3px 6px;
-            border-radius: 50%;
-            min-width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Roboto', sans-serif;
-            font-weight: 600;
-            border: 2px solid white;
         }
     </style>
 </body>

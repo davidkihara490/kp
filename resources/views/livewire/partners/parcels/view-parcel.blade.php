@@ -861,175 +861,333 @@
         </div>
 
         <!-- Payment Modal -->
-        @if($showPaymentModal)
-        <div class="modal fade show d-block" id="paymentModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            <i class="bi bi-cash-stack me-2"></i>
-                            Make Payment
-                        </h5>
-                        <button type="button" class="btn-close" wire:click="closePaymentModal"></button>
-                    </div>
-                    <div class="modal-body">
-                        @if($showMpesaStatus)
-                        <!-- M-Pesa Status Display -->
-                        <div class="text-center py-4">
-                            @if($paymentStatus === 'pending')
-                            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <h5 class="mb-3">Processing Payment</h5>
-                            <p class="text-muted">{{ $paymentStatusMessage }}</p>
-                            <div class="alert alert-info mt-3">
-                                <i class="bi bi-info-circle me-2"></i>
-                                Please check your phone and enter your M-Pesa PIN to complete the transaction.
-                            </div>
-                            <button class="btn btn-outline-secondary mt-2" wire:click="closePaymentModal">
-                                Cancel
-                            </button>
-                            @elseif($paymentStatus === 'completed')
-                            <div class="text-success mb-3">
-                                <i class="bi bi-check-circle-fill" style="font-size: 4rem;"></i>
-                            </div>
-                            <h5 class="mb-3 text-success">Payment Successful!</h5>
-                            <p class="text-muted">{{ $paymentStatusMessage }}</p>
-                            <button class="btn btn-primary mt-3" wire:click="closePaymentModal">
-                                <i class="bi bi-check me-2"></i>
-                                Done
-                            </button>
-                            @elseif($paymentStatus === 'failed')
-                            <div class="text-danger mb-3">
-                                <i class="bi bi-x-circle-fill" style="font-size: 4rem;"></i>
-                            </div>
-                            <h5 class="mb-3 text-danger">Payment Failed</h5>
-                            <p class="text-muted">{{ $paymentStatusMessage }}</p>
-                            <div class="mt-3">
-                                <button class="btn btn-primary me-2" wire:click="$set('showMpesaStatus', false)">
-                                    <i class="bi bi-arrow-repeat me-2"></i>
-                                    Try Again
-                                </button>
-                                <button class="btn btn-outline-secondary" wire:click="closePaymentModal">
-                                    Cancel
-                                </button>
-                            </div>
-                            @endif
-                        </div>
-                        @else
-                        <!-- Payment Form -->
-                        <div class="alert alert-info">
-                            <div class="d-flex justify-content-between">
-                                <span>Total Amount:</span>
-                                <strong>KES {{ number_format($parcel->total_amount, 2) }}</strong>
-                            </div>
-                            <div class="d-flex justify-content-between mt-1">
-                                <span>Paid Amount:</span>
-                                <strong class="text-success">KES {{ number_format($totalPaid, 2) }}</strong>
-                            </div>
-                            <hr class="my-2">
-                            <div class="d-flex justify-content-between fw-bold">
-                                <span>Balance Due:</span>
-                                <span class="text-danger">KES {{ number_format($remainingBalance, 2) }}</span>
-                            </div>
-                        </div>
-
-                        <form wire:submit.prevent="processPayment">
-                            <div class="mb-3">
-                                <label class="form-label required">Payment Amount</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">KES</span>
-                                    <input type="number"
-                                        class="form-control @error('paymentAmount') is-invalid @enderror"
-                                        wire:model="paymentAmount"
-                                        step="0.01"
-                                        min="1"
-                                        max="{{ $remainingBalance }}">
+@if($showPaymentModal)
+<div class="modal fade show d-block" id="paymentModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" wire:ignore.self>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-cash-stack me-2"></i>
+                    Make Payment
+                </h5>
+                <button type="button" class="btn-close" wire:click="closePaymentModal"></button>
+            </div>
+            <div class="modal-body">
+                @if($showMpesaStatus)
+                    <!-- M-Pesa Status Display with All States -->
+                    <div class="mpesa-status-container text-center py-4">
+                        
+                        <!-- Waiting for PIN State -->
+                        @if($paymentStatus === 'waiting_pin')
+                            <div class="waiting-pin-state">
+                                <div class="spinner-grow text-primary mb-3" style="width: 4rem; height: 4rem;" role="status">
+                                    <span class="visually-hidden">Loading...</span>
                                 </div>
-                                @error('paymentAmount')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
+                                <div class="phone-animation mb-3">
+                                    <i class="bi bi-phone fs-1 text-primary"></i>
+                                    <i class="bi bi-arrow-right-short fs-1 text-muted"></i>
+                                    <i class="bi bi-key fs-1 text-success"></i>
+                                </div>
+                                <h5 class="mb-3">Check Your Phone</h5>
+                                <div class="alert alert-info text-start">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    {{ $paymentStatusMessage }}
+                                </div>
+                                <div class="progress mt-3" style="height: 5px;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                                         style="width: {{ ($statusCheckCount / $maxStatusChecks) * 100 }}%"></div>
+                                </div>
+                                <p class="text-muted small mt-2">
+                                    Waiting for your response... ({{ $statusCheckCount }}/{{ $maxStatusChecks }})
+                                </p>
+                                <button class="btn btn-outline-secondary mt-3" wire:click="closePaymentModal">
+                                    Cancel Payment
+                                </button>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label required">Payment Method</label>
-                                <select class="form-select @error('paymentMethod') is-invalid @enderror"
-                                    wire:model.live="paymentMethod">
-                                    <option value="">Select payment method</option>
-                                    <option value="mpesa">M-Pesa</option>
-                                    <option value="cash">Cash</option>
-                                    <option value="card">Card</option>
-                                    <option value="bank_transfer">Bank Transfer</option>
-                                    <option value="wallet">Wallet</option>
-                                </select>
-                                @error('paymentMethod')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
+                        <!-- Payment Success State -->
+                        @elseif($paymentStatus === 'success')
+                            <div class="success-state">
+                                <div class="success-animation mb-3">
+                                    <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                                </div>
+                                <h4 class="text-success mb-3">Payment Successful!</h4>
+                                <div class="alert alert-success text-start">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    {{ $paymentStatusMessage }}
+                                </div>
+                                
+                                @if($mpesaReceiptNumber)
+                                <div class="receipt-details bg-light p-3 rounded text-start mb-3">
+                                    <p class="mb-1"><strong>Receipt Number:</strong> {{ $mpesaReceiptNumber }}</p>
+                                    <p class="mb-1"><strong>Amount:</strong> KES {{ number_format($paymentAmount, 2) }}</p>
+                                    <p class="mb-1"><strong>Phone:</strong> {{ $paymentPhone }}</p>
+                                    <p class="mb-0"><strong>Date:</strong> {{ now()->format('M d, Y H:i:s') }}</p>
+                                </div>
+                                @endif
+                                
+                                <div class="mt-3">
+                                    <button class="btn btn-primary" wire:click="closePaymentModal">
+                                        <i class="bi bi-check me-2"></i>
+                                        Done
+                                    </button>
+                                </div>
                             </div>
 
-                            @if($paymentMethod === 'mpesa')
-                            <div class="mb-3">
-                                <label class="form-label required">Phone Number</label>
-                                <input type="text"
-                                    class="form-control @error('paymentPhone') is-invalid @enderror"
-                                    wire:model="paymentPhone"
-                                    placeholder="0712345678">
-                                @error('paymentPhone')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                                <small class="text-muted">Enter the M-Pesa registered phone number</small>
-                            </div>
-                            @endif
-
-                            @if($paymentMethod && $paymentMethod !== 'mpesa')
-                            <div class="mb-3">
-                                <label class="form-label">Reference Number</label>
-                                <input type="text"
-                                    class="form-control"
-                                    wire:model="paymentReference"
-                                    placeholder="Transaction reference (optional)">
-                                <small class="text-muted">Optional. Will be auto-generated if not provided.</small>
-                            </div>
-                            @endif
-
-                            <div class="mb-3">
-                                <label class="form-label">Notes</label>
-                                <textarea class="form-control"
-                                    wire:model="paymentNotes"
-                                    rows="2"
-                                    placeholder="Any payment notes (optional)"></textarea>
+                        <!-- Payment Cancelled State -->
+                        @elseif($paymentStatus === 'cancelled')
+                            <div class="cancelled-state">
+                                <div class="cancelled-animation mb-3">
+                                    <i class="bi bi-x-circle-fill text-warning" style="font-size: 5rem;"></i>
+                                </div>
+                                <h4 class="text-warning mb-3">Payment Cancelled</h4>
+                                <div class="alert alert-warning text-start">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    {{ $paymentStatusMessage }}
+                                </div>
+                                <div class="mt-4">
+                                    <button class="btn btn-primary me-2" wire:click="retryPayment">
+                                        <i class="bi bi-arrow-repeat me-2"></i>
+                                        Try Again
+                                    </button>
+                                    <button class="btn btn-outline-secondary" wire:click="closePaymentModal">
+                                        Close
+                                    </button>
+                                </div>
                             </div>
 
-                            @if($paymentMethod === 'mpesa')
-                            <div class="alert alert-warning">
-                                <i class="bi bi-info-circle me-2"></i>
-                                Clicking "Pay with M-Pesa" will send an STK push to <strong>{{ $paymentPhone }}</strong>. Please check your phone to complete the payment.
+                        <!-- Payment Timeout State -->
+                        @elseif($paymentStatus === 'timeout')
+                            <div class="timeout-state">
+                                <div class="timeout-animation mb-3">
+                                    <i class="bi bi-clock-history text-warning" style="font-size: 5rem;"></i>
+                                </div>
+                                <h4 class="text-warning mb-3">Payment Timeout</h4>
+                                <div class="alert alert-warning text-start">
+                                    <i class="bi bi-hourglass-split me-2"></i>
+                                    {{ $paymentStatusMessage }}
+                                </div>
+                                <div class="mt-4">
+                                    <button class="btn btn-primary me-2" wire:click="retryPayment">
+                                        <i class="bi bi-arrow-repeat me-2"></i>
+                                        Try Again
+                                    </button>
+                                    <button class="btn btn-outline-secondary" wire:click="closePaymentModal">
+                                        Close
+                                    </button>
+                                </div>
                             </div>
-                            @endif
-                        </form>
+
+                        <!-- Payment Failed State (Insufficient Funds, Wrong PIN, etc) -->
+                        @elseif($paymentStatus === 'failed')
+                            <div class="failed-state">
+                                <div class="failed-animation mb-3">
+                                    <i class="bi bi-exclamation-circle-fill text-danger" style="font-size: 5rem;"></i>
+                                </div>
+                                <h4 class="text-danger mb-3">Payment Failed</h4>
+                                <div class="alert alert-danger text-start">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    {{ $paymentStatusMessage }}
+                                </div>
+                                <div class="mt-4">
+                                    <button class="btn btn-primary me-2" wire:click="retryPayment">
+                                        <i class="bi bi-arrow-repeat me-2"></i>
+                                        Try Again
+                                    </button>
+                                    <button class="btn btn-outline-info me-2" wire:click="tryOtherMethod">
+                                        <i class="bi bi-cash me-2"></i>
+                                        Use Cash
+                                    </button>
+                                    <button class="btn btn-outline-secondary" wire:click="closePaymentModal">
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+
+                        <!-- Payment Initiation Failed State -->
+                        @elseif($paymentStatus === 'initiation_failed')
+                            <div class="initiation-failed-state">
+                                <div class="failed-animation mb-3">
+                                    <i class="bi bi-exclamation-circle-fill text-danger" style="font-size: 5rem;"></i>
+                                </div>
+                                <h4 class="text-danger mb-3">Failed to Initiate Payment</h4>
+                                <div class="alert alert-danger text-start">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    {{ $paymentStatusMessage }}
+                                </div>
+                                <div class="mt-4">
+                                    <button class="btn btn-primary me-2" wire:click="retryPayment">
+                                        <i class="bi bi-arrow-repeat me-2"></i>
+                                        Try Again
+                                    </button>
+                                    <button class="btn btn-outline-secondary" wire:click="closePaymentModal">
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+
+                        <!-- Unknown State -->
+                        @elseif($paymentStatus === 'unknown' || $paymentStatus === 'check_failed')
+                            <div class="unknown-state">
+                                <div class="unknown-animation mb-3">
+                                    <i class="bi bi-question-circle-fill text-warning" style="font-size: 5rem;"></i>
+                                </div>
+                                <h4 class="text-warning mb-3">Payment Status Unknown</h4>
+                                <div class="alert alert-warning text-start">
+                                    <i class="bi bi-question-circle me-2"></i>
+                                    {{ $paymentStatusMessage }}
+                                </div>
+                                <div class="mt-4">
+                                    <button class="btn btn-primary me-2" wire:click="retryPayment">
+                                        <i class="bi bi-arrow-repeat me-2"></i>
+                                        Try Again
+                                    </button>
+                                    <button class="btn btn-outline-info me-2" wire:click="tryOtherMethod">
+                                        <i class="bi bi-cash me-2"></i>
+                                        Use Cash
+                                    </button>
+                                    <button class="btn btn-outline-secondary" wire:click="closePaymentModal">
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+
+                        <!-- Error State -->
+                        @elseif($paymentStatus === 'error')
+                            <div class="error-state">
+                                <div class="error-animation mb-3">
+                                    <i class="bi bi-exclamation-circle-fill text-danger" style="font-size: 5rem;"></i>
+                                </div>
+                                <h4 class="text-danger mb-3">System Error</h4>
+                                <div class="alert alert-danger text-start">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    {{ $paymentStatusMessage }}
+                                </div>
+                                <div class="mt-4">
+                                    <button class="btn btn-primary me-2" wire:click="retryPayment">
+                                        <i class="bi bi-arrow-repeat me-2"></i>
+                                        Try Again
+                                    </button>
+                                    <button class="btn btn-outline-secondary" wire:click="closePaymentModal">
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
                         @endif
                     </div>
-                    @if(!$showMpesaStatus)
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" wire:click="closePaymentModal">
-                            Cancel
-                        </button>
-                        <button type="button" class="btn btn-primary" wire:click="processPayment" wire:loading.attr="disabled">
-                            <span wire:loading.remove wire:target="processPayment">
-                                <i class="bi bi-{{ $paymentMethod === 'mpesa' ? 'phone' : 'check-circle' }} me-2"></i>
-                                {{ $paymentMethod === 'mpesa' ? 'Pay with M-Pesa' : 'Record Payment' }}
-                            </span>
-                            <span wire:loading wire:target="processPayment">
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                Processing...
-                            </span>
-                        </button>
+
+                @else
+                    <!-- Payment Form -->
+                    <div class="payment-summary alert alert-info mb-4">
+                        <div class="d-flex justify-content-between">
+                            <span>Total Amount:</span>
+                            <strong>KES {{ number_format($parcel->total_amount, 2) }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span>Paid Amount:</span>
+                            <strong class="text-success">KES {{ number_format($parcel->payments->where('status', 'completed')->sum('amount'), 2) }}</strong>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span>Balance Due:</span>
+                            <span class="text-danger">KES {{ number_format($paymentAmount, 2) }}</span>
+                        </div>
                     </div>
-                    @endif
-                </div>
+
+                    <form wire:submit.prevent="processPayment">
+                        <div class="mb-3">
+                            <label class="form-label required">Payment Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">KES</span>
+                                <input type="number"
+                                    class="form-control @error('paymentAmount') is-invalid @enderror"
+                                    wire:model="paymentAmount"
+                                    step="0.01"
+                                    min="1"
+                                    max="{{ $paymentAmount }}">
+                            </div>
+                            @error('paymentAmount')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label required">Payment Method</label>
+                            <select class="form-select @error('paymentMethod') is-invalid @enderror"
+                                wire:model.live="paymentMethod">
+                                <option value="">Select payment method</option>
+                                <option value="mpesa">M-Pesa</option>
+                                <option value="cash">Cash</option>
+                                <option value="card">Card</option>
+                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="wallet">Wallet</option>
+                            </select>
+                            @error('paymentMethod')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        @if($paymentMethod === 'mpesa')
+                        <div class="mb-3">
+                            <label class="form-label required">Phone Number</label>
+                            <input type="text"
+                                class="form-control @error('paymentPhone') is-invalid @enderror"
+                                wire:model="paymentPhone"
+                                placeholder="0712345678">
+                            @error('paymentPhone')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Enter the M-Pesa registered phone number</small>
+                        </div>
+                        @endif
+
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control"
+                                wire:model="paymentNotes"
+                                rows="2"
+                                placeholder="Any payment notes (optional)"></textarea>
+                        </div>
+
+                        @if($paymentMethod === 'mpesa')
+                        <div class="alert alert-primary">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>M-Pesa Payment Steps:</strong>
+                            <ol class="mb-0 mt-2">
+                                <li>Click "Pay with M-Pesa" below</li>
+                                <li>You'll receive an STK push on <strong>{{ $paymentPhone }}</strong></li>
+                                <li>Enter your M-Pesa PIN on your phone</li>
+                                <li>Wait for confirmation</li>
+                            </ol>
+                        </div>
+                        @endif
+                    </form>
+                @endif
             </div>
+            
+            @if(!$showMpesaStatus)
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" wire:click="closePaymentModal">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-primary" wire:click="processPayment" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="processPayment">
+                        <i class="bi bi-{{ $paymentMethod === 'mpesa' ? 'phone' : 'check-circle' }} me-2"></i>
+                        {{ $paymentMethod === 'mpesa' ? 'Pay with M-Pesa' : 'Record Payment' }}
+                    </span>
+                    <span wire:loading wire:target="processPayment">
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        Processing...
+                    </span>
+                </button>
+            </div>
+            @endif
         </div>
-        @endif
+    </div>
+</div>
+@endif
+
+
 
         @if($showDriverVerificationModal)
         <div class="modal fade show d-block" id="paymentModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
@@ -1808,6 +1966,64 @@
                 max-width: 800px;
             }
         </style>
+
+        <!-- Add CSS for animations -->
+<style>
+    .phone-animation {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .phone-animation i {
+        animation: bounce 2s infinite;
+    }
+    
+    .phone-animation i:nth-child(2) {
+        animation-delay: 0.5s;
+    }
+    
+    .phone-animation i:nth-child(3) {
+        animation-delay: 1s;
+    }
+    
+    @keyframes bounce {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+    
+    .success-animation i {
+        animation: scaleIn 0.5s ease-in-out;
+    }
+    
+    @keyframes scaleIn {
+        0% {
+            transform: scale(0);
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+    
+    .progress-bar {
+        transition: width 0.5s ease;
+    }
+    
+    .mpesa-status-container {
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
 
         <script>
             function confirmCancel(parcelNumber) {

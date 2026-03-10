@@ -15,14 +15,17 @@ class PartnerLogin extends Component
     public bool $remember = false;
     public bool $showPassword = false;
     public string $errorMessage = '';
+
     protected $rules = [
         'identifier' => 'required|min:3',
         'password' => 'required|min:6',
     ];
+
     protected $messages = [
         'identifier.required' => 'Please enter your email, phone number, or username',
         'password.required' => 'Password is required',
     ];
+
     public function login()
     {
         $this->validate();
@@ -32,15 +35,13 @@ class PartnerLogin extends Component
 
             $credentials = $this->buildCredentials();
 
-            if (! Auth::guard('partner')->attempt($credentials,)) {
+            if (! Auth::guard('partner')->attempt($credentials, )) {
                 throw ValidationException::withMessages([
                     'identifier' => 'Invalid credentials.',
                 ]);
             }
 
             $user = Auth::guard('partner')->user();
-
-            // dd($user);
 
             if ($user->status != 'active') {
                 Auth::guard('partner')->logout();

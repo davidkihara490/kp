@@ -18,8 +18,10 @@ class EnsureAdmin
 
         $user = Auth::guard('admin')->user();
 
+        // dd($user->user_type);
+
         // If logged in but not admin → 403
-        if ($user->user_type !== 'admin') {
+        if ($user->user_type !== "admin") {
             abort(403, 'Unauthorized: Admins only');
         }
 

@@ -8,8 +8,12 @@ use Livewire\Component;
 class ViewPartner extends Component
 {
     public Partner $partner;
+
     public $activeTab = 'overview';
+
     public $showDeleteModal = false;
+
+
     public $tabs = [
         'overview' => 'Overview',
         'details' => 'Company Details',
@@ -23,14 +27,11 @@ class ViewPartner extends Component
 
     public function mount($id)
     {
-        $this->partner = Partner::findOrFail($id);
-    }
-
-    public function verifyPartner(){
-        $this->partner->update([
-            'verification_status' => 'active'
-        ]);
-        session()->flash('success', 'Partner verified successfully');
+        $this->partner = Partner::with([
+            'owner',
+            // 'drivers',
+            'towns.town',
+        ])->findOrFail($id);
     }
 
     public function render()
@@ -46,7 +47,7 @@ class ViewPartner extends Component
     private function getVerificationBadgeColor()
     {
         return match ($this->partner->verification_status) {
-            'active' => 'success',
+            'verified' => 'success',
             'pending' => 'warning',
             'rejected' => 'danger',
             default => 'secondary'
@@ -55,7 +56,7 @@ class ViewPartner extends Component
 
     private function getStatusBadgeColor()
     {
-        return match ($this->partner->sverification_tatus) {
+        return match ($this->partner->status) {
             'active' => 'success',
             'pending' => 'warning',
             'suspended' => 'danger',

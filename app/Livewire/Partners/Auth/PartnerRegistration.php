@@ -23,6 +23,7 @@ class PartnerRegistration extends Component
     use WithFileUploads;
     public $step = 1;
     public $partnerType;
+
     // Common Fields
     public $owner_first_name;
     public $owner_second_name;
@@ -31,6 +32,7 @@ class PartnerRegistration extends Component
     public $owner_phone_number;
     public $terms_and_conditions = false;
     public $privacy_policy = false;
+
     // Company Details
     public $company_name;
     public $registration_number;
@@ -41,12 +43,14 @@ class PartnerRegistration extends Component
     public $responsible_officer_last_name;
     public $responsible_officer_phone;
     public $responsible_officer_email;
+
     // Finance Details
     public $bank_account_number;
     public $bank_account_name;
     public $bank_name;
     public $bank_branch;
     public $finance_email;
+
     // Transport Partner Specific
     public $vehicle_count = 1;
     public $vehicle_ownership = 'owned';
@@ -57,11 +61,13 @@ class PartnerRegistration extends Component
     public $driver_count = 1;
     public $drivers_compliant = false;
     public $drivers_certificate;
+
     public $has_motorcycles = false;
     public $has_vans = false;
     public $has_trucks = false;
     public $has_refrigerated = false;
     public $other_vehicle_types = '';
+
     public $has_computer = false;
     public $has_internet = false;
     public $booking_emails = [];
@@ -69,12 +75,14 @@ class PartnerRegistration extends Component
     public $has_dedicated_allocator = false;
     public $allocator_name = '';
     public $allocator_phone = '';
+
     public $maximum_daily_capacity = 50;
     public $maximum_distance = 100;
     public $operating_radius = 50;
     public $can_handle_fragile = false;
     public $can_handle_perishable = false;
     public $can_handle_valuables = false;
+
     // Station Partner Specific
     public $points_count = 1;
     public $points_have_phone = false;
@@ -83,23 +91,29 @@ class PartnerRegistration extends Component
     public $officers_knowledgeable = false;
     public $points_compliant = false;
     public $station_compliance_certificate;
+
     public $operating_hours = '8:00 AM - 6:00 PM';
     public $maximum_capacity_per_day = 100;
     public $storage_facility_type = 'standard';
     public $security_measures = '';
     public $insurance_coverage = '';
+
     // Service Areas
     public $selectedCounties = [];
     public $selectedSubcounties = [];
     public $selectedTowns = [];
     public $availableTowns = [];
     public $serviceTowns = [];
+
     // Additional
     public $additional_notes = '';
+
     // System
     public $submissionSuccess = false;
     public $partnerId = null;
+
     public $banks = [];
+
     protected $rules = [
         // Step 1: Partner Type
         'partnerType' => 'required|in:transport,pickup-dropoff',
@@ -383,27 +397,7 @@ class PartnerRegistration extends Component
         }
         try {
             DB::beginTransaction();
-            // Handle document uploads
-            $documents = [];
-
-
-            if ($this->registration_certificate) {
-                $path = $this->registration_certificate->store(
-                    'partners/' . $this->partnerType . '/documents',
-                    'public'
-                );
-
-                $documents['registration_certificate_path'] = $path;
-            }
-
-            if ($this->pin_certificate) {
-                $path = $this->pin_certificate->store(
-                    'partners/' . $this->partnerType . '/documents',
-                    'public'
-                );
-
-                $documents['pin_certificate_path'] = $path;
-            }
+            // TODO::HAndle Documents
             $data = [
                 // Step 1: Partner Type
                 'partner_type' => $this->partnerType,
@@ -471,7 +465,6 @@ class PartnerRegistration extends Component
                 'storage_facility_type' => $this->storage_facility_type ?? null,
                 'security_measures' => $this->security_measures ?? null,
                 'insurance_coverage' => $this->insurance_coverage ?? null,
-               
 
                 // Step 6: Service Areas
                 'selectedTowns' => $this->selectedTowns,
@@ -488,11 +481,7 @@ class PartnerRegistration extends Component
                 'insurance_coverage_amount' => $this->insurance_coverage_amount ?? null,
                 'safety_measures' => $this->safety_measures ?? null,
                 'tracking_system' => $this->tracking_system ?? null,
-
-                'registration_certificate_path' => $documents['registration_certificate_path'],
-                'pin_certificate_path' => $documents['pin_certificate_path'],
             ];
-
 
             $ownerPassword = generate_random_string(12);
             $inChargePassword = generate_random_string(12);
@@ -530,6 +519,25 @@ class PartnerRegistration extends Component
 
 
             $partner = Partner::create($data);
+            Log::info('Created Partner' . $partner);
+            Log::info('Created Owner' . $owner);
+            Log::info('Created In Charge' . $inCharge);
+
+            
+            // $partnerOwner = PartnerOwner::create([
+            //     'partner_id' => $partner->id,
+            //     'user_id' => $owner->id,
+            //     'from' => null,
+            //     'to' => null,
+            //     'status' => 'active',
+            // ]);
+            // $partnerInCharge = PartnerInCharge::create([
+            //     'partner_id' => $partner->id,
+            //     'user_id' => $inCharge->id,
+            //     'from' => null,
+            //     'to' => null,
+            //     'status' => 'active',
+            // ]);
             $partnerFinanceAccount = PartnerFinanceAccount::create([
                 'partner_id' => $partner->id,
                 'bank_account_number' => $this->bank_account_number ?? null,

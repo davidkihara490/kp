@@ -1,5 +1,4 @@
 <?php
-// app/Services/MpesaService.php
 
 namespace App\Services;
 
@@ -21,6 +20,17 @@ class MpesaService
     private $passkey;
     private $callbackUrl;
     private $environment;
+
+    // M-Pesa Result Codes
+    const RESULT_SUCCESS = 0;
+    const RESULT_INSUFFICIENT_FUNDS = 1;
+    const RESULT_CANCELLED_BY_USER = 1032;
+    const RESULT_TIMEOUT = 1037;
+    const RESULT_TRANSACTION_FAILED = 1036;
+    const RESULT_REJECTED = 2001;
+    const RESULT_INVALID_TRANSACTION = 1031;
+    const RESULT_WRONG_PIN = 1019;
+    const RESULT_REQUEST_CANCELLED = 1026;
 
     public function __construct()
     {
@@ -44,9 +54,31 @@ class MpesaService
      */
     public function generateAccessToken()
     {
+        $cacheKey = 'mpesa_access_token';
+        $token = cache($cacheKey);
+
+        if ($token) {
+            Log::info('Using cached M-Pesa access token');
+            return $token;
+        }
+
         $url = $this->getBaseUrl() . '/oauth/v1/generate?grant_type=client_credentials';
 
-        Log::info('Generating M-Pesa access token', ['url' => $url]);
+        Log::info('Generating M-Pesa access token', [
+            'url' => $url,
+            'consumer_key_exists' => !empty($this->consumerKey),
+            'consumer_secret_exists' => !empty($this->consumerSecret),
+            'environment' => $this->environment
+        ]);
+
+        // Check if credentials are configured
+        if (empty($this->consumerKey) || empty($this->consumerSecret)) {
+            Log::error('M-Pesa credentials not configured', [
+                'consumer_key' => empty($this->consumerKey) ? 'missing' : 'present',
+                'consumer_secret' => empty($this->consumerSecret) ? 'missing' : 'present'
+            ]);
+            return null;
+        }
 
         try {
             $response = Http::withBasicAuth($this->consumerKey, $this->consumerSecret)
@@ -56,21 +88,32 @@ class MpesaService
 
             Log::info('M-Pesa token response received', [
                 'status' => $response->status(),
-                'successful' => $response->successful()
+                'successful' => $response->successful(),
+                'headers' => $response->headers(),
+                'body' => $response->body()
             ]);
 
             if ($response->successful()) {
                 $data = $response->json();
-                Log::info('Access token generated successfully');
-                return $data['access_token'] ?? null;
+                
+                if (isset($data['access_token'])) {
+                    Log::info('Access token generated successfully');
+                    
+                    // Cache the token for 55 minutes (tokens expire in 1 hour)
+                    cache([$cacheKey => $data['access_token']], now()->addMinutes(55));
+                    
+                    return $data['access_token'];
+                } else {
+                    Log::error('Access token not found in response', ['data' => $data]);
+                    return null;
+                }
+            } else {
+                Log::error('Failed to generate access token', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                return null;
             }
-
-            Log::error('Failed to generate access token', [
-                'response' => $response->body(),
-                'status' => $response->status()
-            ]);
-
-            return null;
         } catch (Exception $e) {
             Log::error('Exception generating access token', [
                 'message' => $e->getMessage(),
@@ -101,36 +144,22 @@ class MpesaService
      */
     public function stkPush($phone, $amount, $accountReference, $transactionDesc, $parcelId = null, $userId = null)
     {
-        Log::info('=== Starting STK Push Process ===', [
-            'phone' => $phone,
-            'amount' => $amount,
-            'account_reference' => $accountReference,
-            'parcel_id' => $parcelId,
-            'user_id' => $userId
-        ]);
-
         try {
             // Step 1: Generate access token
-            Log::info('Step 1: Generating access token');
             $accessToken = $this->generateAccessToken();
 
             if (!$accessToken) {
                 throw new Exception('Failed to generate access token');
             }
-            Log::info('Access token generated successfully');
 
             // Step 2: Format phone number
-            Log::info('Step 2: Formatting phone number', ['original' => $phone]);
             $phone = $this->formatPhoneNumber($phone);
-            Log::info('Phone number formatted', ['formatted' => $phone]);
 
             // Step 3: Generate timestamp and password
-            Log::info('Step 3: Generating timestamp and password');
             $timestamp = date('YmdHis');
             $password = $this->generatePassword($timestamp);
 
             // Step 4: Prepare STK Push payload
-            Log::info('Step 4: Preparing STK Push payload');
             $payload = [
                 'BusinessShortCode' => (int) $this->shortcode,
                 'Password' => $password,
@@ -145,10 +174,7 @@ class MpesaService
                 'TransactionDesc' => $transactionDesc,
             ];
 
-            Log::info('STK Push payload prepared', ['payload' => $payload]);
-
             // Step 5: Send STK Push request
-            Log::info('Step 5: Sending STK Push request to M-Pesa');
             $url = $this->getBaseUrl() . '/mpesa/stkpush/v1/processrequest';
 
             $response = Http::withToken($accessToken)
@@ -156,15 +182,9 @@ class MpesaService
                 ->timeout(30)
                 ->post($url, $payload);
 
-            Log::info('STK Push response received', [
-                'status' => $response->status(),
-                'body' => $response->json()
-            ]);
-
             $responseData = $response->json();
 
             // Step 6: Create M-Pesa transaction record
-            Log::info('Step 6: Creating M-Pesa transaction record');
             $transaction = MpesaTransaction::create([
                 'merchant_request_id' => $responseData['MerchantRequestID'] ?? null,
                 'checkout_request_id' => $responseData['CheckoutRequestID'] ?? null,
@@ -179,29 +199,16 @@ class MpesaService
                 'expires_at' => Carbon::now()->addMinutes(10),
                 'request_data' => $payload,
                 'raw_response' => $responseData,
-                'parcel_id' => $parcelId,  // Link to parcel if provided
-                'user_id' => $userId,       // Link to user if provided
-            ]);
-
-            Log::info('M-Pesa transaction created', [
-                'transaction_id' => $transaction->id,
-                'checkout_request_id' => $transaction->checkout_request_id,
-                'status' => $transaction->status
+                'parcel_id' => $parcelId,
+                'user_id' => $userId,
             ]);
 
             // Step 7: Check if request was successful
             if (isset($responseData['ResponseCode']) && $responseData['ResponseCode'] == '0') {
-                Log::info('STK Push initiated successfully', [
-                    'transaction_id' => $transaction->id,
-                    'checkout_request_id' => $responseData['CheckoutRequestID']
-                ]);
-
                 // If we have parcel ID, create a pending payment record
-                if ($parcelId) {
-                    Log::info('Creating pending payment record for parcel', ['parcel_id' => $parcelId]);
-                    
+                if ($parcelId) {                  
                     $payment = Payment::create([
-                        'reference_number' => null, // Will be updated when M-Pesa completes
+                        'reference_number' => null,
                         'parcel_id' => $parcelId,
                         'amount' => $amount,
                         'payment_method' => 'mpesa',
@@ -212,16 +219,11 @@ class MpesaService
                         'paid_by' => $userId,
                         'mpesa_transaction_id' => $transaction->id,
                     ]);
-
-                    Log::info('Pending payment record created', [
-                        'payment_id' => $payment->id,
-                        'parcel_id' => $parcelId
-                    ]);
                 }
 
                 return [
                     'success' => true,
-                    'message' => $responseData['CustomerMessage'] ?? 'STK Push sent successfully',
+                    'message' => 'STK Push sent successfully. Please check your phone and enter PIN.',
                     'checkout_request_id' => $responseData['CheckoutRequestID'],
                     'merchant_request_id' => $responseData['MerchantRequestID'],
                     'transaction_id' => $transaction->id,
@@ -274,6 +276,8 @@ class MpesaService
 
         DB::beginTransaction();
 
+        dd($callbackData);
+
         try {
             // Step 1: Validate callback structure
             Log::info('Step 1: Validating callback structure');
@@ -321,13 +325,16 @@ class MpesaService
             $resultDesc = $stkCallback['ResultDesc'] ?? null;
             $callbackMetadata = $stkCallback['CallbackMetadata']['Item'] ?? null;
 
-            // Step 4: Determine status
+            // Step 4: Determine status and get user-friendly message
             Log::info('Step 4: Determining payment status');
-            $status = $this->determineStatusFromResultCode($resultCode);
+            $statusData = $this->getStatusFromResultCode($resultCode);
+            $status = $statusData['status'];
+            $userMessage = $statusData['user_message'];
             
             Log::info('Status determined', [
                 'resultCode' => $resultCode,
-                'status' => $status
+                'status' => $status,
+                'user_message' => $userMessage
             ]);
 
             // Step 5: Prepare update data
@@ -336,6 +343,7 @@ class MpesaService
                 'result_code' => $resultCode,
                 'result_description' => $resultDesc,
                 'status' => $status,
+                'user_message' => $userMessage,
                 'callback_data' => $callbackData,
                 'completed_at' => $status === MpesaTransaction::STATUS_COMPLETED ? Carbon::now() : null,
             ];
@@ -409,16 +417,20 @@ class MpesaService
                         // Update parcel payment status
                         $this->updateParcelPaymentStatus($transaction->parcel_id);
                         
-                    } elseif (in_array($status, [MpesaTransaction::STATUS_FAILED, MpesaTransaction::STATUS_CANCELLED, MpesaTransaction::STATUS_EXPIRED])) {
+                    } elseif (in_array($status, [
+                        MpesaTransaction::STATUS_FAILED, 
+                        MpesaTransaction::STATUS_CANCELLED, 
+                        MpesaTransaction::STATUS_EXPIRED
+                    ])) {
                         // Update payment as failed
                         $payment->update([
                             'status' => 'failed',
-                            'notes' => 'M-Pesa payment failed: ' . $resultDesc,
+                            'notes' => 'M-Pesa payment failed: ' . $userMessage,
                         ]);
                         
                         Log::info('Payment failed', [
                             'payment_id' => $payment->id,
-                            'reason' => $resultDesc
+                            'reason' => $userMessage
                         ]);
                     }
                 } else {
@@ -459,6 +471,7 @@ class MpesaService
             Log::info('Callback processed successfully', [
                 'transaction_id' => $transaction->id,
                 'status' => $status,
+                'user_message' => $userMessage,
                 'receipt' => $mpesaReceiptNumber
             ]);
             
@@ -478,6 +491,60 @@ class MpesaService
             
             return false;
         }
+    }
+
+    /**
+     * Get status and user-friendly message from result code
+     */
+    private function getStatusFromResultCode($resultCode)
+    {
+        $resultCode = (int) $resultCode;
+        
+        Log::debug('Determining status from result code', ['result_code' => $resultCode]);
+
+        $statusMap = [
+            self::RESULT_SUCCESS => [
+                'status' => MpesaTransaction::STATUS_COMPLETED,
+                'user_message' => 'Payment completed successfully! Your transaction has been processed.'
+            ],
+            self::RESULT_INSUFFICIENT_FUNDS => [
+                'status' => MpesaTransaction::STATUS_FAILED,
+                'user_message' => 'Insufficient funds in your M-Pesa account. Please ensure you have enough balance and try again.'
+            ],
+            self::RESULT_CANCELLED_BY_USER => [
+                'status' => MpesaTransaction::STATUS_CANCELLED,
+                'user_message' => 'Transaction was cancelled. You did not enter your M-Pesa PIN.'
+            ],
+            self::RESULT_TIMEOUT => [
+                'status' => MpesaTransaction::STATUS_EXPIRED,
+                'user_message' => 'Payment timeout. You took too long to enter your PIN. Please try again.'
+            ],
+            self::RESULT_TRANSACTION_FAILED => [
+                'status' => MpesaTransaction::STATUS_FAILED,
+                'user_message' => 'Transaction failed. Please check your M-Pesa settings and try again.'
+            ],
+            self::RESULT_REJECTED => [
+                'status' => MpesaTransaction::STATUS_FAILED,
+                'user_message' => 'Transaction was rejected by M-Pesa. Please contact support if this persists.'
+            ],
+            self::RESULT_INVALID_TRANSACTION => [
+                'status' => MpesaTransaction::STATUS_FAILED,
+                'user_message' => 'Invalid transaction. Please verify the details and try again.'
+            ],
+            self::RESULT_WRONG_PIN => [
+                'status' => MpesaTransaction::STATUS_FAILED,
+                'user_message' => 'Wrong PIN entered. Please check your M-Pesa PIN and try again.'
+            ],
+            self::RESULT_REQUEST_CANCELLED => [
+                'status' => MpesaTransaction::STATUS_CANCELLED,
+                'user_message' => 'Request was cancelled. You did not complete the transaction.'
+            ]
+        ];
+
+        return $statusMap[$resultCode] ?? [
+            'status' => MpesaTransaction::STATUS_FAILED,
+            'user_message' => 'Payment failed. Please try again or contact support.'
+        ];
     }
 
     /**
@@ -540,6 +607,8 @@ class MpesaService
         try {
             $accessToken = $this->generateAccessToken();
 
+            Log::info("Token generated for checking status: " . ($accessToken ? 'Yes' : 'No'));
+
             if (!$accessToken) {
                 throw new Exception('Failed to generate access token');
             }
@@ -554,24 +623,48 @@ class MpesaService
                 'CheckoutRequestID' => $checkoutRequestId,
             ];
 
+            Log::info('Status query payload prepared', ['payload' => $payload]);
+
             $url = $this->getBaseUrl() . '/mpesa/stkpushquery/v1/query';
 
             $response = Http::withToken($accessToken)
                 ->withHeaders(['Content-Type' => 'application/json'])
+                ->timeout(30)
                 ->post($url, $payload);
+
+            Log::info('STK status response received', [
+                'status' => $response->status(),
+                'body' => $response->json()
+            ]);
 
             $responseData = $response->json();
 
-            Log::info('STK status response', [
-                'checkout_request_id' => $checkoutRequestId,
-                'result_code' => $responseData['ResultCode'] ?? null,
-                'result_desc' => $responseData['ResultDesc'] ?? null
-            ]);
+            // Get result code and user-friendly message
+            $resultCode = $responseData['ResultCode'] ?? null;
+            $statusData = $this->getStatusFromResultCode($resultCode);
+
+            // Check if the transaction has a final status
+            if (in_array($resultCode, [
+                self::RESULT_SUCCESS,
+                self::RESULT_INSUFFICIENT_FUNDS,
+                self::RESULT_CANCELLED_BY_USER,
+                self::RESULT_TIMEOUT,
+                self::RESULT_TRANSACTION_FAILED,
+                self::RESULT_REJECTED,
+                self::RESULT_INVALID_TRANSACTION,
+                self::RESULT_WRONG_PIN,
+                self::RESULT_REQUEST_CANCELLED
+            ])) {
+                // Update transaction from status check
+                $this->updateTransactionFromStatusCheck($checkoutRequestId, $responseData, $statusData['user_message']);
+            }
 
             return [
                 'success' => isset($responseData['ResponseCode']) && $responseData['ResponseCode'] == '0',
-                'result_code' => $responseData['ResultCode'] ?? null,
+                'result_code' => $resultCode,
                 'result_desc' => $responseData['ResultDesc'] ?? null,
+                'user_message' => $statusData['user_message'],
+                'status' => $statusData['status'],
                 'response' => $responseData,
             ];
         } catch (Exception $e) {
@@ -583,32 +676,109 @@ class MpesaService
             return [
                 'success' => false,
                 'message' => 'System error: ' . $e->getMessage(),
+                'user_message' => 'Unable to check payment status. Please try again.',
+                'status' => MpesaTransaction::STATUS_UNKNOWN,
             ];
         }
     }
 
     /**
-     * Determine status from M-Pesa result code
+     * Update transaction from status check
      */
-    private function determineStatusFromResultCode($resultCode)
+    private function updateTransactionFromStatusCheck($checkoutRequestId, $responseData, $userMessage)
     {
-        $resultCode = (int) $resultCode;
-        
-        Log::debug('Determining status from result code', ['result_code' => $resultCode]);
+        try {
+            $transaction = MpesaTransaction::where('checkout_request_id', $checkoutRequestId)->first();
+            
+            if (!$transaction) {
+                Log::warning('Transaction not found for status update', [
+                    'checkout_request_id' => $checkoutRequestId
+                ]);
+                return;
+            }
 
-        switch ($resultCode) {
-            case 0:
-                return MpesaTransaction::STATUS_COMPLETED;
-            case 1032:
-                return MpesaTransaction::STATUS_CANCELLED;
-            case 1037:
-                return MpesaTransaction::STATUS_EXPIRED;
-            case 1:      // Insufficient funds
-            case 1036:   // Transaction failed
-            case 2001:   // Rejected
-                return MpesaTransaction::STATUS_FAILED;
-            default:
-                return MpesaTransaction::STATUS_FAILED;
+            // Only update if still pending
+            if ($transaction->status === MpesaTransaction::STATUS_PENDING) {
+                $resultCode = $responseData['ResultCode'] ?? null;
+                $statusData = $this->getStatusFromResultCode($resultCode);
+                
+                $updateData = [
+                    'result_code' => $resultCode,
+                    'result_description' => $responseData['ResultDesc'] ?? null,
+                    'status' => $statusData['status'],
+                    'user_message' => $userMessage,
+                ];
+
+                if ($statusData['status'] === MpesaTransaction::STATUS_COMPLETED) {
+                    $updateData['completed_at'] = Carbon::now();
+                    
+                    // Try to extract metadata if available in response
+                    if (isset($responseData['CallbackMetadata']['Item'])) {
+                        foreach ($responseData['CallbackMetadata']['Item'] as $item) {
+                            switch ($item['Name']) {
+                                case 'Amount':
+                                    $updateData['amount_paid'] = $item['Value'];
+                                    break;
+                                case 'MpesaReceiptNumber':
+                                    $updateData['mpesa_receipt_number'] = $item['Value'];
+                                    break;
+                                case 'PhoneNumber':
+                                    $updateData['payer_phone'] = $item['Value'];
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+                $transaction->update($updateData);
+                
+                Log::info('Transaction updated from status check', [
+                    'transaction_id' => $transaction->id,
+                    'new_status' => $statusData['status'],
+                    'user_message' => $userMessage
+                ]);
+
+                // If completed and has parcel, update payment
+                if ($statusData['status'] === MpesaTransaction::STATUS_COMPLETED && $transaction->parcel_id) {
+                    $this->updatePaymentFromTransaction($transaction);
+                }
+            }
+        } catch (Exception $e) {
+            Log::error('Failed to update transaction from status check', [
+                'error' => $e->getMessage(),
+                'checkout_request_id' => $checkoutRequestId
+            ]);
+        }
+    }
+
+    /**
+     * Update payment from transaction
+     */
+    private function updatePaymentFromTransaction($transaction)
+    {
+        try {
+            $payment = Payment::where('mpesa_transaction_id', $transaction->id)->first();
+            
+            if ($payment) {
+                $payment->update([
+                    'status' => 'completed',
+                    'reference_number' => $transaction->mpesa_receipt_number ?? 'MPESA-' . time(),
+                    'payment_date' => now(),
+                ]);
+                
+                Log::info('Payment updated from status check', [
+                    'payment_id' => $payment->id,
+                    'transaction_id' => $transaction->id
+                ]);
+
+                // Update parcel payment status
+                $this->updateParcelPaymentStatus($transaction->parcel_id);
+            }
+        } catch (Exception $e) {
+            Log::error('Failed to update payment from status check', [
+                'error' => $e->getMessage(),
+                'transaction_id' => $transaction->id
+            ]);
         }
     }
 
@@ -673,6 +843,7 @@ class MpesaService
                 ->update([
                     'status' => MpesaTransaction::STATUS_EXPIRED,
                     'result_description' => 'STK Push expired',
+                    'user_message' => 'Payment timeout. You took too long to enter your PIN.',
                     'completed_at' => Carbon::now(),
                 ]);
 
@@ -687,7 +858,7 @@ class MpesaService
                 if ($transaction->payment) {
                     $transaction->payment->update([
                         'status' => 'failed',
-                        'notes' => 'M-Pesa payment expired'
+                        'notes' => 'M-Pesa payment expired - user took too long to enter PIN'
                     ]);
                     
                     Log::info('Related payment marked as failed', [

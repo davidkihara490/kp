@@ -6,11 +6,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
-Route::middleware(['admin.auth'])->prefix('admin')->as('admin.')->group(function () {
-    Route::get('/dashboard', function () {
+Route::domain('admin.karibuparcels.com')->as('admin.')->group(function () {
+    Route::get('/login', function () {
+        return view('pages.admin.auth.login');
+    })->name('login');
+
+Route::middleware(['admin.auth'])->group(function(){
+        Route::get('/dashboard', function () {
         return view('pages.admin.dashboard.dashboard');
     })->name('dashboard');
-
     Route::prefix('parcels')->group(function () {
         Route::get('/', function () {
             return view('pages.admin.parcels.index');
@@ -25,8 +29,6 @@ Route::middleware(['admin.auth'])->prefix('admin')->as('admin.')->group(function
             return view('pages.admin.parcels.view', compact('id'));
         })->name('parcels.view');
     });
-
-
     Route::prefix('partners')->group(function () {
         Route::get('/', function () {
             return view('pages.admin.partners.index');
@@ -41,7 +43,6 @@ Route::middleware(['admin.auth'])->prefix('admin')->as('admin.')->group(function
             return view('pages.admin.partners.view', compact('id'));
         })->name('partners.view');
     });
-
     Route::prefix('parcel-handling-assistants')->group(function () {
         Route::get('/', function () {
             return view('pages.admin.parcel-handling-assistants.index');
@@ -56,7 +57,6 @@ Route::middleware(['admin.auth'])->prefix('admin')->as('admin.')->group(function
             return view('pages.admin.parcel-handling-assistants.view', compact('id'));
         })->name('pha.view');
     });
-
     Route::prefix('points')->group(function () {
         Route::get('/', function () {
             return view('pages.admin.points.index');
@@ -71,7 +71,6 @@ Route::middleware(['admin.auth'])->prefix('admin')->as('admin.')->group(function
             return view('pages.admin.points.view', compact('id'));
         })->name('points.view');
     });
-
     Route::prefix('drivers')->group(function () {
         Route::get('/', function () {
             return view('pages.admin.drivers.index');
@@ -86,8 +85,6 @@ Route::middleware(['admin.auth'])->prefix('admin')->as('admin.')->group(function
             return view('pages.admin.drivers.view', compact('id'));
         })->name('drivers.view');
     });
-
-
     Route::prefix('fleets')->group(function () {
         Route::get('/', function () {
             return view('pages.admin.fleets.index');
@@ -102,15 +99,11 @@ Route::middleware(['admin.auth'])->prefix('admin')->as('admin.')->group(function
             return view('pages.admin.fleets.view', compact('id'));
         })->name('fleets.view');
     });
-
     Route::prefix('payments')->group(function () {
         Route::get('/', function () {
             return view('pages.admin.payments.index');
         })->name('payments.index');
     });
-
-
-
     Route::prefix('settings')->group(function () {
         Route::prefix('towns')->group(function () {
             Route::get('/', function () {
@@ -267,7 +260,6 @@ Route::middleware(['admin.auth'])->prefix('admin')->as('admin.')->group(function
             })->name('policy.edit');
         });
     });
-
     Route::prefix('blogs')->group(function () {
         Route::prefix('blog-categories')->group(function () {
             Route::get('/', function () {
@@ -314,86 +306,9 @@ Route::middleware(['admin.auth'])->prefix('admin')->as('admin.')->group(function
             })->name('blog-tags.view');
         });
     });
-
-    // Route::prefix('stations')->group(function () {
-    //     Route::get('/', function () {
-    //         return view('pages.stations.index');
-    //     })->name('stations.index');
-    //     Route::get('/create', function () {
-    //         return view('pages.stations.create');
-    //     })->name('stations.create');
-    //     Route::get('/edit/{id}', function ($id) {
-    //         return view('pages.stations.edit', compact('id'));
-    //     })->name('stations.edit');
-    //     Route::get('/view/{id}', function ($id) {
-    //         return view('pages.stations.view', compact('id'));
-    //     })->name('stations.view');
-    // });
-
-    // Route::prefix('parcel-handling-assistants')->group(function () {
-    //     Route::get('/', function () {
-    //         return view('pages.parcel-handling-assistants.index');
-    //     })->name('pha.index');
-    //     Route::get('/create', function () {
-    //         return view('pages.parcel-handling-assistants.create');
-    //     })->name('pha.create');
-    //     Route::get('/edit/{id}', function ($id) {
-    //         return view('pages.parcel-handling-assistants.edit', compact('id'));
-    //     })->name('pha.edit');
-    //     Route::get('/view/{id}', function ($id) {
-    //         return view('pages.parcel-handling-assistants.view', compact('id'));
-    //     })->name('pha.view');
-    // });
-
-    // Route::prefix('transport-partners')->group(function () {
-    //     Route::get('/', function () {
-    //         return view('pages.transport-partners.index');
-    //     })->name('transport-partners.index');
-    //     Route::get('/create', function () {
-    //         return view('pages.transport-partners.create');
-    //     })->name('transport-partners.create');
-    //     Route::get('/edit/{id}', function ($id) {
-    //         return view('pages.transport-partners.edit', compact('id'));
-    //     })->name('transport-partners.edit');
-    //     Route::get('/view/{id}', function ($id) {
-    //         return view('pages.transport-partners.view', compact('id'));
-    //     })->name('transport-partners.view');
-    // });
-
-    // Route::prefix('drivers')->group(function () {
-    //     Route::get('/', function () {
-    //         return view('pages.drivers.index');
-    //     })->name('drivers.index');
-    //     Route::get('/create', function () {
-    //         return view('pages.drivers.create');
-    //     })->name('drivers.create');
-    //     Route::get('/edit/{id}', function ($id) {
-    //         return view('pages.drivers.edit', compact('id'));
-    //     })->name('drivers.edit');
-    //     Route::get('/view/{id}', function ($id) {
-    //         return view('pages.drivers.view', compact('id'));
-    //     })->name('drivers.view');
-    // });
-
-    // Route::prefix('fleets')->group(function () {
-    //     Route::get('/', function () {
-    //         return view('pages.fleets.index');
-    //     })->name('fleets.index');
-    //     Route::get('/create', function () {
-    //         return view('pages.fleets.create');
-    //     })->name('fleets.create');
-    //     Route::get('/edit/{id}', function ($id) {
-    //         return view('pages.fleets.edit', compact('id'));
-    //     })->name('fleets.edit');
-    //     Route::get('/view/{id}', function ($id) {
-    //         return view('pages.fleets.view', compact('id'));
-    //     })->name('fleets.view');
-    // });
-
-
-
     Route::post('logout', function () {
         Auth::guard('admin')->logout();
-        return redirect()->route('admin.login'); // or redirect to login page
+        return redirect()->route('admin.login');
     })->name('logout');
+});
 });

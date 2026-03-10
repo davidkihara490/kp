@@ -18,15 +18,21 @@
                             </div>
                             <div class="d-flex gap-2">
                                 @if($partner->verification_status === 'pending')
-                                <button class="btn btn-sm btn-success mr-2" wire:click="verifyPartner">
+                                <button class="btn btn-sm btn-success" wire:click="verifyPartner">
                                     <i class="fas fa-check mr-1"></i> Verify
                                 </button>
                                 @endif
-                                                            
-                                <!-- <a href="{{ route('admin.partners.edit', ['id' => $partner->id]) }}" 
+                                
+                                @if($partner->status === 'pending')
+                                <button class="btn btn-sm btn-primary" wire:click="approvePartner">
+                                    <i class="fas fa-thumbs-up mr-1"></i> Approve
+                                </button>
+                                @endif
+                                
+                                <a href="{{ route('admin.partners.edit', ['id' => $partner->id]) }}" 
                                    class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit mr-1"></i> Edit
-                                </a> -->
+                                </a>
                                 
                                 <button class="btn btn-sm btn-danger" wire:click="confirmDelete">
                                     <i class="fas fa-trash mr-1"></i> Delete
@@ -38,29 +44,29 @@
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="d-flex flex-wrap gap-3 mb-3">
-                                    <span class="badge badge-{{ $partnerTypeColor }} p-2 mr-2">
+                                    <span class="badge badge-{{ $partnerTypeColor }} p-2">
                                         <i class="fas fa-{{ $partnerTypeIcon }} mr-1"></i>
                                         {{ ucfirst($partner->partner_type) }} Partner
                                     </span>
                                     
-                                    <span class="badge badge-{{ $statusBadgeColor }} p-2 mr-2">
+                                    <span class="badge badge-{{ $statusBadgeColor }} p-2">
                                         <i class="fas fa-circle mr-1"></i>
-                                        {{ ucfirst($partner->verification_status) }}
+                                        {{ ucfirst($partner->status) }}
                                     </span>
                                     
-                                    <span class="badge badge-{{ $verificationBadgeColor }} p-2 mr-2">
+                                    <span class="badge badge-{{ $verificationBadgeColor }} p-2">
                                         <i class="fas fa-shield-alt mr-1"></i>
                                         {{ ucfirst($partner->verification_status) }}
                                     </span>
                                     
                                     @if($partner->registration_number)
-                                    <span class="badge badge-info p-2 mr-2">
+                                    <span class="badge badge-info p-2">
                                         <i class="fas fa-id-card mr-1"></i>
                                         Reg: {{ $partner->registration_number }}
                                     </span>
                                     @endif
                                     
-                                    <span class="badge badge-secondary p-2 mr-2">
+                                    <span class="badge badge-secondary p-2">
                                         <i class="fas fa-calendar-alt mr-1"></i>
                                         Joined: {{ $partner->created_at->format('M d, Y') }}
                                     </span>
@@ -70,11 +76,11 @@
                                     <div class="col-md-6">
                                         <p class="mb-1">
                                             <i class="fas fa-envelope text-muted mr-2"></i>
-                                            <strong>Email:</strong> {{ $partner->owner->email }}
+                                            <strong>Email:</strong> {{ $partner->email }}
                                         </p>
                                         <p class="mb-1">
                                             <i class="fas fa-phone text-muted mr-2"></i>
-                                            <strong>Phone:</strong> {{ $partner->owner->phone_number }}
+                                            <strong>Phone:</strong> {{ $partner->phone_number }}
                                         </p>
                                         @if($partner->kra_pin)
                                         <p class="mb-1">
