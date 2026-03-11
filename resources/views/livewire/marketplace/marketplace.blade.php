@@ -381,14 +381,14 @@
                                                 <small class="text-muted">FROM</small>
                                                 <div class="fw-bold" style="font-size: 0.95rem;">
                                                     {{ $selectedParcel->senderTown->name ?? 'N/A' }},
-                                                    {{ $selectedParcel->senderCounty->name ?? 'N/A' }}
+                                                    {{ $selectedParcel->senderCounty()->name ?? 'N/A' }}
                                                 </div>
                                             </div>
                                             <div class="mb-3">
                                                 <small class="text-muted">TO</small>
                                                 <div class="fw-bold" style="font-size: 0.95rem;">
                                                     {{ $selectedParcel->receiverTown->name ?? 'N/A' }},
-                                                    {{ $selectedParcel->receiverCounty->name ?? 'N/A' }}
+                                                    {{ $selectedParcel->receiverCounty()->name ?? 'N/A' }}
                                                 </div>
                                             </div>
                                             <div class="mb-3">
