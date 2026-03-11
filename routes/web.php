@@ -60,9 +60,3 @@ Route::get('/server-ip', function() {
         ]
     ]);
 });
-
-
-Route::middleware(['disable.csrf'])->group(function () {
-    // Route::get('test-mpesa-credentials', [MpesaCallbackController::class, 'test']);
-    Route::post('mpesa/stk-callback', [MpesaCallbackController::class, 'handleCallback']);
-});

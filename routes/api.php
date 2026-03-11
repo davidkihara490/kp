@@ -9,10 +9,8 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 // Callbacks (these are called by Safaricom)
-// Route::post('mpesa/stk-callback', [MpesaCallbackController::class, 'stkCallback']);
-// Route::post('mpesa/c2b-callback', [MpesaCallbackController::class, 'c2bCallback']);
-// Route::post('mpesa/b2c-callback', [MpesaCallbackController::class, 'b2cCallback']);
-
-
-
-Route::get('test', function() { return 'ok'; });
+Route::prefix('mpesa')->group(function () {
+    Route::post('/stk-callback', [MpesaCallbackController::class, 'stkCallback']);
+    Route::post('/c2b-callback', [MpesaCallbackController::class, 'c2bCallback']);
+    Route::post('/b2c-callback', [MpesaCallbackController::class, 'b2cCallback']);
+});

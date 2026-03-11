@@ -21,10 +21,6 @@ class MpesaCallbackController extends Controller
      */
     public function stkCallback(Request $request)
     {
-
-        return '1111111111111111111111111111111111111111';
-
-        
         Log::info('=== M-PESA STK CALLBACK RECEIVED ===');
         Log::info('Headers:', $request->headers->all());
         Log::info('Body:', $request->all());
