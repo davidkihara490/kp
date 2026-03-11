@@ -212,9 +212,9 @@ class CreateParcel extends Component
 
         $pha = Auth::guard('partner')->user()->parcelHandlingAssistant;
 
-        $this->sender_pick_up_drop_off_point_id = $pha->assignment()->pick_up_and_drop_off_point_id;
+        $this->sender_pick_up_drop_off_point_id = $pha->assignment()?->pick_up_and_drop_off_point_id;
 
-        $this->sender_town_id = $pha->assignment()->pickUpAndDropOffPoint?->town?->id;
+        $this->sender_town_id = $pha->assignment()?->pickUpAndDropOffPoint?->town?->id;
     }
 
     public function loadOptions()

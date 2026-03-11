@@ -1188,12 +1188,8 @@
         </div>
         @endif
 
-
-
         <div wire:poll.5s="checkMpesaStatus" class="d-none"></div>
-
-
-
+        
         @if($showDriverVerificationModal)
         <div class="modal fade show d-block" id="paymentModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-dialog-centered">

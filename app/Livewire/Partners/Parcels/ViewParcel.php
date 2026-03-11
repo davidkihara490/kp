@@ -368,7 +368,6 @@ class ViewParcel extends Component
 
     public function closePaymentModal()
     {
-        Log::info('Closing payment modal');
         $this->showPaymentModal = false;
         $this->resetPaymentModal();
 
