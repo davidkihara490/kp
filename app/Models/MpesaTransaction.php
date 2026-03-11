@@ -29,6 +29,7 @@ class MpesaTransaction extends Model
         'account_reference',
         'transaction_desc',
         'status',
+        'parcel_id',
         'user_id',
         'transaction_type',
         'related_id',
@@ -69,6 +70,8 @@ class MpesaTransaction extends Model
     const STATUS_FAILED = 'failed';
     const STATUS_CANCELLED = 'cancelled';
     const STATUS_EXPIRED = 'expired';
+
+    const STATUS_UNKNOWN = 'unknown';
 
     // Transaction type constants
     const TYPE_SUBSCRIPTION = 'subscription';

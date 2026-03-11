@@ -18,11 +18,11 @@ class ViewParcel extends Component
 {
     use WithPagination;
     protected $paginationTheme = 'bootstrap';
-    
+
     public $parcelId;
     public $parcel;
     public $activeTab = 'overview';
-    
+
     // Payment Modal Properties
     public $showPaymentModal = false;
     public $paymentAmount = 0;
@@ -30,7 +30,7 @@ class ViewParcel extends Component
     public $paymentPhone = '';
     public $paymentNotes = '';
     public $isProcessing = false;
-    
+
     // M-Pesa Specific Properties
     public $checkoutRequestId = '';
     public $paymentStatus = '';
@@ -42,11 +42,11 @@ class ViewParcel extends Component
     public $mpesaTransactionId = null;
     public $statusCheckCount = 0;
     public $maxStatusChecks = 60; // 5 minutes (60 * 5 seconds)
-    
+
     // Filters
     public $paymentStatusFilter = '';
     public $dateRange = '';
-    
+
     // Driver and Pickup Properties
     public $selectedDriver = null;
     public $driverCode = '';
@@ -103,7 +103,7 @@ class ViewParcel extends Component
             'pickup_person_type' => 'required|in:owner,other',
             'confirm_terms' => 'required|accepted',
         ];
-        
+
         if ($this->pickup_person_type === 'other') {
             $rules = array_merge($rules, [
                 'picker_name' => 'required|string|min:3|max:255',
@@ -113,14 +113,14 @@ class ViewParcel extends Component
                 'picker_reason' => 'nullable|string|max:500',
             ]);
         }
-        
+
         return $rules;
     }
 
     public function verifyPickup()
     {
         $this->validate($this->rulesForPickup());
-        
+
         try {
             DB::beginTransaction();
 
@@ -133,19 +133,19 @@ class ViewParcel extends Component
             $this->selectedDriver = $this->latestStatus?->driver;
 
             $verified = $this->verifyPickupCode($this->pickup_code);
-            
+
             if (!$verified) {
                 $this->pickupVerificationError = 'Invalid verification code';
                 return;
             }
-            
+
             $pickupData = [
                 'pickup_person_type' => $this->pickup_person_type,
                 'pickup_verified_by' => Auth::guard('partner')->user()->id,
                 'pickup_verified_at' => Carbon::now(),
                 'pickup_code' => $this->pickup_code,
             ];
-            
+
             if ($this->pickup_person_type === 'owner') {
                 $pickupData['pickup_person_name'] = $this->parcel->receiver_name;
                 $pickupData['pickup_person_phone'] = $this->parcel->receiver_phone;
@@ -157,13 +157,13 @@ class ViewParcel extends Component
                 $pickupData['pickup_person_relationship'] = $this->picker_relationship;
                 $pickupData['pickup_reason'] = $this->picker_reason;
             }
-            
+
             $this->parcel->update([
                 'current_status' => Parcel::STATUS_PICKED,
             ]);
-            
+
             $this->parcel->parcelPickUp()->create($pickupData);
-            
+
             $notes = "Parcel picked up by: ";
             if ($this->pickup_person_type === 'owner') {
                 $notes .= "Owner - {$this->parcel->receiver_name}";
@@ -182,13 +182,12 @@ class ViewParcel extends Component
                 NULL,
                 NULL,
             );
-            
+
             DB::commit();
-            
+
             $this->closePickUpModal();
             session()->flash('success', 'Parcel pickup verified successfully');
             $this->dispatch('parcel-updated');
-            
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Pickup verification failed', ['error' => $e->getMessage()]);
@@ -230,7 +229,7 @@ class ViewParcel extends Component
         $this->validate([
             'driver_code' => 'required'
         ]);
-        
+
         if ($this->latestStatus->otp == $this->driver_code) {
             DB::beginTransaction();
 
@@ -372,7 +371,7 @@ class ViewParcel extends Component
         Log::info('Closing payment modal');
         $this->showPaymentModal = false;
         $this->resetPaymentModal();
-        
+
         // Stop polling
         $this->dispatch('stop-mpesa-polling');
     }
@@ -459,7 +458,7 @@ class ViewParcel extends Component
 
         try {
             $accountReference = $this->parcel->parcel_id;
-            $transactionDesc = 'Payment for parcel No:'.$this->parcel->parcel_id;
+            $transactionDesc = 'Payment for parcel No:' . $this->parcel->parcel_id;
 
             $result = $this->mpesaService->stkPush(
                 $this->paymentPhone,
@@ -491,7 +490,6 @@ class ViewParcel extends Component
                     'checkout_request_id' => $this->checkoutRequestId,
                     'transaction_id' => $result['transaction_id']
                 ]);
-
             } else {
                 DB::rollBack();
 
@@ -548,7 +546,6 @@ class ViewParcel extends Component
             session()->flash('success', 'Payment of ' . number_format($this->paymentAmount, 2) . ' recorded successfully!');
             $this->closePaymentModal();
             $this->loadParcel();
-
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Non-M-Pesa payment failed', [
@@ -568,6 +565,8 @@ class ViewParcel extends Component
 
     public function checkMpesaStatus()
     {
+
+        Log::info("Polling");
         if (!$this->checkoutRequestId) {
             Log::warning('No checkout request ID for status check');
             return;
@@ -585,37 +584,37 @@ class ViewParcel extends Component
 
             if (isset($result['result_code'])) {
                 $resultCode = $result['result_code'];
-                
+
                 switch ($resultCode) {
                     case 0:
                         $this->handlePaymentSuccess($result);
                         break;
-                        
+
                     case 1032:
                         $this->handlePaymentCancelled($result);
                         break;
-                        
+
                     case 1037:
                         if ($this->statusCheckCount >= $this->maxStatusChecks) {
                             $this->handlePaymentTimeout($result);
                         }
                         break;
-                        
+
                     case 1:
                         $this->handlePaymentFailed($result, 'insufficient_funds');
                         break;
-                        
+
                     case 1019:
                         $this->handlePaymentFailed($result, 'wrong_pin');
                         break;
-                        
+
                     case 1036:
                     case 2001:
                     case 1031:
                     case 1026:
                         $this->handlePaymentFailed($result, 'failed');
                         break;
-                        
+
                     default:
                         if ($this->statusCheckCount >= $this->maxStatusChecks) {
                             $this->handlePaymentUnknown($result);
@@ -623,13 +622,12 @@ class ViewParcel extends Component
                         break;
                 }
             }
-            
         } catch (Exception $e) {
             Log::error('M-Pesa status check error', [
                 'error' => $e->getMessage(),
                 'checkout_request_id' => $this->checkoutRequestId
             ]);
-            
+
             if ($this->statusCheckCount >= $this->maxStatusChecks) {
                 $this->paymentStatus = 'check_failed';
                 $this->paymentStatusType = 'warning';
@@ -646,7 +644,7 @@ class ViewParcel extends Component
         $this->paymentStatusType = 'success';
         $this->paymentStatusIcon = 'bi-check-circle-fill';
         $this->paymentStatusMessage = $result['user_message'] ?? 'Payment completed successfully!';
-        
+
         if (isset($result['response']['CallbackMetadata']['Item'])) {
             foreach ($result['response']['CallbackMetadata']['Item'] as $item) {
                 if ($item['Name'] === 'MpesaReceiptNumber') {
@@ -655,7 +653,7 @@ class ViewParcel extends Component
                 }
             }
         }
-        
+
         $this->loadParcel();
         $this->dispatch('stop-mpesa-polling');
         $this->dispatch('notify', [
@@ -670,7 +668,7 @@ class ViewParcel extends Component
         $this->paymentStatusType = 'warning';
         $this->paymentStatusIcon = 'bi-x-circle';
         $this->paymentStatusMessage = $result['user_message'] ?? 'Transaction cancelled. You did not enter your M-Pesa PIN.';
-        
+
         $this->updatePaymentRecord('failed', 'Transaction cancelled by user');
         $this->dispatch('stop-mpesa-polling');
     }
@@ -681,7 +679,7 @@ class ViewParcel extends Component
         $this->paymentStatusType = 'warning';
         $this->paymentStatusIcon = 'bi-clock-history';
         $this->paymentStatusMessage = $result['user_message'] ?? 'Payment timeout. You took too long to enter your PIN. Please try again.';
-        
+
         $this->updatePaymentRecord('failed', 'Payment timeout');
         $this->dispatch('stop-mpesa-polling');
     }
@@ -698,7 +696,7 @@ class ViewParcel extends Component
         $this->paymentStatusType = 'danger';
         $this->paymentStatusIcon = 'bi-exclamation-circle';
         $this->paymentStatusMessage = $result['user_message'] ?? $failureMessages[$failureType];
-        
+
         $this->updatePaymentRecord('failed', $this->paymentStatusMessage);
         $this->dispatch('stop-mpesa-polling');
     }
@@ -709,7 +707,7 @@ class ViewParcel extends Component
         $this->paymentStatusType = 'warning';
         $this->paymentStatusIcon = 'bi-question-circle';
         $this->paymentStatusMessage = 'Payment status unknown. Please check transaction history or contact support.';
-        
+
         $this->dispatch('stop-mpesa-polling');
     }
 

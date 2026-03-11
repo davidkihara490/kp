@@ -38,6 +38,7 @@ return new class extends Migration
             // Reference information
             $table->string('account_reference')->nullable()->index();
             $table->text('transaction_desc')->nullable();
+            $table->unsignedBigInteger('parcel_id')->nullable();
 
             // Status tracking
             $table->enum('status', [

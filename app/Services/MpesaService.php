@@ -95,13 +95,13 @@ class MpesaService
 
             if ($response->successful()) {
                 $data = $response->json();
-                
+
                 if (isset($data['access_token'])) {
                     Log::info('Access token generated successfully');
-                    
+
                     // Cache the token for 55 minutes (tokens expire in 1 hour)
                     cache([$cacheKey => $data['access_token']], now()->addMinutes(55));
-                    
+
                     return $data['access_token'];
                 } else {
                     Log::error('Access token not found in response', ['data' => $data]);
@@ -130,12 +130,12 @@ class MpesaService
     {
         $data = $this->shortcode . $this->passkey . $timestamp;
         $password = base64_encode($data);
-        
+
         Log::debug('Generated STK password', [
             'shortcode' => $this->shortcode,
             'timestamp' => $timestamp
         ]);
-        
+
         return $password;
     }
 
@@ -206,7 +206,7 @@ class MpesaService
             // Step 7: Check if request was successful
             if (isset($responseData['ResponseCode']) && $responseData['ResponseCode'] == '0') {
                 // If we have parcel ID, create a pending payment record
-                if ($parcelId) {                  
+                if ($parcelId) {
                     $payment = Payment::create([
                         'reference_number' => null,
                         'parcel_id' => $parcelId,
@@ -231,7 +231,7 @@ class MpesaService
             } else {
                 // Handle immediate failure
                 $errorMessage = $responseData['errorMessage'] ?? $responseData['ResponseDescription'] ?? 'Failed to send STK Push';
-                
+
                 Log::error('STK Push failed', [
                     'transaction_id' => $transaction->id,
                     'error' => $errorMessage
@@ -269,36 +269,29 @@ class MpesaService
     /**
      * Handle callback from M-Pesa and create/update Payment record
      */
+
     public function handleCallback($callbackData)
     {
-        Log::info('====== M-PESA CALLBACK RECEIVED ======');
-        Log::info('Full callback data', ['callback' => $callbackData]);
-
         DB::beginTransaction();
 
-        dd($callbackData);
-
         try {
-            // Step 1: Validate callback structure
-            Log::info('Step 1: Validating callback structure');
-            if (!isset($callbackData['Body']['stkCallback'])) {
-                Log::error('Invalid callback structure - missing stkCallback');
+            // Validate nested keys safely
+            if (
+                !isset($callbackData['callback']) ||
+                !isset($callbackData['callback']['Body']) ||
+                !isset($callbackData['callback']['Body']['stkCallback'])
+            ) {
+                Log::error('Invalid callback structure - missing stkCallback', ['payload' => $callbackData]);
                 DB::rollBack();
                 return false;
             }
 
-            $stkCallback = $callbackData['Body']['stkCallback'];
+            // Step 1: Extract the stkCallback safely
+            $stkCallback = $callbackData['callback']['Body']['stkCallback'];
             
-            Log::info('STK Callback extracted', [
-                'CheckoutRequestID' => $stkCallback['CheckoutRequestID'] ?? null,
-                'ResultCode' => $stkCallback['ResultCode'] ?? null,
-                'ResultDesc' => $stkCallback['ResultDesc'] ?? null
-            ]);
-
             // Step 2: Find the transaction
-            Log::info('Step 2: Finding transaction');
             $checkoutRequestId = $stkCallback['CheckoutRequestID'] ?? null;
-            
+
             if (!$checkoutRequestId) {
                 Log::error('Missing CheckoutRequestID in callback');
                 DB::rollBack();
@@ -313,136 +306,83 @@ class MpesaService
                 return false;
             }
 
-            Log::info('Transaction found', [
-                'transaction_id' => $transaction->id,
-                'current_status' => $transaction->status,
-                'parcel_id' => $transaction->parcel_id
-            ]);
-
             // Step 3: Extract callback details
-            Log::info('Step 3: Extracting callback details');
             $resultCode = $stkCallback['ResultCode'] ?? null;
             $resultDesc = $stkCallback['ResultDesc'] ?? null;
-            $callbackMetadata = $stkCallback['CallbackMetadata']['Item'] ?? null;
+            $callbackMetadata = $stkCallback['CallbackMetadata']['Item'] ?? [];
 
             // Step 4: Determine status and get user-friendly message
-            Log::info('Step 4: Determining payment status');
             $statusData = $this->getStatusFromResultCode($resultCode);
             $status = $statusData['status'];
             $userMessage = $statusData['user_message'];
-            
-            Log::info('Status determined', [
-                'resultCode' => $resultCode,
-                'status' => $status,
-                'user_message' => $userMessage
-            ]);
 
             // Step 5: Prepare update data
-            Log::info('Step 5: Preparing transaction update data');
             $updateData = [
                 'result_code' => $resultCode,
                 'result_description' => $resultDesc,
                 'status' => $status,
                 'user_message' => $userMessage,
                 'callback_data' => $callbackData,
-                'completed_at' => $status === MpesaTransaction::STATUS_COMPLETED ? Carbon::now() : null,
+                'completed_at' => $status === MpesaTransaction::STATUS_COMPLETED ? now() : null,
             ];
 
-            // Step 6: Extract payment details if successful
+            // Step 6: Extract payment details from metadata if successful
             $mpesaReceiptNumber = null;
             $amountPaid = null;
             $payerPhone = null;
             $transactionDate = null;
 
-            if ($resultCode === 0 && $callbackMetadata) {
-                Log::info('Step 6: Extracting payment details from metadata');
-                
+            if ($resultCode === 0 && !empty($callbackMetadata)) {
                 foreach ($callbackMetadata as $item) {
-                    Log::debug('Processing metadata item', $item);
-                    
                     switch ($item['Name']) {
                         case 'Amount':
-                            $amountPaid = $item['Value'];
+                            $amountPaid = $item['Value'] ?? null;
                             $updateData['amount_paid'] = $amountPaid;
-                            Log::info('Amount extracted', ['amount' => $amountPaid]);
                             break;
                         case 'MpesaReceiptNumber':
-                            $mpesaReceiptNumber = $item['Value'];
+                            $mpesaReceiptNumber = $item['Value'] ?? null;
                             $updateData['mpesa_receipt_number'] = $mpesaReceiptNumber;
-                            Log::info('Receipt number extracted', ['receipt' => $mpesaReceiptNumber]);
                             break;
                         case 'TransactionDate':
-                            $transactionDate = $item['Value'];
+                            $transactionDate = $item['Value'] ?? null;
                             $updateData['transaction_date'] = $transactionDate;
-                            Log::info('Transaction date extracted', ['date' => $transactionDate]);
                             break;
                         case 'PhoneNumber':
-                            $payerPhone = $item['Value'];
+                            $payerPhone = $item['Value'] ?? null;
                             $updateData['payer_phone'] = $payerPhone;
-                            Log::info('Phone number extracted', ['phone' => $payerPhone]);
                             break;
                     }
                 }
             }
 
             // Step 7: Update transaction
-            Log::info('Step 7: Updating transaction record');
             $transaction->update($updateData);
-            Log::info('Transaction updated', ['new_status' => $transaction->status]);
 
-            // Step 8: Handle payment record based on transaction status
-            Log::info('Step 8: Handling payment record');
-
+            // Step 8: Handle payment record
             if ($transaction->parcel_id) {
-                // Find existing payment record
                 $payment = Payment::where('mpesa_transaction_id', $transaction->id)->first();
 
                 if ($payment) {
-                    Log::info('Found existing payment record', ['payment_id' => $payment->id]);
-                    
                     if ($status === MpesaTransaction::STATUS_COMPLETED) {
-                        // Update payment as completed
                         $payment->update([
                             'reference_number' => $mpesaReceiptNumber,
                             'status' => 'completed',
                             'payment_date' => now(),
                             'notes' => 'M-Pesa payment completed. Receipt: ' . $mpesaReceiptNumber,
                         ]);
-                        
-                        Log::info('Payment completed', [
-                            'payment_id' => $payment->id,
-                            'receipt' => $mpesaReceiptNumber
-                        ]);
-
-                        // Update parcel payment status
                         $this->updateParcelPaymentStatus($transaction->parcel_id);
-                        
                     } elseif (in_array($status, [
-                        MpesaTransaction::STATUS_FAILED, 
-                        MpesaTransaction::STATUS_CANCELLED, 
+                        MpesaTransaction::STATUS_FAILED,
+                        MpesaTransaction::STATUS_CANCELLED,
                         MpesaTransaction::STATUS_EXPIRED
                     ])) {
-                        // Update payment as failed
                         $payment->update([
                             'status' => 'failed',
                             'notes' => 'M-Pesa payment failed: ' . $userMessage,
                         ]);
-                        
-                        Log::info('Payment failed', [
-                            'payment_id' => $payment->id,
-                            'reason' => $userMessage
-                        ]);
                     }
                 } else {
-                    Log::warning('No payment record found for transaction', [
-                        'transaction_id' => $transaction->id,
-                        'parcel_id' => $transaction->parcel_id
-                    ]);
-                    
-                    // Create payment record if it doesn't exist and transaction is completed
-                    if ($status === MpesaTransaction::STATUS_COMPLETED && $transaction->parcel_id) {
-                        Log::info('Creating payment record from callback');
-                        
+                    if ($status === MpesaTransaction::STATUS_COMPLETED) {
                         $payment = Payment::create([
                             'reference_number' => $mpesaReceiptNumber,
                             'parcel_id' => $transaction->parcel_id,
@@ -455,51 +395,28 @@ class MpesaService
                             'paid_by' => $transaction->user_id,
                             'mpesa_transaction_id' => $transaction->id,
                         ]);
-                        
-                        Log::info('Payment record created from callback', [
-                            'payment_id' => $payment->id
-                        ]);
-
-                        // Update parcel payment status
                         $this->updateParcelPaymentStatus($transaction->parcel_id);
                     }
                 }
             }
 
             DB::commit();
-            
-            Log::info('Callback processed successfully', [
-                'transaction_id' => $transaction->id,
-                'status' => $status,
-                'user_message' => $userMessage,
-                'receipt' => $mpesaReceiptNumber
-            ]);
-            
-            Log::info('====== M-PESA CALLBACK PROCESSING COMPLETED ======');
-            
-            return true;
 
+            return true;
         } catch (Exception $e) {
             DB::rollBack();
-            
             Log::error('Callback processing failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
-            Log::info('====== M-PESA CALLBACK PROCESSING FAILED ======');
-            
             return false;
         }
     }
 
-    /**
-     * Get status and user-friendly message from result code
-     */
     private function getStatusFromResultCode($resultCode)
     {
         $resultCode = (int) $resultCode;
-        
+
         Log::debug('Determining status from result code', ['result_code' => $resultCode]);
 
         $statusMap = [
@@ -556,7 +473,7 @@ class MpesaService
 
         try {
             $parcel = Parcel::find($parcelId);
-            
+
             if (!$parcel) {
                 Log::warning('Parcel not found', ['parcel_id' => $parcelId]);
                 return;
@@ -588,7 +505,6 @@ class MpesaService
                 'parcel_id' => $parcelId,
                 'new_status' => $parcel->payment_status
             ]);
-
         } catch (Exception $e) {
             Log::error('Failed to update parcel payment status', [
                 'parcel_id' => $parcelId,
@@ -672,7 +588,7 @@ class MpesaService
                 'error' => $e->getMessage(),
                 'checkout_request_id' => $checkoutRequestId
             ]);
-            
+
             return [
                 'success' => false,
                 'message' => 'System error: ' . $e->getMessage(),
@@ -689,7 +605,7 @@ class MpesaService
     {
         try {
             $transaction = MpesaTransaction::where('checkout_request_id', $checkoutRequestId)->first();
-            
+
             if (!$transaction) {
                 Log::warning('Transaction not found for status update', [
                     'checkout_request_id' => $checkoutRequestId
@@ -701,7 +617,7 @@ class MpesaService
             if ($transaction->status === MpesaTransaction::STATUS_PENDING) {
                 $resultCode = $responseData['ResultCode'] ?? null;
                 $statusData = $this->getStatusFromResultCode($resultCode);
-                
+
                 $updateData = [
                     'result_code' => $resultCode,
                     'result_description' => $responseData['ResultDesc'] ?? null,
@@ -711,7 +627,7 @@ class MpesaService
 
                 if ($statusData['status'] === MpesaTransaction::STATUS_COMPLETED) {
                     $updateData['completed_at'] = Carbon::now();
-                    
+
                     // Try to extract metadata if available in response
                     if (isset($responseData['CallbackMetadata']['Item'])) {
                         foreach ($responseData['CallbackMetadata']['Item'] as $item) {
@@ -731,7 +647,7 @@ class MpesaService
                 }
 
                 $transaction->update($updateData);
-                
+
                 Log::info('Transaction updated from status check', [
                     'transaction_id' => $transaction->id,
                     'new_status' => $statusData['status'],
@@ -758,14 +674,14 @@ class MpesaService
     {
         try {
             $payment = Payment::where('mpesa_transaction_id', $transaction->id)->first();
-            
+
             if ($payment) {
                 $payment->update([
                     'status' => 'completed',
                     'reference_number' => $transaction->mpesa_receipt_number ?? 'MPESA-' . time(),
                     'payment_date' => now(),
                 ]);
-                
+
                 Log::info('Payment updated from status check', [
                     'payment_id' => $payment->id,
                     'transaction_id' => $transaction->id
@@ -824,9 +740,9 @@ class MpesaService
         $url = $this->environment === 'production'
             ? 'https://api.safaricom.co.ke'
             : 'https://sandbox.safaricom.co.ke';
-            
+
         Log::debug('Base URL determined', ['environment' => $this->environment, 'url' => $url]);
-        
+
         return $url;
     }
 
@@ -860,7 +776,7 @@ class MpesaService
                         'status' => 'failed',
                         'notes' => 'M-Pesa payment expired - user took too long to enter PIN'
                     ]);
-                    
+
                     Log::info('Related payment marked as failed', [
                         'payment_id' => $transaction->payment->id,
                         'transaction_id' => $transaction->id

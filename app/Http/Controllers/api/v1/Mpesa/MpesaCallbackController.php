@@ -21,19 +21,17 @@ class MpesaCallbackController extends Controller
      */
     public function stkCallback(Request $request)
     {
-        Log::info('=== M-PESA STK CALLBACK RECEIVED ===');
-        Log::info('Headers:', $request->headers->all());
-        Log::info('Body:', $request->all());
-        Log::info('IP: ' . $request->ip());
-        Log::info('====================================');
 
-        // Get the callback data from request
-        $callbackData = $request->all();
-        
-        // Validate the callback has required data
-        if (empty($callbackData) || !isset($callbackData['Body']['stkCallback'])) {
-            Log::error('Invalid callback data received', $callbackData);
-            
+        // // Get the callback data from request and decode it
+        $callbackData = $request->json()->all();
+
+        // Check if stkCallback exists
+        if (
+            !isset($callbackData['callback']) ||
+            !isset($callbackData['callback']['Body']) ||
+            !isset($callbackData['callback']['Body']['stkCallback'])
+        ) {
+            Log::error('Invalid callback structure', ['payload' => $callbackData]);
             return response()->json([
                 'ResultCode' => 1,
                 'ResultDesc' => 'Invalid callback data'
@@ -43,10 +41,10 @@ class MpesaCallbackController extends Controller
         try {
             // Process the callback
             $success = $this->mpesaService->handleCallback($callbackData);
-            
+
             if ($success) {
                 Log::info('Callback processed successfully');
-                
+
                 // Return success response to M-Pesa
                 return response()->json([
                     'ResultCode' => 0,
@@ -54,19 +52,18 @@ class MpesaCallbackController extends Controller
                 ]);
             } else {
                 Log::error('Failed to process callback');
-                
+
                 return response()->json([
                     'ResultCode' => 1,
                     'ResultDesc' => 'Failed to process'
                 ]);
             }
-            
         } catch (\Exception $e) {
             Log::error('Callback processing exception: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
                 'data' => $callbackData
             ]);
-            
+
             return response()->json([
                 'ResultCode' => 1,
                 'ResultDesc' => 'Internal server error'
@@ -80,10 +77,10 @@ class MpesaCallbackController extends Controller
     public function c2bCallback(Request $request)
     {
         Log::info('M-Pesa C2B Callback Received', $request->all());
-        
+
         // Process C2B payment confirmation
         // Similar to STK but different data structure
-        
+
         return response()->json([
             'ResultCode' => 0,
             'ResultDesc' => 'Success'
@@ -96,9 +93,9 @@ class MpesaCallbackController extends Controller
     public function b2cCallback(Request $request)
     {
         Log::info('M-Pesa B2C Callback Received', $request->all());
-        
+
         // Process B2C payment confirmation
-        
+
         return response()->json([
             'ResultCode' => 0,
             'ResultDesc' => 'Success'
@@ -155,10 +152,10 @@ class MpesaCallbackController extends Controller
 
         $type = $request->input('type', 'success');
         $sampleData = $sampleCallbacks[$type] ?? $sampleCallbacks['success'];
-        
+
         // Process the sample callback
         $success = $this->mpesaService->handleCallback($sampleData);
-        
+
         return response()->json([
             'success' => $success,
             'message' => 'Test callback processed',
