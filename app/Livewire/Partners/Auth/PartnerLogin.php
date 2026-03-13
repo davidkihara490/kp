@@ -43,6 +43,8 @@ class PartnerLogin extends Component
 
             $user = Auth::guard('partner')->user();
 
+            dd($user);
+
             if ($user->status != 'active') {
                 Auth::guard('partner')->logout();
 

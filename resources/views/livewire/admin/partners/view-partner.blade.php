@@ -5,10 +5,11 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
+                        <x-alerts.response-alerts />
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center">
-                                <a href="{{ route('admin.partners.index') }}" 
-                                   class="btn btn-sm btn-outline-secondary mr-3">
+                                <a href="{{ route('admin.partners.index') }}"
+                                    class="btn btn-sm btn-outline-secondary mr-3">
                                     <i class="fas fa-arrow-left"></i> Back
                                 </a>
                                 <h3 class="card-title mb-0">
@@ -18,23 +19,23 @@
                             </div>
                             <div class="d-flex gap-2">
                                 @if($partner->verification_status === 'pending')
-                                <button class="btn btn-sm btn-success" wire:click="verifyPartner">
+                                <button class="btn btn-sm btn-success mr-2" wire:click="verifyPartner">
                                     <i class="fas fa-check mr-1"></i> Verify
                                 </button>
                                 @endif
-                                
+
                                 @if($partner->status === 'pending')
-                                <button class="btn btn-sm btn-primary" wire:click="approvePartner">
+                                <button class="btn btn-sm btn-primary mr-2" wire:click="approvePartner">
                                     <i class="fas fa-thumbs-up mr-1"></i> Approve
                                 </button>
                                 @endif
-                                
-                                <a href="{{ route('admin.partners.edit', ['id' => $partner->id]) }}" 
-                                   class="btn btn-sm btn-warning">
+
+                                <!-- <a href="{{ route('admin.partners.edit', ['id' => $partner->id]) }}"
+                                    class="btn btn-sm btn-warning mr-2">
                                     <i class="fas fa-edit mr-1"></i> Edit
-                                </a>
-                                
-                                <button class="btn btn-sm btn-danger" wire:click="confirmDelete">
+                                </a> -->
+
+                                <button class="btn btn-sm btn-danger mr-2" wire:click="confirmDelete">
                                     <i class="fas fa-trash mr-1"></i> Delete
                                 </button>
                             </div>
@@ -44,62 +45,48 @@
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="d-flex flex-wrap gap-3 mb-3">
-                                    <span class="badge badge-{{ $partnerTypeColor }} p-2">
+                                    <span class="badge badge-{{ $partnerTypeColor }} p-2 mr-2">
                                         <i class="fas fa-{{ $partnerTypeIcon }} mr-1"></i>
                                         {{ ucfirst($partner->partner_type) }} Partner
                                     </span>
-                                    
-                                    <span class="badge badge-{{ $statusBadgeColor }} p-2">
+
+                                    <span class="badge badge-{{ $statusBadgeColor }} p-2 mr-2">
                                         <i class="fas fa-circle mr-1"></i>
-                                        {{ ucfirst($partner->status) }}
+                                        {{ ucfirst($partner->verification_status) }}
                                     </span>
-                                    
-                                    <span class="badge badge-{{ $verificationBadgeColor }} p-2">
+
+                                    <span class="badge badge-{{ $verificationBadgeColor }} p-2 mr-2">
                                         <i class="fas fa-shield-alt mr-1"></i>
                                         {{ ucfirst($partner->verification_status) }}
                                     </span>
-                                    
+
                                     @if($partner->registration_number)
-                                    <span class="badge badge-info p-2">
+                                    <span class="badge badge-info p-2 mr-2">
                                         <i class="fas fa-id-card mr-1"></i>
                                         Reg: {{ $partner->registration_number }}
                                     </span>
                                     @endif
-                                    
-                                    <span class="badge badge-secondary p-2">
+
+                                    <span class="badge badge-secondary p-2 mr-2">
                                         <i class="fas fa-calendar-alt mr-1"></i>
                                         Joined: {{ $partner->created_at->format('M d, Y') }}
                                     </span>
                                 </div>
-                                
+
                                 <div class="row">
                                     <div class="col-md-6">
                                         <p class="mb-1">
                                             <i class="fas fa-envelope text-muted mr-2"></i>
-                                            <strong>Email:</strong> {{ $partner->email }}
+                                            <strong>Email:</strong> {{ $partner->owner->email }}
                                         </p>
                                         <p class="mb-1">
                                             <i class="fas fa-phone text-muted mr-2"></i>
-                                            <strong>Phone:</strong> {{ $partner->phone_number }}
+                                            <strong>Phone:</strong> {{ $partner->owner->phone_number }}
                                         </p>
                                         @if($partner->kra_pin)
                                         <p class="mb-1">
                                             <i class="fas fa-file-invoice-dollar text-muted mr-2"></i>
                                             <strong>KRA PIN:</strong> {{ $partner->kra_pin }}
-                                        </p>
-                                        @endif
-                                    </div>
-                                    <div class="col-md-6">
-                                        @if($partner->operating_hours)
-                                        <p class="mb-1">
-                                            <i class="fas fa-clock text-muted mr-2"></i>
-                                            <strong>Operating Hours:</strong> {{ $partner->operating_hours }}
-                                        </p>
-                                        @endif
-                                        @if($partner->years_in_operation)
-                                        <p class="mb-1">
-                                            <i class="fas fa-history text-muted mr-2"></i>
-                                            <strong>Years in Operation:</strong> {{ $partner->years_in_operation }}
                                         </p>
                                         @endif
                                     </div>
@@ -113,20 +100,26 @@
                                         </h6>
                                         <div class="row text-center">
                                             <div class="col-6 mb-3">
+                                                @if($partner->partner_type == 'transport')
                                                 <div class="display-4 text-primary">{{ $partner->fleet_count ?? 0 }}</div>
                                                 <small class="text-muted">Fleet Size</small>
+                                                @elseif($partner->partner_type == 'pickup-dropoff')
+                                                <div class="display-4 text-primary">{{ $partner->pickUpAndDropOffPoints->count() ?? 0 }}</div>
+                                                <small class="text-muted">PickUp/DropOff Points</small>
+                                                @endif
                                             </div>
                                             <div class="col-6 mb-3">
-                                                <div class="display-4 text-success">{{ $partner->driver_count ?? 0 }}</div>
+                                                @if($partner->partner_type == 'transport')
+                                                <div class="display-4 text-success">{{ $partner->drivers->count() ?? 0 }}</div>
                                                 <small class="text-muted">Drivers</small>
+                                                @elseif($partner->partner_type == 'pickup-dropoff')
+                                                <div class="display-4 text-success">{{ $partner->parcelHandlingAssistants->count() ?? 0 }}</div>
+                                                <small class="text-muted">Assistants</small>
+                                                @endif
                                             </div>
                                             <div class="col-6">
                                                 <div class="display-4 text-info">{{ $partner->towns->count() }}</div>
                                                 <small class="text-muted">Service Towns</small>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="display-4 text-warning">{{ $partner->maximum_daily_capacity ?? 0 }}</div>
-                                                <small class="text-muted">Daily Capacity</small>
                                             </div>
                                         </div>
                                     </div>
@@ -146,20 +139,20 @@
                         <ul class="nav nav-tabs" role="tablist">
                             @foreach($tabs as $key => $label)
                             <li class="nav-item">
-                                <a class="nav-link {{ $activeTab === $key ? 'active' : '' }}" 
-                                   href="#" 
-                                   wire:click.prevent="activeTab = '{{ $key }}'">
+                                <a class="nav-link {{ $activeTab === $key ? 'active' : '' }}"
+                                    href="#"
+                                    wire:click.="changeTab('{{ $key }}')">
                                     @php
-                                        $tabIcons = [
-                                            'overview' => 'home',
-                                            'details' => 'building',
-                                            'fleet' => 'truck',
-                                            'capacity' => 'boxes',
-                                            'documents' => 'file-alt',
-                                            'owners' => 'users',
-                                            'drivers' => 'user-tie',
-                                            'towns' => 'map-marker-alt'
-                                        ];
+                                    $tabIcons = [
+                                    'overview' => 'home',
+                                    'details' => 'building',
+                                    'fleet' => 'truck',
+                                    'capacity' => 'boxes',
+                                    'documents' => 'file-alt',
+                                    'owners' => 'users',
+                                    'drivers' => 'user-tie',
+                                    'towns' => 'map-marker-alt'
+                                    ];
                                     @endphp
                                     <i class="fas fa-{{ $tabIcons[$key] ?? 'info-circle' }} mr-2"></i>
                                     {{ $label }}
@@ -179,7 +172,7 @@
                 <!-- Overview Tab -->
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="card-title mb-0">
+                        <h5 class="card-title mb-0" wire:click="changeTab('overview')">
                             <i class="fas fa-home mr-2"></i>Overview
                         </h5>
                     </div>
@@ -207,7 +200,7 @@
                                                     <td><strong>Status:</strong></td>
                                                     <td>
                                                         <span class="badge badge-{{ $statusBadgeColor }}">
-                                                            {{ ucfirst($partner->status) }}
+                                                            {{ ucfirst($partner->verification_status) }}
                                                         </span>
                                                     </td>
                                                 </tr>
@@ -257,18 +250,12 @@
                                             <tbody>
                                                 <tr>
                                                     <td width="40%"><strong>Email:</strong></td>
-                                                    <td>{{ $partner->email }}</td>
+                                                    <td>{{ $partner->owner->email }}</td>
                                                 </tr>
                                                 <tr>
                                                     <td><strong>Phone:</strong></td>
-                                                    <td>{{ $partner->phone_number }}</td>
+                                                    <td>{{ $partner->owner->phone_number }}</td>
                                                 </tr>
-                                                @if($partner->operating_hours)
-                                                <tr>
-                                                    <td><strong>Operating Hours:</strong></td>
-                                                    <td>{{ $partner->operating_hours }}</td>
-                                                </tr>
-                                                @endif
                                             </tbody>
                                         </table>
                                     </div>
@@ -285,19 +272,28 @@
                                     <div class="card-body">
                                         <div class="row text-center mb-3">
                                             <div class="col-4">
+                                                @if($partner->partner_type == 'transport')
                                                 <div class="display-4 text-primary">{{ $partner->fleet_count ?? 0 }}</div>
-                                                <small class="text-muted">Fleet</small>
+                                                <small class="text-muted">Fleet Size</small>
+                                                @elseif($partner->partner_type == 'pickup-dropoff')
+                                                <div class="display-4 text-primary">{{ $partner->pickUpAndDropOffPoints->count() ?? 0 }}</div>
+                                                <small class="text-muted">PickUp/DropOff Points</small>
+                                                @endif
                                             </div>
                                             <div class="col-4">
-                                                <div class="display-4 text-success">{{ $partner->driver_count ?? 0 }}</div>
+                                                @if($partner->partner_type == 'transport')
+                                                <div class="display-4 text-success">{{ $partner->drivers->count() ?? 0 }}</div>
                                                 <small class="text-muted">Drivers</small>
+                                                @elseif($partner->partner_type == 'pickup-dropoff')
+                                                <div class="display-4 text-success">{{ $partner->parcelHandlingAssistants->count() ?? 0 }}</div>
+                                                <small class="text-muted">Assistants</small>
+                                                @endif
                                             </div>
                                             <div class="col-4">
                                                 <div class="display-4 text-info">{{ $partner->towns->count() }}</div>
-                                                <small class="text-muted">Towns</small>
+                                                <small class="text-muted">Service Towns</small>
                                             </div>
                                         </div>
-                                        
                                         <table class="table table-sm">
                                             <tbody>
                                                 @if($partner->maximum_daily_capacity)
@@ -336,20 +332,20 @@
                                                 <i class="fas fa-check-circle mr-1"></i>Points Compliant
                                             </span>
                                             @endif
-                                            
+
                                             @if($partner->fleets_compliant)
                                             <span class="badge badge-success p-2 mr-2">
                                                 <i class="fas fa-check-circle mr-1"></i>Fleet Compliant
                                             </span>
                                             @endif
-                                            
+
                                             @if($partner->drivers_compliant)
                                             <span class="badge badge-success p-2 mr-2">
                                                 <i class="fas fa-check-circle mr-1"></i>Drivers Compliant
                                             </span>
                                             @endif
                                         </div>
-                                        
+
                                         @if($partner->additional_notes)
                                         <div class="alert alert-info mb-0">
                                             <strong><i class="fas fa-sticky-note mr-2"></i>Notes:</strong>
@@ -547,7 +543,7 @@
                                                 <div class="text-center text-muted">Drivers</div>
                                             </div>
                                         </div>
-                                        
+
                                         <table class="table table-sm">
                                             <tbody>
                                                 @if($partner->fleet_ownership)
@@ -656,7 +652,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         @if($partner->has_dedicated_allocator)
                                         <table class="table table-sm">
                                             <tbody>
@@ -675,7 +671,7 @@
                                             </tbody>
                                         </table>
                                         @endif
-                                        
+
                                         @if($partner->booking_emails && count($partner->booking_emails) > 0)
                                         <div class="mt-3">
                                             <strong>Booking Emails:</strong>
@@ -702,14 +698,14 @@
                                             <p class="mb-0">{{ $partner->safety_measures }}</p>
                                         </div>
                                         @endif
-                                        
+
                                         @if($partner->tracking_system)
                                         <div class="mb-3">
                                             <strong>Tracking System:</strong>
                                             <p class="mb-0">{{ $partner->tracking_system }}</p>
                                         </div>
                                         @endif
-                                        
+
                                         @if($partner->maximum_distance)
                                         <div class="mb-3">
                                             <strong>Maximum Distance:</strong>
@@ -748,7 +744,7 @@
                                                 <div class="text-center text-muted">Maximum Daily Capacity</div>
                                             </div>
                                         </div>
-                                        
+
                                         <table class="table table-sm">
                                             <tbody>
                                                 @if($partner->maximum_capacity_per_day)
@@ -822,14 +818,14 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         @if($partner->storage_facility_type)
                                         <div class="mt-3">
                                             <strong>Storage Facility Type:</strong>
                                             <p class="mb-0">{{ $partner->storage_facility_type }}</p>
                                         </div>
                                         @endif
-                                        
+
                                         @if($partner->security_measures)
                                         <div class="mt-3">
                                             <strong>Security Measures:</strong>
@@ -852,14 +848,14 @@
                                             <p class="mb-0">{{ $partner->additional_notes }}</p>
                                         </div>
                                         @endif
-                                        
+
                                         @if($partner->insurance_coverage)
                                         <div class="mb-3">
                                             <strong>Insurance Coverage:</strong>
                                             <p class="mb-0">{{ $partner->insurance_coverage }}</p>
                                         </div>
                                         @endif
-                                        
+
                                         @if($partner->insurance_coverage_amount)
                                         <div class="mb-3">
                                             <strong>Insurance Amount:</strong>
@@ -896,14 +892,14 @@
                                             <strong>Registration Certificate:</strong>
                                             @if($partner->registration_certificate_path)
                                             <div class="mt-2">
-                                                <a href="{{ asset('storage/' . $partner->registration_certificate_path) }}" 
-                                                   target="_blank" 
-                                                   class="btn btn-sm btn-primary">
+                                                <a href="{{ asset('storage/' . $partner->registration_certificate_path) }}"
+                                                    target="_blank"
+                                                    class="btn btn-sm btn-primary">
                                                     <i class="fas fa-eye mr-1"></i> View Document
                                                 </a>
-                                                <a href="{{ asset('storage/' . $partner->registration_certificate_path) }}" 
-                                                   download 
-                                                   class="btn btn-sm btn-success">
+                                                <a href="{{ asset('storage/' . $partner->registration_certificate_path) }}"
+                                                    download
+                                                    class="btn btn-sm btn-success">
                                                     <i class="fas fa-download mr-1"></i> Download
                                                 </a>
                                             </div>
@@ -914,19 +910,19 @@
                                             </p>
                                             @endif
                                         </div>
-                                        
+
                                         <div class="mb-3">
                                             <strong>KRA PIN Certificate:</strong>
                                             @if($partner->pin_certificate_path)
                                             <div class="mt-2">
-                                                <a href="{{ asset('storage/' . $partner->pin_certificate_path) }}" 
-                                                   target="_blank" 
-                                                   class="btn btn-sm btn-primary">
+                                                <a href="{{ asset('storage/' . $partner->pin_certificate_path) }}"
+                                                    target="_blank"
+                                                    class="btn btn-sm btn-primary">
                                                     <i class="fas fa-eye mr-1"></i> View Document
                                                 </a>
-                                                <a href="{{ asset('storage/' . $partner->pin_certificate_path) }}" 
-                                                   download 
-                                                   class="btn btn-sm btn-success">
+                                                <a href="{{ asset('storage/' . $partner->pin_certificate_path) }}"
+                                                    download
+                                                    class="btn btn-sm btn-success">
                                                     <i class="fas fa-download mr-1"></i> Download
                                                 </a>
                                             </div>
@@ -953,14 +949,14 @@
                                             <strong>Compliance Certificate:</strong>
                                             @if($partner->compliance_certificate_path)
                                             <div class="mt-2">
-                                                <a href="{{ asset('storage/' . $partner->compliance_certificate_path) }}" 
-                                                   target="_blank" 
-                                                   class="btn btn-sm btn-primary">
+                                                <a href="{{ asset('storage/' . $partner->compliance_certificate_path) }}"
+                                                    target="_blank"
+                                                    class="btn btn-sm btn-primary">
                                                     <i class="fas fa-eye mr-1"></i> View Document
                                                 </a>
-                                                <a href="{{ asset('storage/' . $partner->compliance_certificate_path) }}" 
-                                                   download 
-                                                   class="btn btn-sm btn-success">
+                                                <a href="{{ asset('storage/' . $partner->compliance_certificate_path) }}"
+                                                    download
+                                                    class="btn btn-sm btn-success">
                                                     <i class="fas fa-download mr-1"></i> Download
                                                 </a>
                                             </div>
@@ -971,19 +967,19 @@
                                             </p>
                                             @endif
                                         </div>
-                                        
+
                                         <div class="mb-3">
                                             <strong>Insurance Certificate:</strong>
                                             @if($partner->insurance_certificate_path)
                                             <div class="mt-2">
-                                                <a href="{{ asset('storage/' . $partner->insurance_certificate_path) }}" 
-                                                   target="_blank" 
-                                                   class="btn btn-sm btn-primary">
+                                                <a href="{{ asset('storage/' . $partner->insurance_certificate_path) }}"
+                                                    target="_blank"
+                                                    class="btn btn-sm btn-primary">
                                                     <i class="fas fa-eye mr-1"></i> View Document
                                                 </a>
-                                                <a href="{{ asset('storage/' . $partner->insurance_certificate_path) }}" 
-                                                   download 
-                                                   class="btn btn-sm btn-success">
+                                                <a href="{{ asset('storage/' . $partner->insurance_certificate_path) }}"
+                                                    download
+                                                    class="btn btn-sm btn-success">
                                                     <i class="fas fa-download mr-1"></i> Download
                                                 </a>
                                             </div>
@@ -994,19 +990,19 @@
                                             </p>
                                             @endif
                                         </div>
-                                        
+
                                         <div class="mb-3">
                                             <strong>Drivers Certificate:</strong>
                                             @if($partner->drivers_certificate_path)
                                             <div class="mt-2">
-                                                <a href="{{ asset('storage/' . $partner->drivers_certificate_path) }}" 
-                                                   target="_blank" 
-                                                   class="btn btn-sm btn-primary">
+                                                <a href="{{ asset('storage/' . $partner->drivers_certificate_path) }}"
+                                                    target="_blank"
+                                                    class="btn btn-sm btn-primary">
                                                     <i class="fas fa-eye mr-1"></i> View Document
                                                 </a>
-                                                <a href="{{ asset('storage/' . $partner->drivers_certificate_path) }}" 
-                                                   download 
-                                                   class="btn btn-sm btn-success">
+                                                <a href="{{ asset('storage/' . $partner->drivers_certificate_path) }}"
+                                                    download
+                                                    class="btn btn-sm btn-success">
                                                     <i class="fas fa-download mr-1"></i> Download
                                                 </a>
                                             </div>
@@ -1083,8 +1079,8 @@
                                         </td>
                                         <td>
                                             @if($owner->user)
-                                            <a href="{{ route('admin.users.view', $owner->user->id) }}" 
-                                               class="btn btn-sm btn-info" title="View User">
+                                            <a href="{{ route('admin.users.view', $owner->user->id) }}"
+                                                class="btn btn-sm btn-info" title="View User">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             @endif
@@ -1155,8 +1151,8 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <a href="{{ route('admin.drivers.view', $driver->id) }}" 
-                                               class="btn btn-sm btn-info" title="View Driver">
+                                            <a href="{{ route('admin.drivers.view', $driver->id) }}"
+                                                class="btn btn-sm btn-info" title="View Driver">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         </td>
@@ -1297,32 +1293,33 @@
         color: #495057;
         padding: 0.5rem 1rem;
     }
-    
+
     .nav-tabs .nav-link.active {
         color: #495057;
         background-color: #fff;
         border-color: #dee2e6 #dee2e6 #fff;
         font-weight: 600;
     }
-    
+
     .nav-tabs .nav-link:hover {
         border-color: #e9ecef #e9ecef #dee2e6;
     }
-    
+
     .card-header.bg-light {
         background-color: #f8f9fa !important;
     }
-    
-    .table-sm td, .table-sm th {
+
+    .table-sm td,
+    .table-sm th {
         padding: 0.5rem;
     }
-    
+
     .display-3 {
         font-size: 4.5rem;
         font-weight: 300;
         line-height: 1.2;
     }
-    
+
     .display-4 {
         font-size: 3.5rem;
         font-weight: 300;

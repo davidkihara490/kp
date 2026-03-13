@@ -14,6 +14,7 @@
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,6 +22,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{{ asset('frontend/f2.css') }}">
+    <script src="https://cdn.tiny.cloud/1/3culyhhybbcchz5f5d6o066dedtcc2ugjb92n22l8ocyw9rv/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+
 </head>
 
 <body>
@@ -43,7 +46,7 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav mx-auto"> <!-- Changed ms-auto to mx-auto for center alignment -->
                     <li class="nav-item">
                         <a class="nav-link active" href="#home">Home</a>
                     </li>
@@ -62,17 +65,14 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#contact">Contact</a>
                     </li>
-                    <li class="nav-item ms-2">
-                        <a target="_blank" href="{{ route('marketplace') }}" class="btn btn-success">
-                            Marketplace
-                        </a>
-                    </li>
-                    <li class="nav-item ms-2">
-                        <a href="{{ route('partners.login') }}" class="btn btn-success">
-                            Partners
-                        </a>
-                    </li>
                 </ul>
+
+                <!-- Optional: Add a small call-to-action or search icon for balance -->
+                <div class="d-none d-lg-block">
+                    <a href="#tracking" class="btn btn-outline-success btn-sm rounded-pill px-3">
+                        <i class="bi bi-box-seam me-1"></i> Track
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
@@ -102,87 +102,115 @@
                 </ul>
 
                 <!-- Tab Content -->
-                <div class="tab-content" id="bookingTabContent">
-                    <!-- Town to Town Tab -->
-                    <div class="tab-pane fade show active" id="town" role="tabpanel" aria-labelledby="town-tab">
-                        <div class="booking-header">
-                            <h6 class="text-muted mb-3">Get an instant quote for shipments between Kenyan towns</h6>
-                        </div>
-
-                        <form id="townQuoteForm">
-                            <div class="booking-form-grid">
-                                <!-- From Town -->
-                                <div class="booking-field">
-                                    <label>From Town</label>
-                                    <select class="form-select compact-select" id="fromTown" required>
-                                        <option value="">Select Town</option>
-                                        @foreach($towns as $town)
-                                        <option value="{{ $town->name }}">{{ $town->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <!-- To Town -->
-                                <div class="booking-field">
-                                    <label>To Town</label>
-                                    <select class="form-select compact-select" id="toTown" required>
-                                        <option value="">Select Town</option>
-                                        @foreach($towns as $town)
-                                        <option value="{{ $town->name }}">{{ $town->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <!-- Weight -->
-                                <div class="booking-field">
-                                    <label>Weight (kg)</label>
-                                    <input type="number" class="form-control compact-select" id="weight" placeholder="e.g., 5" min="0.1" step="0.1" required>
-                                </div>
-
-                                <!-- Item Description - Full Width -->
-                                <div class="booking-field full-width">
-                                    <label>Item Description</label>
-                                    <textarea class="form-control compact-select" id="itemDescription" rows="2" placeholder="Describe your item (e.g., Documents, Electronics, Clothing, etc.)..." required></textarea>
-                                </div>
-                            </div>
-
-                            <div class="booking-action">
-                                <button type="submit" class="btn btn-primary quote-btn">
-                                    <i class="bi bi-calculator me-2"></i> Get a Quote
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary clear-btn" id="clearForm">
-                                    <i class="bi bi-arrow-clockwise me-2"></i> Clear
-                                </button>
-                            </div>
-                        </form>
-
-                        <div id="quoteResult" class="compact-quote-result"></div>
+                <!-- Town to Town Tab -->
+                <div class="tab-pane fade show active" id="town" role="tabpanel" aria-labelledby="town-tab">
+                    <div class="booking-header">
+                        <h6 class="text-muted mb-3">Get an instant quote for shipments between Kenyan towns</h6>
                     </div>
 
-                    <!-- International Tab -->
-                    <div class="tab-pane fade" id="international" role="tabpanel" aria-labelledby="international-tab">
-                        <div class="international-coming-soon">
-                            <div class="text-center py-4">
-                                <div class="mb-3">
-                                    <i class="bi bi-globe2" style="font-size: 4rem; color: var(--primary-color);"></i>
-                                </div>
-                                <h5 class="mb-2">International Shipping Coming Soon!</h5>
-                                <p class="text-muted mb-3">We're expanding our services to serve you better. International shipping will be available shortly.</p>
-                                <div class="row justify-content-center">
-                                    <div class="col-md-8">
-                                        <div class="alert alert-info py-2 mb-3">
-                                            <i class="bi bi-info-circle me-2"></i>
-                                            Get notified when we launch
+                    <form id="townQuoteForm">
+                        <div class="booking-form-grid">
+                            <!-- From Town with Search -->
+                            <div class="booking-field">
+                                <label><i class="bi bi-geo-alt-fill me-1 text-primary"></i> From Town</label>
+                                <div class="searchable-select-container">
+                                    <div class="searchable-select" id="fromTownSelect">
+                                        <div class="searchable-select-display" data-target="fromTown">
+                                            <span class="selected-text">Select pickup town</span>
+                                            <i class="bi bi-chevron-down"></i>
                                         </div>
-                                        <div class="input-group">
-                                            <input type="email" class="form-control form-control-sm" placeholder="Enter your email">
-                                            <button class="btn btn-primary btn-sm" type="button">Notify Me</button>
+                                        <div class="searchable-select-dropdown" id="fromTownDropdown">
+                                            <div class="search-box">
+                                                <i class="bi bi-search"></i>
+                                                <input type="text" class="search-input" placeholder="Search towns..." id="fromTownSearch">
+                                            </div>
+                                            <div class="options-list" id="fromTownOptions">
+                                                @foreach($towns as $town)
+                                                <div class="option-item" data-value="{{ $town->name }}">
+                                                    <i class="bi bi-building me-2"></i>
+                                                    <span class="town-name">{{ $town->name }}</span>
+                                                    <small class="town-county text-muted">{{ $town->county ?? 'Kenya' }}</small>
+                                                </div>
+                                                @endforeach
+                                            </div>
                                         </div>
                                     </div>
+                                    <input type="hidden" id="fromTown" name="fromTown" required>
                                 </div>
                             </div>
+
+                            <!-- To Town with Search -->
+                            <div class="booking-field">
+                                <label><i class="bi bi-geo-alt-fill me-1 text-danger"></i> To Town</label>
+                                <div class="searchable-select-container">
+                                    <div class="searchable-select" id="toTownSelect">
+                                        <div class="searchable-select-display" data-target="toTown">
+                                            <span class="selected-text">Select delivery town</span>
+                                            <i class="bi bi-chevron-down"></i>
+                                        </div>
+                                        <div class="searchable-select-dropdown" id="toTownDropdown">
+                                            <div class="search-box">
+                                                <i class="bi bi-search"></i>
+                                                <input type="text" class="search-input" placeholder="Search towns..." id="toTownSearch">
+                                            </div>
+                                            <div class="options-list" id="toTownOptions">
+                                                @foreach($towns as $town)
+                                                <div class="option-item" data-value="{{ $town->name }}">
+                                                    <i class="bi bi-building me-2"></i>
+                                                    <span class="town-name">{{ $town->name }}</span>
+                                                    <small class="town-county text-muted">{{ $town->county ?? 'Kenya' }}</small>
+                                                </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="toTown" name="toTown" required>
+                                </div>
+                            </div>
+
+                            <!-- Weight -->
+                            <div class="booking-field">
+                                <label><i class="bi bi-weight me-1"></i> Weight (kg)</label>
+                                <div class="weight-input-group options-list">
+                                    <input type="number" class="form-control compact-select" id="weight" placeholder="0.0" min="0.1" step="0.1" required>
+                                    <span class="weight-unit">kg</span>
+                                </div>
+                            </div>
+
+                            <!-- Parcel Type -->
+                            <div class="booking-field">
+                                <label><i class="bi bi-box me-1"></i> Parcel Type</label>
+                                <div class="parcel-type-selector"> <select class="form-select compact-select" id="parcelType" required>
+                                        <option value="">Select parcel type</option>
+                                        <option value="document">Document</option>
+                                        <option value="small">Small Package (up to 5kg)</option>
+                                        <option value="medium">Medium Package (5-10kg)</option>
+                                        <option value="large">Large Package (10-20kg)</option>
+                                        <option value="extra-large">Extra Large (20kg+)</option>
+                                        <option value="fragile">Fragile Items</option>
+                                        <option value="electronics">Electronics</option>
+                                        <option value="perishable">Perishable Goods</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Item Description - Full Width -->
+                            <div class="booking-field full-width">
+                                <label><i class="bi bi-card-text me-1"></i> Item Description</label>
+                                <textarea class="form-control compact-select" id="itemDescription" rows="2" placeholder="Describe your item (e.g., Documents, Electronics, Clothing, etc.)..." style="resize: none;"></textarea>
+                            </div>
                         </div>
-                    </div>
+
+                        <div class="booking-action">
+                            <button type="submit" class="btn btn-primary quote-btn">
+                                <i class="bi bi-calculator me-2"></i> Get Quote
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary clear-btn" id="clearForm">
+                                <i class="bi bi-arrow-clockwise me-2"></i> Clear
+                            </button>
+                        </div>
+                    </form>
+                    <div id="quoteResult" class="compact-quote-result"></div>
                 </div>
             </div>
         </div>
@@ -335,7 +363,7 @@
                         <div class="mt-4">
                             <p class="small opacity-75 mb-0 d-flex align-items-center justify-content-center gap-2 flex-wrap">
                                 <i class="bi bi-info-circle"></i>
-                                Try sample: 
+                                Try sample:
                                 <button class="btn btn-sm btn-outline-light tracking-example"
                                     data-phone="0712345678" data-id="KP78945">0712345678 / KP78945</button>
                                 <button class="btn btn-sm btn-outline-light tracking-example"
@@ -683,6 +711,7 @@
     </section>
 
     <!-- Footer -->
+    <!-- Footer -->
     <footer>
         <div class="container">
             <div class="row">
@@ -693,7 +722,7 @@
                                 <img src="{{ asset('logo.jpeg') }}" alt="Karibu Parcels" height="45"
                                     class="logo-img">
                             </div>
-                            <div class="brand-text d-none d-md-block">
+                            <div class="brand-text">
                                 <span class="fw-bold fs-5">{{ config('app.name') }}</span>
                                 <small class="d-block text-muted"
                                     style="font-size: 0.75rem; line-height: 1;">Professional Courier
@@ -727,7 +756,7 @@
                         <li><a href="#">About Us</a></li>
                         <li><a href="#">Careers</a></li>
                         <li><a href="#">News</a></li>
-                        <li><a href="#">Partners</a></li>
+                        <li><a href="#contact">Support</a></li>
                     </ul>
                 </div>
 
@@ -752,10 +781,55 @@
                 </div>
             </div>
 
+            <!-- Marketplace & Partners Section -->
+            <div class="marketplace-partners-section mt-4 pt-4 border-top">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <div class="d-flex align-items-center">
+                            <span class="text-muted small fw-semibold me-3">BUSINESS SOLUTIONS:</span>
+                            <div class="d-flex gap-3">
+                                <a href="{{ route('marketplace') }}" target="_blank" class="footer-business-link">
+                                    <i class="bi bi-shop me-2"></i>
+                                    Marketplace
+                                </a>
+                                <a href="{{ route('partners.login') }}" class="footer-business-link">
+                                    <i class="bi bi-briefcase me-2"></i>
+                                    Partners
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 text-lg-end mt-3 mt-lg-0">
+                        <div class="d-flex gap-2 justify-content-lg-end">
+                            <a href="{{ route('marketplace') }}" target="_blank" class="btn btn-success btn-sm rounded-pill px-4">
+                                <i class="bi bi-shop me-2"></i>
+                                Visit Marketplace
+                            </a>
+                            <a href="{{ route('partners.login') }}" class="btn btn-outline-success btn-sm rounded-pill px-4">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>
+                                Partner Login
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <hr class="mt-4 mb-4">
 
-            <div class="text-center">
-                <p class="mb-0">&copy; {{ date('Y') }} Karibu Parcels. All rights reserved.</p>
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; {{ date('Y') }} Karibu Parcels. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 small text-muted">
+                        <i class="bi bi-shield-check me-1"></i>
+                        Secure & Reliable |
+                        <i class="bi bi-truck ms-2 me-1"></i>
+                        40+ Counties |
+                        <i class="bi bi-clock ms-2 me-1"></i>
+                        24/7 Support
+                    </p>
+                </div>
             </div>
         </div>
     </footer>
@@ -986,7 +1060,7 @@
                 });
 
                 $('#proceedBooking').on('click', function() {
-                    alert('Booking functionality will be implemented here. Quote: KES ' + quote.total);
+                    alert('Please priceed to the nearest parcel station to send your parcel  ' + quote.total);
                 });
             }
 
@@ -1287,13 +1361,13 @@
 
         .booking-form-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 12px;
             margin-bottom: 20px;
         }
 
         .booking-field.full-width {
-            grid-column: span 3;
+            grid-column: span 4;
         }
 
         .booking-field label {
@@ -2016,6 +2090,223 @@
             margin-bottom: 0;
         }
 
+        /* Footer Marketplace & Partners Section */
+        .marketplace-partners-section {
+            background: linear-gradient(to right, rgba(0, 143, 64, 0.02), rgba(255, 53, 25, 0.02));
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .footer-business-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: white;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .footer-business-link:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Searchable Select Styles */
+        .searchable-select-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .searchable-select {
+            position: relative;
+            width: 100%;
+        }
+
+        .searchable-select-display {
+            width: 100%;
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .searchable-select-display:hover {
+            border-color: var(--primary-color);
+        }
+
+        .searchable-select-display i {
+            color: var(--text-light);
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .searchable-select.active .searchable-select-display {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.15rem rgba(0, 143, 64, 0.1);
+        }
+
+        .searchable-select.active .searchable-select-display i {
+            transform: rotate(180deg);
+            color: var(--primary-color);
+        }
+
+        .searchable-select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-top: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: none;
+            max-height: 300px;
+            overflow: hidden;
+        }
+
+        .searchable-select.active .searchable-select-dropdown {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .search-box {
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 12px 8px 35px;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.15rem rgba(0, 143, 64, 0.1);
+        }
+
+        .options-list {
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .option-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-item:hover {
+            background: #f0f7f0;
+            color: var(--primary-color);
+        }
+
+        .option-item.selected {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .option-item.selected i {
+            color: white;
+        }
+
+        .option-item i {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            width: 20px;
+        }
+
+        /* No results message */
+        .no-results {
+            padding: 15px;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .no-results i {
+            display: block;
+            font-size: 2rem;
+            margin-bottom: 8px;
+            opacity: 0.5;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .searchable-select-dropdown {
+                position: fixed;
+                top: auto;
+                left: 15px;
+                right: 15px;
+                bottom: 15px;
+                max-height: 70vh;
+                margin-top: 0;
+            }
+
+            .options-list {
+                max-height: calc(70vh - 70px);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .marketplace-partners-section .d-flex {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 10px !important;
+            }
+
+            .footer-business-link {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
         /* Footer */
         footer {
             background: var(--dark-bg);
@@ -2107,21 +2398,21 @@
             .points-container {
                 padding: 15px;
             }
-            
+
             .tracking-card {
                 padding: 25px;
             }
-            
+
             .tracking-form-wrapper .row {
                 flex-direction: column;
             }
-            
+
             .tracking-form-wrapper .col-md-5,
             .tracking-form-wrapper .col-md-2 {
                 width: 100%;
                 margin-bottom: 10px;
             }
-            
+
             .tracking-btn {
                 width: 100%;
             }
@@ -2239,7 +2530,938 @@
         .animate-fade-up {
             animation: fadeInUp 0.6s ease-out;
         }
+
+        /* Footer Business Links Styles */
+        .business-links-section {
+            background: linear-gradient(to right, rgba(0, 143, 64, 0.02), rgba(255, 53, 25, 0.02));
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .business-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 30px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .business-link:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 143, 64, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .business-link-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--accent-color);
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .business-feature-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e9ecef;
+        }
+
+        .business-features-row {
+            border: 1px solid #e9ecef;
+        }
+
+        /* Navbar adjustments */
+        .navbar-nav .nav-link {
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            margin: 0 0.2rem;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .navbar-nav .nav-link:hover {
+            background: rgba(0, 143, 64, 0.05);
+            color: var(--primary-color) !important;
+        }
+
+        .navbar-nav .nav-link.active {
+            background: rgba(0, 143, 64, 0.1);
+            color: var(--primary-color) !important;
+        }
+
+        /* Enhanced Searchable Select Styles */
+        .searchable-select-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .searchable-select {
+            position: relative;
+            width: 100%;
+        }
+
+        .searchable-select-display {
+            width: 100%;
+            padding: 12px 15px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            min-height: 48px;
+        }
+
+        .searchable-select-display .selected-text {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .searchable-select-display:hover {
+            border-color: var(--primary-color);
+            background: #f8f9fa;
+        }
+
+        .searchable-select.active .searchable-select-display {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 143, 64, 0.1);
+            background: white;
+        }
+
+        .searchable-select.active .searchable-select-display i {
+            transform: rotate(180deg);
+            color: var(--primary-color);
+        }
+
+        .searchable-select-dropdown {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            margin-top: 4px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: none;
+            max-height: 350px;
+            overflow: hidden;
+        }
+
+        .searchable-select.active .searchable-select-dropdown {
+            display: block;
+            animation: slideDown 0.2s ease;
+        }
+
+        .search-box {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            position: relative;
+            background: #f8f9fa;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 22px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid #dee2e6;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.15rem rgba(0, 143, 64, 0.1);
+        }
+
+        .options-list {
+            max-height: 280px;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .option-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+
+        .option-item .town-name {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-right: 8px;
+        }
+
+        .option-item .town-county {
+            font-size: 0.75rem;
+            background: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: auto;
+        }
+
+        .option-item:hover {
+            background: #f0f7f0;
+        }
+
+        .option-item.selected {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .option-item.selected .town-name {
+            color: white;
+        }
+
+        .option-item.selected .town-county {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .option-item i {
+            color: var(--primary-color);
+            font-size: 1rem;
+            width: 24px;
+        }
+
+        .option-item.selected i {
+            color: white;
+        }
+
+        /* Weight Input Group */
+        .weight-input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .weight-input-group input {
+            padding-right: 45px;
+        }
+
+        .weight-unit {
+            position: absolute;
+            right: 12px;
+            color: var(--text-light);
+            font-weight: 500;
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        /* Parcel Type Selector */
+        .parcel-type-selector select {
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            background-color: white;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+
+        .parcel-type-selector select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 143, 64, 0.1);
+            outline: none;
+        }
+
+        /* No results message */
+        .no-results {
+            padding: 30px 20px;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .no-results i {
+            display: block;
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #dee2e6;
+        }
+
+        .no-results p {
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .no-results small {
+            color: var(--text-light);
+        }
+
+        /* Field labels */
+        .booking-field label {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .booking-field label i {
+            font-size: 1rem;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .searchable-select-dropdown {
+                position: fixed;
+                top: 50%;
+                left: 15px;
+                right: 15px;
+                transform: translateY(-50%);
+                max-height: 70vh;
+                margin-top: 0;
+                z-index: 1050;
+            }
+
+            .options-list {
+                max-height: calc(70vh - 70px);
+            }
+
+            .searchable-select.active .searchable-select-dropdown {
+                animation: fadeInUp 0.3s ease;
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px) translateY(-50%);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0) translateY(-50%);
+                }
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .business-links-section .d-flex {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 10px !important;
+            }
+
+            .business-link {
+                width: 100%;
+            }
+
+            .business-features-row .col-md-4 {
+                margin-bottom: 15px;
+            }
+        }
     </style>
+
+    <!-- WhatsApp Button with Tooltip -->
+    @php
+    $phone = config('services.whatsapp.phone', '254700130759');
+    $message = config('services.whatsapp.message', 'Hello, I need more information about your services');
+    $whatsappUrl = "https://wa.me/" . preg_replace('/[^0-9]/', '', $phone) . "?text=" . urlencode($message);
+    @endphp
+
+    <div class="whatsapp-wrapper">
+        <span class="whatsapp-tooltip">Need more info? Chat with us!</span>
+        <a href="{{ $whatsappUrl }}"
+            target="_blank"
+            class="whatsapp-button"
+            title="Contact us on WhatsApp">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+    </div>
+
+    <style>
+        /* WhatsApp Button Styles */
+        .whatsapp-wrapper {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .whatsapp-button {
+            width: 60px;
+            height: 60px;
+            background-color: #25d366;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            font-size: 30px;
+            line-height: 60px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+
+        .whatsapp-button:hover {
+            background-color: #128C7E;
+            transform: scale(1.1);
+            color: white;
+            text-decoration: none;
+            box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .whatsapp-button i {
+            font-size: 32px;
+        }
+
+        .whatsapp-tooltip {
+            position: absolute;
+            right: 70px;
+            top: 15px;
+            background-color: #333;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        .whatsapp-tooltip::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-left: 10px solid #333;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+        }
+
+        .whatsapp-wrapper:hover .whatsapp-tooltip {
+            opacity: 1;
+            visibility: visible;
+            right: 80px;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .whatsapp-wrapper {
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .whatsapp-button {
+                width: 50px;
+                height: 50px;
+            }
+
+            .whatsapp-button i {
+                font-size: 26px;
+            }
+
+            .whatsapp-tooltip {
+                display: none;
+            }
+        }
+
+        /* Optional: Add a subtle glow effect on hover */
+        .whatsapp-button:hover {
+            filter: brightness(1.1);
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize searchable selects
+            initSearchableSelects();
+
+            function initSearchableSelects() {
+                // Toggle dropdown on display click
+                $('.searchable-select-display').on('click', function(e) {
+                    e.stopPropagation();
+                    const select = $(this).closest('.searchable-select');
+
+                    // Close all other dropdowns
+                    $('.searchable-select').not(select).removeClass('active');
+
+                    // Toggle current dropdown
+                    select.toggleClass('active');
+
+                    // Focus search input when dropdown opens
+                    if (select.hasClass('active')) {
+                        select.find('.search-input').focus();
+                    }
+                });
+
+                // Search functionality for From Town
+                $('#fromTownSearch').on('keyup', function() {
+                    const searchTerm = $(this).val().toLowerCase();
+                    filterOptions('#fromTownOptions', searchTerm);
+                });
+
+                // Search functionality for To Town
+                $('#toTownSearch').on('keyup', function() {
+                    const searchTerm = $(this).val().toLowerCase();
+                    filterOptions('#toTownOptions', searchTerm);
+                });
+
+                // Select option for From Town
+                $('#fromTownOptions').on('click', '.option-item', function() {
+                    const value = $(this).data('value');
+                    const townName = $(this).find('.town-name').text();
+                    const county = $(this).find('.town-county').text();
+
+                    // Update hidden input
+                    $('#fromTown').val(value);
+
+                    // Update display text with town and county
+                    $('#fromTownSelect .selected-text').text(`${townName} (${county})`);
+
+                    // Update selected state
+                    $('#fromTownOptions .option-item').removeClass('selected');
+                    $(this).addClass('selected');
+
+                    // Close dropdown
+                    $('#fromTownSelect').closest('.searchable-select').removeClass('active');
+
+                    // Clear search
+                    $('#fromTownSearch').val('');
+                    $('#fromTownOptions .option-item').show();
+                });
+
+                // Select option for To Town
+                $('#toTownOptions').on('click', '.option-item', function() {
+                    const value = $(this).data('value');
+                    const townName = $(this).find('.town-name').text();
+                    const county = $(this).find('.town-county').text();
+
+                    // Update hidden input
+                    $('#toTown').val(value);
+
+                    // Update display text with town and county
+                    $('#toTownSelect .selected-text').text(`${townName} (${county})`);
+
+                    // Update selected state
+                    $('#toTownOptions .option-item').removeClass('selected');
+                    $(this).addClass('selected');
+
+                    // Close dropdown
+                    $('#toTownSelect').closest('.searchable-select').removeClass('active');
+
+                    // Clear search
+                    $('#toTownSearch').val('');
+                    $('#toTownOptions .option-item').show();
+                });
+
+                // Close dropdown when clicking outside
+                $(document).on('click', function(e) {
+                    if (!$(e.target).closest('.searchable-select').length) {
+                        $('.searchable-select').removeClass('active');
+                    }
+                });
+
+                // Prevent dropdown from closing when clicking inside
+                $('.searchable-select-dropdown').on('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+
+            function filterOptions(selector, searchTerm) {
+                const options = $(`${selector} .option-item`);
+                let hasResults = false;
+
+                options.each(function() {
+                    const townName = $(this).find('.town-name').text().toLowerCase();
+                    const county = $(this).find('.town-county').text().toLowerCase();
+
+                    if (townName.includes(searchTerm) || county.includes(searchTerm)) {
+                        $(this).show();
+                        hasResults = true;
+                    } else {
+                        $(this).hide();
+                    }
+                });
+
+                // Show no results message if needed
+                const container = $(selector);
+                container.find('.no-results').remove();
+
+                if (!hasResults && searchTerm) {
+                    container.append(`
+                <div class="no-results">
+                    <i class="bi bi-search"></i>
+                    <p>No towns found matching "${searchTerm}"</p>
+                    <small>Try a different search term</small>
+                </div>
+            `);
+                }
+            }
+
+            // Form validation
+            function validateTownForm() {
+                const fromTown = $('#fromTown').val();
+                const toTown = $('#toTown').val();
+                const weight = $('#weight').val();
+                const parcelType = $('#parcelType').val();
+
+                if (!fromTown) {
+                    showAlert('Please select pickup town', 'warning');
+                    $('#fromTownSelect').addClass('error');
+                    return false;
+                }
+
+                if (!toTown) {
+                    showAlert('Please select delivery town', 'warning');
+                    $('#toTownSelect').addClass('error');
+                    return false;
+                }
+
+                if (!weight || weight <= 0) {
+                    showAlert('Please enter a valid weight', 'warning');
+                    $('#weight').focus();
+                    return false;
+                }
+
+                if (!parcelType) {
+                    showAlert('Please select parcel type', 'warning');
+                    $('#parcelType').focus();
+                    return false;
+                }
+
+                if (fromTown === toTown) {
+                    showAlert('Pickup and delivery towns cannot be the same', 'warning');
+                    return false;
+                }
+
+                return true;
+            }
+
+            // Quote calculation with parcel type
+            function calculateTownQuote() {
+                const fromTown = $('#fromTown').val();
+                const toTown = $('#toTown').val();
+                const weight = parseFloat($('#weight').val());
+                const parcelType = $('#parcelType').val();
+
+                // Base price
+                let basePrice = 300;
+
+                // Add distance factor
+                const majorRoutes = [
+                    ['Nairobi', 'Mombasa'],
+                    ['Mombasa', 'Nairobi'],
+                    ['Nairobi', 'Kisumu'],
+                    ['Kisumu', 'Nairobi'],
+                    ['Nairobi', 'Nakuru'],
+                    ['Nakuru', 'Nairobi'],
+                    ['Nairobi', 'Eldoret'],
+                    ['Eldoret', 'Nairobi']
+                ];
+
+                const isLongDistance = majorRoutes.some(route =>
+                    (route[0] === fromTown && route[1] === toTown) ||
+                    (route[0] === toTown && route[1] === fromTown)
+                );
+
+                if (isLongDistance) {
+                    basePrice += 500;
+                } else if (fromTown !== toTown) {
+                    basePrice += 200;
+                }
+
+                // Parcel type multiplier
+                const typeMultipliers = {
+                    'document': 1,
+                    'small': 1.2,
+                    'medium': 1.5,
+                    'large': 2,
+                    'extra-large': 2.5,
+                    'fragile': 2.2,
+                    'electronics': 2,
+                    'perishable': 2.3
+                };
+
+                const multiplier = typeMultipliers[parcelType] || 1;
+
+                // Weight charge
+                let weightCharge = 0;
+                if (weight <= 1) {
+                    weightCharge = 0;
+                } else if (weight <= 5) {
+                    weightCharge = 200;
+                } else if (weight <= 10) {
+                    weightCharge = 500;
+                } else {
+                    weightCharge = 1000 + (Math.ceil(weight - 10) * 50);
+                }
+
+                // Calculate total with multiplier
+                const subtotal = (basePrice + weightCharge) * multiplier;
+                const tax = subtotal * 0.16;
+                const total = Math.round(subtotal + tax);
+
+                return {
+                    base: basePrice,
+                    weight: weightCharge,
+                    multiplier: multiplier,
+                    subtotal: subtotal,
+                    tax: tax,
+                    total: total,
+                    weight: weight,
+                    parcelType: parcelType
+                };
+            }
+
+            // Form submission
+            $('#townQuoteForm').on('submit', function(e) {
+                e.preventDefault();
+
+                if (!validateTownForm()) {
+                    return;
+                }
+
+                const quote = calculateTownQuote();
+                displayTownQuoteResult(quote);
+            });
+
+            // Display quote result
+            function displayTownQuoteResult(quote) {
+                const fromTown = $('#fromTownSelect .selected-text').text();
+                const toTown = $('#toTownSelect .selected-text').text();
+                const parcelType = $('#parcelType option:selected').text();
+
+                const quoteHTML = `
+            <div class="quote-result-content">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="mb-1">Estimated Quote</h6>
+                        <p class="mb-0 small text-muted">${fromTown} → ${toTown}</p>
+                        <p class="mb-0 small text-muted">${parcelType} | ${quote.weight} kg</p>
+                    </div>
+                    <span class="quote-amount">KES ${quote.total}</span>
+                </div>
+                
+                <div class="price-breakdown small mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Base delivery:</span>
+                        <span>KES ${quote.base}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Weight charge:</span>
+                        <span>KES ${quote.weight}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Type multiplier:</span>
+                        <span>${quote.multiplier}x</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">VAT (16%):</span>
+                        <span>KES ${Math.round(quote.tax)}</span>
+                    </div>
+                    <div class="d-flex justify-content-between fw-bold pt-2 border-top">
+                        <span>Total:</span>
+                        <span>KES ${quote.total}</span>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary btn-sm flex-grow-1" id="proceedBooking">
+                        Proceed to Booking <i class="bi bi-arrow-right"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" id="closeQuote">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                
+                <p class="small text-muted mt-2 mb-0">
+                    <i class="bi bi-info-circle"></i> 
+                    Final price may vary based on actual measurements.
+                </p>
+            </div>
+        `;
+
+                $('#quoteResult').html(quoteHTML).addClass('show');
+
+                $('#closeQuote').on('click', function() {
+                    $('#quoteResult').removeClass('show').empty();
+                });
+
+                $('#proceedBooking').on('click', function() {
+                    alert('Proceed to complete your booking with KES ' + quote.total);
+                });
+            }
+
+            // Clear form
+            $('#clearForm').on('click', function() {
+                $('#townQuoteForm')[0].reset();
+                $('#fromTown').val('');
+                $('#toTown').val('');
+                $('#fromTownSelect .selected-text').text('Select pickup town');
+                $('#toTownSelect .selected-text').text('Select delivery town');
+                $('#fromTownOptions .option-item').removeClass('selected');
+                $('#toTownOptions .option-item').removeClass('selected');
+                $('#quoteResult').removeClass('show').empty();
+            });
+
+            // Show alert function
+            function showAlert(message, type) {
+                const alertClass = type === 'warning' ? 'alert-warning' : 'alert-danger';
+                const alert = $(`
+            <div class="alert ${alertClass} alert-dismissible fade show py-2" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                ${message}
+                <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+            </div>
+        `);
+
+                $('#townQuoteForm').prepend(alert);
+
+                setTimeout(() => {
+                    alert.alert('close');
+                }, 5000);
+            }
+        });
+    </script>
+
+    <!-- Make sure Font Awesome is included in your layout -->
+    <script>
+        // Optional: Track WhatsApp clicks
+        document.addEventListener('DOMContentLoaded', function() {
+            const whatsappBtn = document.querySelector('.whatsapp-button');
+            if (whatsappBtn) {
+                whatsappBtn.addEventListener('click', function() {
+                    // Track with Google Analytics if available
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'whatsapp_click', {
+                            'event_category': 'engagement',
+                            'event_label': 'whatsapp_chat',
+                            'value': 1
+                        });
+                    }
+
+                    // Optional: Send to your analytics endpoint
+                    fetch('/track-whatsapp-click', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            page: window.location.pathname,
+                            timestamp: new Date().toISOString()
+                        })
+                    }).catch(error => console.error('Error tracking WhatsApp click:', error));
+                });
+            }
+        });
+    </script>
+
+    <!-- <script>
+        tinymce.init({
+            selector: 'textarea',
+            plugins: [
+                // Core editing features
+                'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
+                // Your account includes a free trial of TinyMCE premium features
+                // Try the most popular premium features until Mar 27, 2026:
+                'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'advtemplate', 'ai', 'uploadcare', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown', 'importword', 'exportword', 'exportpdf'
+            ],
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+            tinycomments_mode: 'embedded',
+            tinycomments_author: 'Author name',
+            mergetags_list: [{
+                    value: 'First.Name',
+                    title: 'First Name'
+                },
+                {
+                    value: 'Email',
+                    title: 'Email'
+                },
+            ],
+            ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+            uploadcare_public_key: 'ed7312cf0958d607cbc6',
+        });
+    </script> -->
+    <textarea>
+  Welcome to TinyMCE!
+</textarea>
+
 </body>
 
 </html>

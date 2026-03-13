@@ -1,16 +1,15 @@
 <div>
-    <div>
     <div class="card">
         <div class="card-header">
             <h3 class="card-title font-weight-bold d-inline">
-                <i class="fas fa-file-contract mr-2"></i>View Terms & Conditions
+                <i class="fas fa-file-alt mr-2"></i>View Policy
             </h3>
             <div class="float-right">
-                <a href="{{ route('admin.terms.edit', $termsId) }}" class="btn btn-primary btn-sm">
+                <a href="{{ route('admin.policy.edit', $policyId) }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-edit mr-2"></i>Edit
                 </a>
-                <a href="{{ route('admin.terms') }}" class="btn btn-secondary btn-sm">
-                    <i class="fas fa-arrow-left mr-2"></i>Back to Terms
+                <a href="{{ route('admin.policy') }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Policies
                 </a>
             </div>
         </div>
@@ -27,20 +26,14 @@
                         @if($is_active)
                             <span class="badge badge-success">Active</span>
                         @else
-                            <span class="badge badge-warning">Draft</span>
-                        @endif
-                        
-                        @if($requires_acceptance)
-                            <span class="badge badge-info ml-2">
-                                <i class="fas fa-check-double mr-1"></i>Requires Acceptance
-                            </span>
+                            <span class="badge badge-warning">Inactive</span>
                         @endif
                     </div>
                     
-                    @if($effective_date)
+                    @if($published_on)
                         <div>
                             <i class="fas fa-calendar-alt mr-1"></i>
-                            <strong>Effective:</strong> {{ \Carbon\Carbon::parse($effective_date)->format('F d, Y') }}
+                            <strong>Published:</strong> {{ $published_on->format('F d, Y') }}
                         </div>
                     @endif
                 </div>
@@ -55,22 +48,10 @@
                             <h1 class="h2 mb-3">{{ $title }}</h1>
                             
                             <div class="row text-muted mb-3">
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <i class="fas fa-tag mr-1"></i> Version: <strong>{{ $version }}</strong>
                                 </div>
-                                <div class="col-md-4">
-                                    <i class="fas fa-language mr-1"></i> Language: 
-                                    <strong>
-                                        @switch($locale)
-                                            @case('en') English @break
-                                            @case('es') Spanish @break
-                                            @case('fr') French @break
-                                            @case('de') German @break
-                                            @default {{ strtoupper($locale) }}
-                                        @endswitch
-                                    </strong>
-                                </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <i class="fas fa-clock mr-1"></i> Last Updated: 
                                     <strong>{{ $updated_at ? $updated_at->format('M d, Y') : 'N/A' }}</strong>
                                 </div>
@@ -98,8 +79,8 @@
                         <div class="card-body">
                             <table class="table table-sm table-borderless">
                                 <tr>
-                                    <td width="40%"><strong>Document ID:</strong></td>
-                                    <td><code>#{{ $termsId }}</code></td>
+                                    <td width="40%"><strong>Policy ID:</strong></td>
+                                    <td><code>#{{ $policyId }}</code></td>
                                 </tr>
                                 <tr>
                                     <td><strong>Created:</strong></td>
@@ -113,13 +94,9 @@
                                         </span>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td><strong>Last Updated:</strong></td>
-                                    <td>{{ $updated_at ? $updated_at->format('M d, Y H:i') : 'N/A' }}</td>
-                                </tr>
                                 @if($updated_by_name)
                                 <tr>
-                                    <td><strong>Updated By:</strong></td>
+                                    <td><strong>Last Updated By:</strong></td>
                                     <td>
                                         <span class="badge badge-light">
                                             <i class="fas fa-user-edit mr-1"></i>{{ $updated_by_name }}
@@ -131,34 +108,25 @@
                         </div>
                     </div>
 
-                    <!-- Dates Card -->
+                    <!-- Published Date Card -->
                     <div class="card mb-4">
                         <div class="card-header">
                             <h5 class="card-title mb-0">
-                                <i class="fas fa-calendar-alt mr-2"></i>Effective Dates
+                                <i class="fas fa-calendar-alt mr-2"></i>Publication Date
                             </h5>
                         </div>
                         <div class="card-body">
                             <div class="mb-3">
-                                <label class="text-muted mb-1">Effective Date</label>
+                                <label class="text-muted mb-1">Published On</label>
                                 <div class="h5">
-                                    @if($effective_date)
-                                        {{ \Carbon\Carbon::parse($effective_date)->format('F d, Y') }}
-                                        <small class="text-muted">({{ \Carbon\Carbon::parse($effective_date)->diffForHumans() }})</small>
+                                    @if($published_on)
+                                        {{ $published_on->format('F d, Y') }}
+                                        <small class="text-muted">({{ $published_on->diffForHumans() }})</small>
                                     @else
-                                        <span class="text-muted">Not set</span>
+                                        <span class="text-muted">Not published yet</span>
                                     @endif
                                 </div>
                             </div>
-                            
-                            @if($expiry_date)
-                            <div>
-                                <label class="text-muted mb-1">Expiry Date</label>
-                                <div class="h5 text-warning">
-                                    {{ \Carbon\Carbon::parse($expiry_date)->format('F d, Y') }}
-                                </div>
-                            </div>
-                            @endif
                         </div>
                     </div>
 
@@ -170,15 +138,13 @@
                             </h5>
                         </div>
                         <div class="card-body">
-                            <div class="row text-center">
-                                <div class="col-6">
-                                    <div class="h3 mb-0">{{ $acceptance_count ?? 0 }}</div>
-                                    <small class="text-muted">Acceptances</small>
-                                </div>
-                                <div class="col-6">
-                                    <div class="h3 mb-0">{{ $views_count ?? 0 }}</div>
-                                    <small class="text-muted">Views</small>
-                                </div>
+                            <div class="text-center mb-3">
+                                <div class="h3 mb-0">{{ strlen($content) }}</div>
+                                <small class="text-muted">Total Characters</small>
+                            </div>
+                            <div class="text-center">
+                                <div class="h3 mb-0">{{ str_word_count(strip_tags($content)) }}</div>
+                                <small class="text-muted">Approx. Word Count</small>
                             </div>
                         </div>
                     </div>
@@ -192,8 +158,8 @@
                         </div>
                         <div class="card-body">
                             <div class="d-grid gap-2">
-                                <a href="{{ route('admin.terms.edit', $termsId) }}" class="btn btn-primary btn-block mb-2">
-                                    <i class="fas fa-edit mr-2"></i>Edit Document
+                                <a href="{{ route('admin.policy.edit', $policyId) }}" class="btn btn-primary btn-block mb-2">
+                                    <i class="fas fa-edit mr-2"></i>Edit Policy
                                 </a>
                                 
                                 <button type="button" class="btn btn-info btn-block mb-2" onclick="window.print()">
@@ -201,26 +167,10 @@
                                 </button>
                                 
                                 <button type="button" class="btn btn-outline-secondary btn-block" 
-                                        wire:click="copyToClipboard" 
-                                        x-data="{ copied: false }"
-                                        x-on:click="copied = true; setTimeout(() => copied = false, 2000)">
-                                    <span x-show="!copied">
-                                        <i class="fas fa-copy mr-2"></i>Copy Link
-                                    </span>
-                                    <span x-show="copied" style="display: none;">
-                                        <i class="fas fa-check mr-2"></i>Copied!
-                                    </span>
+                                        onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied to clipboard!');">
+                                    <i class="fas fa-copy mr-2"></i>Copy Link
                                 </button>
                             </div>
-
-                            <hr>
-
-                            <!-- Version History Link -->
-                            @if($has_version_history)
-                            <a href="{{ route('admin.terms.versions', $termsId) }}" class="btn btn-link btn-block">
-                                <i class="fas fa-history mr-2"></i>View Version History
-                            </a>
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -311,24 +261,4 @@
         }
     </style>
     @endpush
-
-    @push('scripts')
-    <script>
-        document.addEventListener('livewire:init', function() {
-            Livewire.on('copied', () => {
-                // Show temporary tooltip or notification
-                const toast = document.createElement('div');
-                toast.className = 'alert alert-success position-fixed bottom-0 right-0 m-3';
-                toast.style.zIndex = '9999';
-                toast.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Link copied to clipboard!';
-                document.body.appendChild(toast);
-                
-                setTimeout(() => {
-                    toast.remove();
-                }, 3000);
-            });
-        });
-    </script>
-    @endpush
-</div>
 </div>

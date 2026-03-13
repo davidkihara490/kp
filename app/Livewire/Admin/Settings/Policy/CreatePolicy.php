@@ -1,19 +1,18 @@
 <?php
 
-namespace App\Livewire\Admin\Settings\Terms;
+namespace App\Livewire\Admin\Settings\Policy;
 
 use Livewire\Component;
-use App\Models\TermsAndCondition;
+use App\Models\Policy;
+use App\Models\PrivacyPolicy;
 use Illuminate\Support\Facades\Auth;
 
-class CreateTermsAndConditions extends Component
+class CreatePolicy extends Component
 {
     public $title;
     public $version;
     public $content;
-    public $locale = 'en';
-    public $effective_date;
-    public $requires_acceptance = true;
+    public $published_on;
     public $is_active = false;
 
     protected function rules()
@@ -22,17 +21,15 @@ class CreateTermsAndConditions extends Component
             'title' => 'required|min:3|max:255',
             'version' => 'required|max:50',
             'content' => 'required|string',
-            'locale' => 'required|in:en,es,fr,de',
-            'effective_date' => 'nullable|date',
-            'requires_acceptance' => 'boolean',
+            'published_on' => 'nullable|date',
             'is_active' => 'boolean',
         ];
     }
 
     protected $messages = [
-        'title.required' => 'Please provide a title for these terms.',
+        'title.required' => 'Please provide a policy title.',
         'version.required' => 'Version number is required.',
-        'content.required' => 'Please enter the terms content.',
+        'content.required' => 'Please enter the policy content.',
     ];
 
     public function mount()
@@ -49,29 +46,27 @@ class CreateTermsAndConditions extends Component
     {
         $this->validate();
 
-        $terms = TermsAndCondition::create([
+        $policy = PrivacyPolicy::create([
             'title' => $this->title,
             'version' => $this->version,
             'content' => $this->content,
-            'locale' => $this->locale,
-            'effective_date' => $this->effective_date,
-            'requires_acceptance' => $this->requires_acceptance,
+            'published_on' => $this->published_on ?? now(),
             'is_active' => $this->is_active,
             'created_by' => Auth::id(),
             'updated_by' => Auth::id(),
         ]);
 
-        session()->flash('success', 'Terms and Conditions created successfully!');
+        session()->flash('success', 'Policy created successfully!');
 
         if ($this->is_active) {
-            return redirect()->route('admin.terms');
+            return redirect()->route('admin.policy');
         }
 
-        return redirect()->route('admin.terms.edit', $terms->id);
+        return redirect()->route('admin.policy.edit', $policy->id);
     }
 
     public function render()
     {
-        return view('livewire.admin.settings.terms.create-terms-and-conditions');
+        return view('livewire.admin.settings.policy.create-policy');
     }
 }

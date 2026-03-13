@@ -2,22 +2,17 @@
     <div class="card">
         <div class="card-header">
             <h3 class="card-title font-weight-bold d-inline">
-                <i class="fas fa-file-alt mr-2"></i>Edit Policy
+                <i class="fas fa-file-alt mr-2"></i>Create Policy
             </h3>
-            <div class="float-right">
-                <a href="{{ route('admin.policy.view', $policyId) }}" class="btn btn-info btn-sm">
-                    <i class="fas fa-eye mr-2"></i>View
-                </a>
-                <a href="{{ route('admin.policy') }}" class="btn btn-secondary btn-sm">
-                    <i class="fas fa-arrow-left mr-2"></i>Back to Policies
-                </a>
-            </div>
+            <a href="{{ route('admin.policy') }}" class="btn btn-secondary btn-sm float-right">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Policies
+            </a>
         </div>
 
         <div class="card-body">
             @include('components.alerts.response-alerts')
 
-            <form wire:submit.prevent="update">
+            <form wire:submit.prevent="save">
                 <div class="row">
                     <!-- Left Column - Main Content -->
                     <div class="col-md-8">
@@ -41,6 +36,9 @@
                                             @error('title')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
+                                            <small class="form-text text-muted">
+                                                Choose a clear, descriptive title for your policy.
+                                            </small>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -50,7 +48,8 @@
                                                 <input type="text"
                                                        class="form-control @error('version') is-invalid @enderror" 
                                                        id="version"
-                                                       wire:model="version">
+                                                       wire:model="version"
+                                                       placeholder="v1.0.0">
                                                 <div class="input-group-append">
                                                     <button class="btn btn-outline-secondary" type="button"
                                                             wire:click="generateVersion">
@@ -74,6 +73,9 @@
                                     @error('published_on')
                                         <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
+                                    <small class="form-text text-muted">
+                                        Leave empty to use current date.
+                                    </small>
                                 </div>
 
                                 <!-- CKEditor Content -->
@@ -83,11 +85,15 @@
                                         <textarea id="content" 
                                                   class="form-control @error('content') is-invalid @enderror"
                                                   wire:model="content"
-                                                  name="content"></textarea>
+                                                  name="content"
+                                                  placeholder="Enter the full policy content..."></textarea>
                                     </div>
                                     @error('content')
                                         <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
+                                    <small class="form-text text-muted">
+                                        Use the editor to format your policy with headings, lists, and emphasis.
+                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -110,53 +116,71 @@
                                                id="is_active" 
                                                wire:model="is_active">
                                         <label class="custom-control-label" for="is_active">
-                                            <strong>Active</strong>
+                                            <strong>Publish immediately</strong>
                                         </label>
                                     </div>
+                                    <small class="form-text text-muted">
+                                        If enabled, this policy will be visible to users.
+                                    </small>
+                                </div>
+
+                                <hr>
+
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-info-circle mr-2"></i>
+                                    <small>
+                                        Policies are typically published on your website's legal pages 
+                                        (e.g., /privacy-policy, /terms-of-service).
+                                    </small>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Metadata Card -->
+                        <!-- Preview Card -->
                         <div class="card mb-4">
                             <div class="card-header">
                                 <h5 class="card-title mb-0">
-                                    <i class="fas fa-history mr-2"></i>Metadata
+                                    <i class="fas fa-eye mr-2"></i>Quick Preview
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <table class="table table-sm table-borderless">
-                                    <tr>
-                                        <td><strong>Created:</strong></td>
-                                        <td>{{ $created_at ? $created_at->format('M d, Y H:i') : 'N/A' }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Created By:</strong></td>
-                                        <td>
-                                            <span class="badge badge-light">
-                                                <i class="fas fa-user-circle mr-1"></i>{{ $created_by_name }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Last Updated:</strong></td>
-                                        <td>{{ $updated_at ? $updated_at->format('M d, Y H:i') : 'N/A' }}</td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
+                                <div class="mb-3">
+                                    <strong>Title:</strong>
+                                    <div class="mt-1">
+                                        <span class="badge badge-primary p-2">
+                                            {{ $title ?: 'Untitled Policy' }}
+                                        </span>
+                                    </div>
+                                </div>
 
-                        <!-- Danger Zone -->
-                        <div class="card mb-4 border-danger">
-                            <div class="card-header bg-danger text-white">
-                                <h5 class="card-title mb-0">
-                                    <i class="fas fa-exclamation-triangle mr-2"></i>Danger Zone
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <button type="button" class="btn btn-danger btn-block" wire:click="confirmDelete">
-                                    <i class="fas fa-trash mr-2"></i>Delete Policy
-                                </button>
+                                <div class="mb-3">
+                                    <strong>Version:</strong>
+                                    <div class="mt-1">
+                                        <code>{{ $version ?: 'v1.0.0' }}</code>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <strong>Published:</strong>
+                                    <div class="mt-1">
+                                        @if($published_on)
+                                            <span class="badge badge-info">
+                                                {{ \Carbon\Carbon::parse($published_on)->format('M d, Y') }}
+                                            </span>
+                                        @else
+                                            <span class="badge badge-secondary">Today</span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <strong>Content Length:</strong>
+                                    <div class="mt-1">
+                                        <span class="badge badge-light">
+                                            {{ strlen($content) }} characters
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -174,54 +198,30 @@
                                     </a>
                                     <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
                                         <span wire:loading.remove>
-                                            <i class="fas fa-save mr-2"></i>Update
+                                            <i class="fas fa-save mr-2"></i>Create Policy
                                         </span>
                                         <span wire:loading>
-                                            <i class="fas fa-spinner fa-spin mr-2"></i>Updating...
+                                            <i class="fas fa-spinner fa-spin mr-2"></i>Creating...
                                         </span>
                                     </button>
+                                </div>
+
+                                <hr>
+
+                                <div class="small text-muted">
+                                    <p class="mb-1"><strong>Tips:</strong></p>
+                                    <ul class="pl-3 mb-0">
+                                        <li>Use clear, simple language</li>
+                                        <li>Be transparent about data handling</li>
+                                        <li>Include effective date</li>
+                                        <li>Keep it up to date</li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </form>
-
-            <!-- Delete Confirmation Modal -->
-            @if($showDeleteModal)
-            <div class="modal fade show" id="deleteModal" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header bg-danger text-white">
-                            <h5 class="modal-title">
-                                <i class="fas fa-exclamation-triangle mr-2"></i>Confirm Delete
-                            </h5>
-                            <button type="button" class="close text-white" wire:click="$set('showDeleteModal', false)">
-                                <span>&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Are you sure you want to delete this policy?</p>
-                            <p class="font-weight-bold">"{{ $title }}"</p>
-                            <p class="text-danger">This action cannot be undone.</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" wire:click="$set('showDeleteModal', false)">
-                                <i class="fas fa-times mr-2"></i>Cancel
-                            </button>
-                            <button type="button" class="btn btn-danger" wire:click="delete" wire:loading.attr="disabled">
-                                <span wire:loading.remove>
-                                    <i class="fas fa-trash mr-2"></i>Delete Permanently
-                                </span>
-                                <span wire:loading>
-                                    <i class="fas fa-spinner fa-spin mr-2"></i>Deleting...
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @endif
         </div>
     </div>
 
@@ -248,20 +248,10 @@
                     editor.model.document.on('change:data', () => {
                         @this.set('content', editor.getData());
                     });
-
-                    // Set initial content
-                    editor.setData(@js($content));
                 })
                 .catch(error => {
                     console.error(error);
                 });
-
-            // Listen for content updates from Livewire
-            Livewire.on('content-updated', (content) => {
-                if (editor) {
-                    editor.setData(content);
-                }
-            });
         });
     </script>
     @endpush
@@ -271,8 +261,9 @@
         .ck-editor__editable {
             min-height: 400px;
         }
-        .modal.show {
-            display: block;
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
     </style>
     @endpush

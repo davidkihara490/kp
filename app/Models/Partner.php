@@ -138,4 +138,12 @@ class Partner extends Model
     {
         return $this->hasMany(Fleet::class,'partner_id');
     }
+
+        public function pickUpAndDropOffPoints(): HasMany{
+        return $this->hasMany(PickUpAndDropOffPoint::class, 'partner_id');
+    }
+
+    public function parcelHandlingAssistants(): HasMany{
+        return $this->hasMany(ParcelHandlingAssistant::class, 'partner_id');
+    }
 }

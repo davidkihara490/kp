@@ -47,5 +47,9 @@ return [
         'sender_name' => env('MOBITECH_SENDER', 'FULL_CIRCLE'),
         'api_url' => env('MOBITECH_API_URL', 'https://app.mobitechtechnologies.com/sms/sendsms'),
     ],
+    'whatsapp' => [
+    'phone' => env('WHATSAPP_PHONE', '254700130759'),
+    'message' => env('WHATSAPP_MESSAGE', 'Hello, I need more information about your services.'),
+],
 
 ];

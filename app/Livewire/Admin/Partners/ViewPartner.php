@@ -20,9 +20,12 @@ class ViewPartner extends Component
         'fleet' => 'Fleet & Operations',
         'capacity' => 'Capacity & Coverage',
         'documents' => 'Documents',
+        'points' => 'PickUp/DropOff Points',
+        'pha' => 'Parcel Handling Assistants',
         'owners' => 'Owners',
         'drivers' => 'Drivers',
         'towns' => 'Service Towns',
+
     ];
 
     public function mount($id)
@@ -32,6 +35,11 @@ class ViewPartner extends Component
             // 'drivers',
             'towns.town',
         ])->findOrFail($id);
+    }
+
+    public function changeTab($tab)
+    {
+        $this->activeTab = $tab;
     }
 
     public function render()
@@ -47,7 +55,7 @@ class ViewPartner extends Component
     private function getVerificationBadgeColor()
     {
         return match ($this->partner->verification_status) {
-            'verified' => 'success',
+            'active' => 'success',
             'pending' => 'warning',
             'rejected' => 'danger',
             default => 'secondary'
@@ -85,5 +93,14 @@ class ViewPartner extends Component
             'driver' => 'warning',
             default => 'secondary'
         };
+    }
+
+    public function verifyPartner()
+    {
+        $this->partner->update([
+            'verification_status' => 'active',
+        ]);
+
+        session()->flash('success', 'Partner verified successfully');
     }
 }
