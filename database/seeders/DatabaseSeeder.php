@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
             SubCategorySeeder::class,
             // ItemSeeder::class,
             WeightRangeSeeder::class,
-            PricingSeeder::class,
+            // PricingSeeder::class,
             PaymentStructureSeeder::class,
             // FAQSeeder::class,
             // BlogCategorySeeder::class,
