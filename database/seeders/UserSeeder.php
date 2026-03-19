@@ -22,7 +22,7 @@ class UserSeeder extends Seeder
             'second_name' => 'System',
             'last_name' => 'Administrator',
             'user_name' => 'superadmin',
-            'email' => 'super_admin_test@karibuparcels.com',
+            'email' => 'karibuparcels@gmail.com',
             'phone_number' => '+254700000001',
             'password' => Hash::make('admin123KP'),
             'user_type' => 'admin',
@@ -31,7 +31,7 @@ class UserSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
-        $this->command->info('Super Admin created: super_admin_test@karibuparcels.com / admin123KP');
+        $this->command->info('Super Admin created: karibuparcels@gmail.com / admin123KP');
 
         // Create Transport Partner User
         $transportPartnerUser = User::factory()->transportPartner()->active()->create([
@@ -179,14 +179,59 @@ class UserSeeder extends Seeder
         if (app()->environment('local', 'development')) {
             // Create additional Kenyan counties as service areas
             $kenyanTowns = [
-                'Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Thika', 'Machakos',
-                'Kiambu', 'Kikuyu', 'Ruiru', 'Juja', 'Limuru', 'Kitengela', 'Athi River',
-                'Kitui', 'Embu', 'Meru', 'Nyeri', 'Muranga', 'Kerugoya', 'Karatina',
-                'Naivasha', 'Gilgil', 'Nyandarua', 'Ol Kalou', 'Narok', 'Bomet', 'Kericho',
-                'Kisii', 'Migori', 'Homa Bay', 'Siaya', 'Busia', 'Bungoma', 'Kakamega',
-                'Vihiga', 'Trans Nzoia', 'Uasin Gishu', 'Nandi', 'Laikipia', 'Samburu',
-                'Isiolo', 'Marsabit', 'Garissa', 'Wajir', 'Mandera', 'Lamu', 'Tana River',
-                'Kilifi', 'Kwale', 'Taita Taveta', 'Makueni', 'Kajiado'
+                'Nairobi',
+                'Mombasa',
+                'Kisumu',
+                'Nakuru',
+                'Eldoret',
+                'Thika',
+                'Machakos',
+                'Kiambu',
+                'Kikuyu',
+                'Ruiru',
+                'Juja',
+                'Limuru',
+                'Kitengela',
+                'Athi River',
+                'Kitui',
+                'Embu',
+                'Meru',
+                'Nyeri',
+                'Muranga',
+                'Kerugoya',
+                'Karatina',
+                'Naivasha',
+                'Gilgil',
+                'Nyandarua',
+                'Ol Kalou',
+                'Narok',
+                'Bomet',
+                'Kericho',
+                'Kisii',
+                'Migori',
+                'Homa Bay',
+                'Siaya',
+                'Busia',
+                'Bungoma',
+                'Kakamega',
+                'Vihiga',
+                'Trans Nzoia',
+                'Uasin Gishu',
+                'Nandi',
+                'Laikipia',
+                'Samburu',
+                'Isiolo',
+                'Marsabit',
+                'Garissa',
+                'Wajir',
+                'Mandera',
+                'Lamu',
+                'Tana River',
+                'Kilifi',
+                'Kwale',
+                'Taita Taveta',
+                'Makueni',
+                'Kajiado'
             ];
 
             // Create additional transport partners with drivers
@@ -202,12 +247,16 @@ class UserSeeder extends Seeder
                         ->withOwner($user)
                         ->create([
                             'company_name' => fake()->randomElement([
-                                'Highway Express', 'Coast Hauliers', 'Rift Valley Transport',
-                                'Mountain Logistics', 'Savannah Couriers', 'Lake Region Movers'
+                                'Highway Express',
+                                'Coast Hauliers',
+                                'Rift Valley Transport',
+                                'Mountain Logistics',
+                                'Savannah Couriers',
+                                'Lake Region Movers'
                             ]) . ' ' . fake()->year(),
                             'operating_hours' => 'Monday - Friday: 8:00 AM - 6:00 PM, Saturday: 9:00 AM - 1:00 PM',
                         ]);
-                    
+
                     // Create 5-10 drivers for each transport partner
                     Driver::factory()
                         ->count(rand(5, 10))
@@ -241,12 +290,16 @@ class UserSeeder extends Seeder
                         ->withOwner($user)
                         ->create([
                             'company_name' => fake()->randomElement([
-                                'City Pickup Services', 'Town Dropoff Express', 'Neighborhood Couriers',
-                                'Estate Logistics', 'Local Parcel Hub', 'Community Deliveries'
+                                'City Pickup Services',
+                                'Town Dropoff Express',
+                                'Neighborhood Couriers',
+                                'Estate Logistics',
+                                'Local Parcel Hub',
+                                'Community Deliveries'
                             ]) . ' ' . fake()->year(),
                             'points_count' => rand(3, 10),
                         ]);
-                    
+
                     // Create 3-6 PHAs for each pickup-dropoff partner
                     ParcelHandlingAssistant::factory()
                         ->count(rand(3, 6))
