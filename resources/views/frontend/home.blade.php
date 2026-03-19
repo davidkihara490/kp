@@ -1,31 +1,23 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Karibu Parcels - Professional Courier Service</title>
-
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Bootstrap Icons -->
+    <!--Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="{{ asset('frontend/f2.css') }}">
     <script src="https://cdn.tiny.cloud/1/3culyhhybbcchz5f5d6o066dedtcc2ugjb92n22l8ocyw9rv/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
-
 </head>
-
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
@@ -128,8 +120,8 @@
                                                 @foreach($towns as $town)
                                                 <div class="option-item" data-value="{{ $town->name }}">
                                                     <i class="bi bi-building me-2"></i>
-                                                    <span class="town-name">{{ $town->name }}</span>
-                                                    <small class="town-county text-muted">{{ $town->county ?? 'Kenya' }}</small>
+                                                    <span class="town-name">{{ $town->subCounty?->county?->name }}-{{ $town->name }}</span>
+                                                    <small class="town-county text-muted">{{ $town->subCounty->county->name ?? 'Kenya' }}</small>
                                                 </div>
                                                 @endforeach
                                             </div>
@@ -157,8 +149,8 @@
                                                 @foreach($towns as $town)
                                                 <div class="option-item" data-value="{{ $town->name }}">
                                                     <i class="bi bi-building me-2"></i>
-                                                    <span class="town-name">{{ $town->name }}</span>
-                                                    <small class="town-county text-muted">{{ $town->county ?? 'Kenya' }}</small>
+                                                    <span class="town-name">{{ $town->subCounty?->county?->name }}-{{ $town->name }}</span>
+                                                    <small class="town-county text-muted">{{ $town->subCounty->county->name ?? 'Kenya' }}</small>
                                                 </div>
                                                 @endforeach
                                             </div>
@@ -180,16 +172,12 @@
                             <!-- Parcel Type -->
                             <div class="booking-field">
                                 <label><i class="bi bi-box me-1"></i> Parcel Type</label>
-                                <div class="parcel-type-selector"> <select class="form-select compact-select" id="parcelType" required>
-                                        <option value="">Select parcel type</option>
-                                        <option value="document">Document</option>
-                                        <option value="small">Small Package (up to 5kg)</option>
-                                        <option value="medium">Medium Package (5-10kg)</option>
-                                        <option value="large">Large Package (10-20kg)</option>
-                                        <option value="extra-large">Extra Large (20kg+)</option>
-                                        <option value="fragile">Fragile Items</option>
-                                        <option value="electronics">Electronics</option>
-                                        <option value="perishable">Perishable Goods</option>
+                                <div class="parcel-type-selector">
+                                    <select class="form-select compact-select" id="parcelType" required>
+                                        @foreach($parcelTypes as $parcelType)
+                                        <option value="{{ $parcelType->id }}">{{ $parcelType->name }}</option>
+
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>

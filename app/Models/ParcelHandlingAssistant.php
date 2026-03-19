@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Hash;
 
@@ -50,6 +51,11 @@ class ParcelHandlingAssistant extends Model
     public function assignment()
     {
         return $this->assignments()->latest()->first();
+    }
+
+    public function createdParcels(): MorphMany
+    {
+        return $this->morphMany(Parcel::class, 'creator');
     }
 
     public function getFullNameAttribute()

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Partner extends Model
@@ -16,7 +17,6 @@ class Partner extends Model
     protected $fillable = [
         'partner_type',
         'owner_id',
-        'incharge_id',
         // Company Details
         'company_name',
         'registration_number',
@@ -89,7 +89,6 @@ class Partner extends Model
         // System Fields
         'onboarding_step',
         'verification_status',
-
     ];
 
     protected $casts = [
@@ -122,10 +121,6 @@ class Partner extends Model
     {
         return $this->belongsTo(User::class, 'owner_id');
     }
-    public function inCharge(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'incharge_id');
-    }
     public function towns(): HasMany
     {
         return $this->hasMany(PartnerTown::class);
@@ -136,14 +131,26 @@ class Partner extends Model
     }
     public function fleets(): HasMany
     {
-        return $this->hasMany(Fleet::class,'partner_id');
+        return $this->hasMany(Fleet::class, 'partner_id');
     }
 
-        public function pickUpAndDropOffPoints(): HasMany{
+    public function pickUpAndDropOffPoints(): HasMany
+    {
         return $this->hasMany(PickUpAndDropOffPoint::class, 'partner_id');
     }
 
-    public function parcelHandlingAssistants(): HasMany{
+    public function parcelHandlingAssistants(): HasMany
+    {
         return $this->hasMany(ParcelHandlingAssistant::class, 'partner_id');
+    }
+
+    public function parcels(): MorphMany
+    {
+        return $this->morphMany(Parcel::class, 'transporter');
+    }
+
+    public function createdParcels(): MorphMany
+    {
+        return $this->morphMany(Parcel::class, 'creator');
     }
 }

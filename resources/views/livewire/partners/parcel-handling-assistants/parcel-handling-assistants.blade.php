@@ -8,7 +8,7 @@
                         <i class="bi bi-people me-2"></i>
                         Parcel Handling Assistants
                     </h3>
-                    <p class="section-subtitle">Manage all parcel handling assistants and their assignments</p>
+                    <p class="section-subtitle">Manage all parcel handling assistants</p>
                 </div>
                 <div class="header-actions">
                     <!-- Search -->
@@ -235,12 +235,6 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th width="50">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" wire:model="selectAll"
-                                        id="selectAll">
-                                </div>
-                            </th>
                             <th wire:click="sortBy('first_name')" style="cursor: pointer;">
                                 <div class="d-flex align-items-center">
                                     <span>Name</span>
@@ -260,7 +254,7 @@
                                     @endif
                                 </div>
                             </th>
-                            <th>Assignment</th>
+                            <th>Role</th>
                             <th wire:click="sortBy('status')" style="cursor: pointer;">
                                 <div class="d-flex align-items-center">
                                     <span>Status</span>
@@ -285,13 +279,6 @@
                     <tbody>
                         @forelse($assistants as $assistant)
                         <tr>
-                            <td>
-                                <div class="form-check">
-                                    <input class="form-check-input row-checkbox" type="checkbox"
-                                        value="{{ $assistant->id }}" wire:model="selectedAssistants"
-                                        id="assistant_{{ $assistant->id }}">
-                                </div>
-                            </td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="avatar">
@@ -330,17 +317,15 @@
                             <td>
                                 <div class="id-info">
                                     <span class="badge bg-light text-dark">{{ $assistant->id_number }}</span>
-                                    @if ($assistant->user)
                                     <small class="d-block text-muted">User:
-                                        {{ $assistant->user->username }}</small>
-                                    @endif
+                                        {{ $assistant->user->user_name }}</small>
                                 </div>
                             </td>
                             <td>
                                 <div class="station-assignments">
                                     <span class="badge bg-primary mb-1">
                                         <i class="bi bi-shop me-1"></i>
-                                        {{ $assistant->assignment()->pickUpAndDropOffPoint?->name  ?? 'Not Assigned'}}
+                                        {{ $assistant->user->getRoleNames()->first()  ?? 'No role assigned'}}
                                     </span>
                                 </div>
                             </td>

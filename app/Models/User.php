@@ -9,11 +9,12 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -65,21 +66,25 @@ class User extends Authenticatable
 
         ];
     }
-
-
     public function partner(): HasOne
     {
         return $this->hasOne(Partner::class, 'owner_id');
     }
-    public function driver():HasOne{
-        return $this->hasOne(Driver::class,'user_id');
+    public function driver(): HasOne
+    {
+        return $this->hasOne(Driver::class, 'user_id');
     }
-
-    public function parcelHandlingAssistant():HasOne{
-        return $this->hasOne(ParcelHandlingAssistant::class,'user_id');
+    public function parcelHandlingAssistant(): HasOne
+    {
+        return $this->hasOne(ParcelHandlingAssistant::class, 'user_id');
     }
     public function isPartner(): bool
     {
         return $this->user_type === 'transport' || $this->user_type === 'pickup-dropoff' || $this->user_type === 'driver' || $this->user_type === 'pha';
+    }
+
+    public function getFullName()
+    {
+        return $this->first_name . ' ' . $this->second_name . ' ' . $this->last_name;
     }
 }

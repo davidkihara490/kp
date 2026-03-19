@@ -32,7 +32,6 @@ class CreateParcel extends Component
     // Step Management
     public $currentStep = 1;
     public $totalSteps = 3;
-
     // Parcel Data
     public $parcel_number;
     public $customer_id;
@@ -40,7 +39,6 @@ class CreateParcel extends Component
     public $receiver_id;
     public $booking_type = 'instant';
     public $booking_source = 'admin';
-
     // Sender Information
     public $sender_name = '';
     public $sender_phone = '';
@@ -185,36 +183,49 @@ class CreateParcel extends Component
         ];
     }
 
-
     public function boot(SMSService $smsService)
     {
         $this->smsService = $smsService;
     }
 
-
-
     public function mount()
     {
+
+        // $this->smsService->sendDriverWelcomeSMS('254706506361', 'ONFONMEDIA');
+
+        // dd(400000);
+
+
+        $modelClass = current_user_type();
+        $user = $modelClass ? $modelClass::find(Auth::guard('partner')->user()->id) : null;
+
+
         $this->parcel_number = Parcel::generateParcelNumber();
         $this->loadOptions();
 
-
-        // Set default values
         $this->weight_unit = 'kg';
         $this->payment_method = 'mpesa';
         $this->payment_status = 'pending';
-
 
         // Initial price calculation if default values exist
         if ($this->parcel_type && $this->weight) {
             $this->calculatePriceByTypeAndWeight();
         }
 
+
+
         $pha = Auth::guard('partner')->user()->parcelHandlingAssistant;
 
-        $this->sender_pick_up_drop_off_point_id = $pha->assignment()?->pick_up_and_drop_off_point_id;
+        $loggedInUser = Auth::guard('partner')->user();
 
-        $this->sender_town_id = $pha->assignment()?->pickUpAndDropOffPoint?->town?->id;
+        // dd($loggedInUser);
+        // if($loggedInUser->i_am_assistant){
+
+        // }
+
+        // $this->sender_pick_up_drop_off_point_id = $pha->assignment()?->pick_up_and_drop_off_point_id ?? '';
+
+        // $this->sender_town_id = $pha->assignment()?->pickUpAndDropOffPoint?->town?->id ?? '';
     }
 
     public function loadOptions()
@@ -440,9 +451,7 @@ class CreateParcel extends Component
         return $this->total_amount;
     }
 
-    /**
-     * Calculate insurance charge if needed
-     */
+
     protected function calculateInsurance()
     {
         if ($this->insurance_required && $this->declared_value > 0) {
@@ -451,10 +460,6 @@ class CreateParcel extends Component
             $this->insurance_charge = 0;
         }
     }
-
-    /**
-     * Get all pricings for debugging (optional)
-     */
     public function getPricings()
     {
         return Pricing::with('item')
@@ -464,18 +469,10 @@ class CreateParcel extends Component
             ->groupBy('item_id');
     }
 
-
-
-
     public function updatedReceiverCountyId($value)
     {
         $this->calculatePrice();
     }
-
-    // public function updatedWeight($value)
-    // {
-    //     $this->calculatePrice();
-    // }
 
     public function updatedPackageType($value)
     {
@@ -623,8 +620,8 @@ class CreateParcel extends Component
                 'sender_town_id' => $this->sender_town_id,
                 'sender_pick_up_drop_off_point_id' => $this->sender_pick_up_drop_off_point_id,
                 'sender_notes' => $this->sender_notes,
-                'pha_id' => Auth::guard('partner')->user()->parcelHandlingAssistant->id,
-                'sender_partner_id' =>  Auth::guard('partner')->user()->parcelHandlingAssistant->partner->id,
+                'pha_id' => Auth::guard('partner')->user()->parcelHandlingAssistant?->id ?? NULL,
+                'sender_partner_id' =>  Auth::guard('partner')->user()->parcelHandlingAssistant?->partner?->id ?? Auth::guard('partner')->user()->partner?->id,
 
                 // Receiver information
                 'receiver_name' => $this->receiver_name,
@@ -668,6 +665,17 @@ class CreateParcel extends Component
                 'current_status' => Parcel::STATUS_CREATED,
                 // System fields
                 'created_by' => Auth::guard('partner')->user()->id,
+
+
+
+                'transporter_id' => NULL,
+                'transporter_type' => NULL,
+                'creator_id' => Auth::guard('partner')->user()->id,
+                'creator_type' => current_user_type(),
+
+
+
+
             ];
 
             $parcel = Parcel::create($parcelData);

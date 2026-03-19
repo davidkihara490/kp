@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Spatie\Permission\Models\Role;
 
 class CreateParcelHandlingAssistant extends Component
 {
@@ -18,13 +19,13 @@ class CreateParcelHandlingAssistant extends Component
     public $last_name = '';
     public $phone_number = '';
     public $email = '';
-    public $role = 'assistant';
     public $id_number = '';
     public $status = 'active';
-    public $generate_user_account = true;
-    public $send_welcome_email = true;
     public $password = '';
     public $confirm_password = '';
+    public $role_id;
+    public $roles = [];
+    public $role;
 
     protected function rules()
     {
@@ -46,7 +47,6 @@ class CreateParcelHandlingAssistant extends Component
                 Rule::unique('parcel_handling_assistants', 'email'),
                 Rule::unique('users', 'email'),
             ],
-            'role' => 'required|in:assistant,supervisor,manager',
             'id_number' => [
                 'required',
                 'string',
@@ -55,10 +55,9 @@ class CreateParcelHandlingAssistant extends Component
                 Rule::unique('parcel_handling_assistants', 'id_number'),
             ],
             'status' => 'required|in:active,inactive,suspended,pending',
-            // 'generate_user_account' => 'boolean',
-            // 'send_welcome_email' => 'boolean',
             'password' => 'required|min:8|nullable',
             'confirm_password' => 'required|same:password|nullable',
+            'role_id' => 'required|exists:roles,id',
         ];
     }
 
@@ -73,6 +72,8 @@ class CreateParcelHandlingAssistant extends Component
         'id_number.unique' => 'This ID number is already registered.',
         'password.required_if' => 'Password is required when creating a user account.',
         'confirm_password.same' => 'Passwords do not match.',
+        'role_id.exists' => 'This role does not exist.',
+        'role_id.required' => 'Role is required.',
     ];
 
     public function mount()
@@ -80,6 +81,7 @@ class CreateParcelHandlingAssistant extends Component
         // Generate a random password
         $this->password = $this->generateRandomPassword();
         $this->confirm_password = $this->password;
+        $this->roles = Role::where('user_id', Auth::guard('partner')->user()->id)->get();
     }
 
     private function generateRandomPassword($length = 12)
@@ -115,13 +117,18 @@ class CreateParcelHandlingAssistant extends Component
                 'user_type' => 'pha',
             ]);
 
+            if ($this->role_id) {
+                $this->role = Role::findOrFail($this->role_id);
+                $user->assignRole($this->role->name);
+            }
+
             $assistant = ParcelHandlingAssistant::create([
                 'first_name' => $this->first_name,
                 'second_name' => $this->second_name,
                 'last_name' => $this->last_name,
                 'phone_number' => $this->phone_number,
                 'email' => $this->email,
-                'role' => $this->role,
+                'role' => $this->role->name,
                 'id_number' => $this->id_number,
                 'status' => $this->status,
                 'user_id' => $user->id,

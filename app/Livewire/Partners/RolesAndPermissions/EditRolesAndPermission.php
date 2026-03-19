@@ -1,0 +1,13 @@
+<?php
+
+namespace App\Livewire\Partners\RolesAndPermissions;
+
+use Livewire\Component;
+
+class EditRolesAndPermission extends Component
+{
+    public function render()
+    {
+        return view('livewire.partners.roles-and-permissions.edit-roles-and-permission');
+    }
+}

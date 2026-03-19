@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Spatie\Permission\Models\Role;
 
 class EditDriver extends Component
 {
@@ -23,96 +24,93 @@ class EditDriver extends Component
     public $email;
     public $phone_number;
     public $alternate_phone_number;
-
     // Personal Details
     public $gender;
     public $id_number;
-
     // Driving License Information
     public $driving_license_number;
     public $driving_license_issue_date;
     public $driving_license_expiry_date;
     public $license_class = 'B';
-
     // Emergency Contact
     public $emergency_contact_name;
     public $emergency_contact_phone;
     public $emergency_contact_relationship;
-
     // Banking Information
     public $bank_name;
     public $bank_account_number;
     public $bank_account_name;
-
     // Status
     public $is_available = true;
-
     // Notes
     public $notes;
-
     // For form
     public $password = '';
     public $password_confirmation = '';
+    public $roles = [];
+    public $role_id;
+    public $role;
 
-protected function rules()
-{
-    $driverId = $this->driver->id ?? null;
-    
-    return [
-        'first_name' => 'required|string|max:255',
-        'second_name' => 'nullable|string|max:255',
-        'last_name' => 'required|string|max:255',
-        'email' => [
-            'required',
-            'email',
-            Rule::unique('drivers')->ignore($driverId),
-            Rule::unique('users')->ignore($driverId ? User::where('email', $this->email)->value('id') : null),
-        ],
-        'phone_number' => [
-            'required',
-            'string',
-            Rule::unique('drivers')->ignore($driverId)
-        ],
-        'alternate_phone_number' => 'nullable|string',
+    protected function rules()
+    {
+        $driverId = $this->driver->id ?? null;
 
-        'gender' => 'nullable|in:male,female,other',
-        'id_number' => [
-            'nullable',
-            'string',
-            'max:20',
-            Rule::unique('drivers')->ignore($driverId)
-        ],
+        return [
+            'first_name' => 'required|string|max:255',
+            'second_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('drivers')->ignore($driverId),
+                Rule::unique('users')->ignore($driverId ? User::where('email', $this->email)->value('id') : null),
+            ],
+            'phone_number' => [
+                'required',
+                'string',
+                Rule::unique('drivers')->ignore($driverId)
+            ],
+            'alternate_phone_number' => 'nullable|string',
 
-        'driving_license_number' => [
-            'required',
-            'string',
-            Rule::unique('drivers')->ignore($driverId)
-        ],
-        'driving_license_issue_date' => 'required|date',
-        'driving_license_expiry_date' => 'required|date|after:driving_license_issue_date',
-        'license_class' => 'required|in:A,B,C,D,E,F',
+            'gender' => 'nullable|in:male,female,other',
+            'id_number' => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('drivers')->ignore($driverId)
+            ],
 
-        'emergency_contact_name' => 'nullable|string|max:255',
-        'emergency_contact_phone' => 'nullable|string',
-        'emergency_contact_relationship' => 'nullable|string|max:100',
+            'driving_license_number' => [
+                'required',
+                'string',
+                Rule::unique('drivers')->ignore($driverId)
+            ],
+            'driving_license_issue_date' => 'required|date',
+            'driving_license_expiry_date' => 'required|date|after:driving_license_issue_date',
+            'license_class' => 'required|in:A,B,C,D,E,F',
 
-        'bank_name' => 'nullable|string|max:255',
-        'bank_account_number' => 'nullable|string|max:50',
-        'bank_account_name' => 'nullable|string|max:255',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string',
+            'emergency_contact_relationship' => 'nullable|string|max:100',
 
-        'is_available' => 'boolean',
+            'bank_name' => 'nullable|string|max:255',
+            'bank_account_number' => 'nullable|string|max:50',
+            'bank_account_name' => 'nullable|string|max:255',
 
-        'notes' => 'nullable|string',
+            'is_available' => 'boolean',
 
-        'password' => $driverId ? 'nullable|string|min:8|confirmed' : 'required|string|min:8|confirmed',
-    ];
-}
+            'notes' => 'nullable|string',
+
+            'password' => $driverId ? 'nullable|string|min:8|confirmed' : 'required|string|min:8|confirmed',
+            'role_id' => 'required|exists:roles,id',
+
+        ];
+    }
 
     public function mount($id)
     {
-
+        $this->roles = Role::where('user_id', Auth::guard('partner')->user()->id)->get();
         $this->driver = Driver::findOrFail($id);
-
         $this->first_name = $this->driver->first_name;
         $this->second_name = $this->driver->second_name;
         $this->last_name = $this->driver->last_name;
@@ -159,6 +157,12 @@ protected function rules()
                 'status' => 'active',
             ]);
 
+            if ($this->role_id) {
+                $this->role = Role::findOrFail($this->role_id);
+                $user->assignRole($this->role->name);
+            }
+
+
             // Create driver
             $this->driver->update([
                 'user_id' => $user->id,
@@ -184,14 +188,6 @@ protected function rules()
                 'notes' => $this->notes,
             ]);
 
-            // $employment = DriverEmployment::create([
-            //     'driver_id' => $driver->id,
-            //     'partner_id' => Auth::guard('partner')->user()->currentPartner()->id,
-            //     'from' => now(),
-            //     'to' => null,
-            //     'status' => 'active',
-            // ]);
-
             DB::commit();
 
             session()->flash('success', 'Driver created successfully!');
@@ -214,7 +210,7 @@ protected function rules()
     }
     public function render()
     {
-        return view('livewire.partners.drivers.edit-driver',[
+        return view('livewire.partners.drivers.edit-driver', [
             'licenseClasses' => [
                 'A' => 'A - Motorcycle',
                 'B' => 'B - Light Vehicle',
@@ -257,7 +253,7 @@ protected function rules()
         ]);
     }
 
-        public function validateIdNumber()
+    public function validateIdNumber()
     {
         if ($this->id_number && $this->nationality === 'Kenyan') {
             $id = $this->id_number;

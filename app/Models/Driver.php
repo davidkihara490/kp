@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Driver extends Model
@@ -60,11 +62,20 @@ class Driver extends Model
         return $query->where('is_available', true);
     }
 
-    public function fleets(){
+
+    public function parcels(): MorphMany
+    {
+        return $this->morphMany(Parcel::class, 'transporter');
+    }
+
+
+    public function fleets()
+    {
         return $this->hasMany(DriverFleetAssignment::class, 'driver_id');
     }
 
-    public function currentFleet(){
+    public function currentFleet()
+    {
         return $this->fleets()->where('status', 'active')->whereNull('to')->latest()->first();
     }
 
@@ -150,5 +161,3 @@ class Driver extends Model
         return $expiryDate->greaterThan($now) && $expiryDate->lessThanOrEqualTo($now->copy()->addDays(30));
     }
 }
-
-

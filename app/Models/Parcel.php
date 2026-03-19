@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -80,6 +81,11 @@ class Parcel extends Model
         'payout',
         'transport_partner_id',
         'driver_id',
+
+        'transporter_id',
+        'transporter_type',
+        'creator_id',
+        'creator_type',
 
     ];
 
@@ -179,6 +185,7 @@ class Parcel extends Model
         return $prefix . $date . $random;
     }
 
+
     // ==================== RELATIONSHIPS ====================
 
     /**
@@ -194,11 +201,13 @@ class Parcel extends Model
         return $this->belongsTo(Partner::class, 'transport_partner_id');
     }
 
-    public function parcelPickUp(){
+    public function parcelPickUp()
+    {
         return $this->hasOne(ParcelPickUp::class, 'parcel_id');
     }
 
-    public function parcelHandlingAssistant(){
+    public function parcelHandlingAssistant()
+    {
         return $this->belongsTo(ParcelHandlingAssistant::class, 'pha_id');
     }
 
@@ -252,6 +261,16 @@ class Parcel extends Model
     public function driver()
     {
         return $this->belongsTo(Driver::class, 'driver_id');
+    }
+
+    public function transporter(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    public function creator(): MorphTo
+    {
+        return $this->morphTo();
     }
 
     /**

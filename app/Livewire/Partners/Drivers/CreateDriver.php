@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
+use Spatie\Permission\Models\Role;
 
 class CreateDriver extends Component
 {
@@ -35,6 +36,9 @@ class CreateDriver extends Component
     public $notes;
     public $password = '';
     public $password_confirmation = '';
+    public $roles = [];
+    public $role_id;
+    public $role;
 
     protected $rules = [
         'first_name' => 'required|string|max:255',
@@ -65,6 +69,7 @@ class CreateDriver extends Component
         'notes' => 'nullable|string',
 
         'password' => 'required|string|min:8|confirmed',
+        'role_id' => 'required|exists:roles,id',
     ];
 
     protected $messages = [
@@ -73,9 +78,12 @@ class CreateDriver extends Component
         'phone_number.unique' => 'This phone number is already registered.',
         'email.unique' => 'This email address is already registered.',
         'driving_license_number.unique' => 'This driving license number is already registered.',
+        'role_id.required' => 'Role is required',
+        'role_id.exists' => 'The role was not found',
     ];
     public function mount()
     {
+        $this->roles = Role::where('user_id', Auth::guard('partner')->user()->id)->get();
         $this->generatePassword();
         $this->setDefaultDates();
     }
@@ -115,6 +123,11 @@ class CreateDriver extends Component
                 'status' => 'active',
             ]);
 
+            if ($this->role_id) {
+                $this->role = Role::findOrFail($this->role_id);
+                $user->assignRole($this->role->name);
+            }
+
             // Create driver
             $driver = Driver::create([
                 'user_id' => $user->id,
@@ -140,14 +153,6 @@ class CreateDriver extends Component
                 'is_available' => $this->is_available,
                 'notes' => $this->notes,
             ]);
-
-            // $employment = DriverEmployment::create([
-            //     'driver_id' => $driver->id,
-            //     'partner_id' => Auth::guard('partner')->user()->currentPartner()->id,
-            //     'from' => now(),
-            //     'to' => null,
-            //     'status' => 'active',
-            // ]);
 
             // TODO::Handle documents
 

@@ -15,11 +15,11 @@
     $partnerType = Auth::guard('partner')->user()->partner?->partner_type ?? Auth::guard('partner')->user()->driver?->partner ?? Auth::guard('partner')->user()->parcelHandlingAssistant?->partner;
 
     $dashboardRoute = match($partnerType) {
-        'pick_up_and_drop_off' => 'partners.pd.dashboard',
-        'transport' => 'partners.transport.dashboard',
-        'driver' => 'partners.driver.dashboard',
-        'pha' => 'partners.pha.dashboard',
-        default => 'partners.login'
+    'pick_up_and_drop_off' => 'partners.pd.dashboard',
+    'transport' => 'partners.transport.dashboard',
+    'driver' => 'partners.driver.dashboard',
+    'pha' => 'partners.pha.dashboard',
+    default => 'partners.login'
     };
     @endphp
 
@@ -41,7 +41,6 @@
                 <i class="bi bi-inbox"></i>
                 <span>Incoming Parcels</span>
             </a>
-
             @endif
 
             <a href="#" class="nav-link">
@@ -102,6 +101,10 @@
                 <span>Partner Profile</span>
             </a>
             @endif
+            <a href="{{ route('partners.roles-and-permissions.index') }}" class="nav-link">
+                <i class="bi bi-lock"></i>
+                <span>Roles And Permissions</span>
+            </a>
             <a href="#" class="nav-link">
                 <i class="bi bi-shield-check"></i>
                 <span>Security</span>

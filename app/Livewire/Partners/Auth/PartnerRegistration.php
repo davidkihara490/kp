@@ -8,8 +8,6 @@ use App\Models\Town;
 use App\Models\County;
 use App\Models\Partner;
 use App\Models\PartnerFinanceAccount;
-use App\Models\PartnerInCharge;
-use App\Models\PartnerOwner;
 use App\Models\PartnerTown;
 use App\Models\User;
 use Livewire\Component;
@@ -17,13 +15,14 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class PartnerRegistration extends Component
 {
     use WithFileUploads;
     public $step = 1;
     public $partnerType;
-
     // Common Fields
     public $owner_first_name;
     public $owner_second_name;
@@ -32,25 +31,18 @@ class PartnerRegistration extends Component
     public $owner_phone_number;
     public $terms_and_conditions = false;
     public $privacy_policy = false;
-
     // Company Details
     public $company_name;
     public $registration_number;
     public $registration_certificate;
     public $kra_pin;
     public $pin_certificate;
-    public $responsible_officer_first_name;
-    public $responsible_officer_last_name;
-    public $responsible_officer_phone;
-    public $responsible_officer_email;
-
     // Finance Details
     public $bank_account_number;
     public $bank_account_name;
     public $bank_name;
     public $bank_branch;
     public $finance_email;
-
     // Transport Partner Specific
     public $vehicle_count = 1;
     public $vehicle_ownership = 'owned';
@@ -61,13 +53,11 @@ class PartnerRegistration extends Component
     public $driver_count = 1;
     public $drivers_compliant = false;
     public $drivers_certificate;
-
     public $has_motorcycles = false;
     public $has_vans = false;
     public $has_trucks = false;
     public $has_refrigerated = false;
     public $other_vehicle_types = '';
-
     public $has_computer = false;
     public $has_internet = false;
     public $booking_emails = [];
@@ -75,14 +65,12 @@ class PartnerRegistration extends Component
     public $has_dedicated_allocator = false;
     public $allocator_name = '';
     public $allocator_phone = '';
-
     public $maximum_daily_capacity = 50;
     public $maximum_distance = 100;
     public $operating_radius = 50;
     public $can_handle_fragile = false;
     public $can_handle_perishable = false;
     public $can_handle_valuables = false;
-
     // Station Partner Specific
     public $points_count = 1;
     public $points_have_phone = false;
@@ -91,81 +79,76 @@ class PartnerRegistration extends Component
     public $officers_knowledgeable = false;
     public $points_compliant = false;
     public $station_compliance_certificate;
-
     public $operating_hours = '8:00 AM - 6:00 PM';
     public $maximum_capacity_per_day = 100;
     public $storage_facility_type = 'standard';
     public $security_measures = '';
     public $insurance_coverage = '';
-
     // Service Areas
     public $selectedCounties = [];
     public $selectedSubcounties = [];
     public $selectedTowns = [];
     public $availableTowns = [];
     public $serviceTowns = [];
-
     // Additional
     public $additional_notes = '';
-
     // System
     public $submissionSuccess = false;
     public $partnerId = null;
-
     public $banks = [];
+    public $assistant_count = 0;
 
-    protected $rules = [
-        // Step 1: Partner Type
-        'partnerType' => 'required|in:transport,pickup-dropoff',
+    protected function rules()
+    {
+        $rules = [
+            // Step 1: Partner Type
+            'partnerType' => 'required|in:transport,pickup-dropoff',
 
-        // Step 2: Personal Information
-        'owner_first_name' => 'required|min:2|max:50',
-        'owner_second_name' => 'nullable|min:2|max:50',
-        'owner_last_name' => 'required|min:2|max:50',
-        'owner_email' => 'required|email|unique:users,email',
-        'owner_phone_number' => ['required', 'regex:/^(\+254|0)[1-9]\d{8}$/'], // Fixed regex
-        'terms_and_conditions' => 'accepted',
-        'privacy_policy' => 'accepted',
+            // Step 2: Personal Information
+            'owner_first_name' => 'required|min:2|max:50',
+            'owner_second_name' => 'nullable|min:2|max:50',
+            'owner_last_name' => 'required|min:2|max:50',
+            'owner_email' => 'required|email|unique:users,email',
+            'owner_phone_number' => ['required', 'regex:/^(\+254|0)[1-9]\d{8}$/'], // Fixed regex
+            'terms_and_conditions' => 'accepted',
+            'privacy_policy' => 'accepted',
 
-        // Step 3: Company Details
-        'company_name' => 'required|min:3|max:200',
-        'registration_number' => 'required|min:3|max:50',
-        'registration_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-        'kra_pin' => ['required', 'min:11', 'max:11', 'regex:/^[A-Z]\d{9}[A-Z]$/'], // Fixed regex
-        'pin_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-        'responsible_officer_first_name' => 'required|min:3|max:100',
-        'responsible_officer_last_name' => 'required|min:3|max:100',
+            // Step 3: Company Details
+            'company_name' => 'required|min:3|max:200',
+            'registration_number' => 'required|min:3|max:50',
+            'registration_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'kra_pin' => ['required', 'min:11', 'max:11', 'regex:/^[A-Z]\d{9}[A-Z]$/'], // Fixed regex
+            'pin_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
 
-        'responsible_officer_phone' => ['required', 'regex:/^(\+254|0)[1-9]\d{8}$/'], // Fixed regex
-        'responsible_officer_email' => 'nullable|email',
+            // Step 4: Finance Details
+            'bank_account_number' => 'required|numeric|digits_between:10,20',
+            'bank_account_name' => 'required|min:3|max:100',
+            'bank_name' => 'required|min:3|max:100',
+            'bank_branch' => 'required|min:3|max:100',
+            'finance_email' => 'nullable|email',
 
-        // Step 4: Finance Details
-        'bank_account_number' => 'required|numeric|digits_between:10,20',
-        'bank_account_name' => 'required|min:3|max:100',
-        'bank_name' => 'required|min:3|max:100',
-        'bank_branch' => 'required|min:3|max:100',
-        'finance_email' => 'nullable|email',
+            // Transport Specific Rules
+            'vehicle_count' => 'nullable|integer|min:1|max:1000',
+            'vehicle_ownership' => 'nullable|in:owned,subcontracted,both',
+            'vehicles_insured' => 'nullable|boolean',
+            'insurance_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'vehicles_compliant' => 'nullable|boolean',
+            'compliance_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'driver_count' => 'nullable|integer|min:1|max:100',
+            'drivers_compliant' => 'nullable|boolean',
+            'drivers_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
 
-        // Transport Specific Rules
-        'vehicle_count' => 'nullable|integer|min:1|max:1000',
-        'vehicle_ownership' => 'nullable|in:owned,subcontracted,both',
-        'vehicles_insured' => 'nullable|boolean',
-        'insurance_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-        'vehicles_compliant' => 'nullable|boolean',
-        'compliance_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-        'driver_count' => 'nullable|integer|min:1|max:100',
-        'drivers_compliant' => 'nullable|boolean',
-        'drivers_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-
-        // Station Specific Rules
-        'points_count' => 'nullable|integer|min:1|max:100',
-        'points_have_phone' => 'nullable|boolean',
-        'points_have_computer' => 'nullable|boolean',
-        'points_have_internet' => 'nullable|boolean',
-        'officers_knowledgeable' => 'nullable|boolean',
-        'points_compliant' => 'nullable|boolean',
-        // 'station_compliance_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-    ];
+            // Station Specific Rules
+            'points_count' => 'nullable|integer|min:1|max:100',
+            'points_have_phone' => 'nullable|boolean',
+            'points_have_computer' => 'nullable|boolean',
+            'points_have_internet' => 'nullable|boolean',
+            'officers_knowledgeable' => 'nullable|boolean',
+            'points_compliant' => 'nullable|boolean',
+            // 'station_compliance_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        ];
+        return $rules;
+    }
     protected $messages = [
         'phone_number.regex' => 'Please enter a valid Kenyan phone number (e.g., 0712345678 or +254712345678)',
         'kra_pin.regex' => 'Please enter a valid KRA PIN (format: A123456789Z)',
@@ -207,6 +190,36 @@ class PartnerRegistration extends Component
             })
             ->toArray();
     }
+    public function updateDriverCountBasedOnVehicle()
+    {
+        if ($this->i_am_driver) {
+            $this->driver_count = min($this->vehicle_count ?? 1, 1);
+        }
+    }
+
+    // Add listeners for checkbox changes
+    protected function getListeners()
+    {
+        return array_merge(parent::getListeners(), [
+            'updatedIDriver' => 'handleDriverCheckbox',
+            'updatedIAssistant' => 'handleAssistantCheckbox',
+        ]);
+    }
+
+    public function handleDriverCheckbox()
+    {
+        if ($this->i_am_driver) {
+            $this->driver_count = 1;
+        }
+    }
+
+    public function handleAssistantCheckbox()
+    {
+        if ($this->i_am_assistant) {
+            $this->assistant_count = 0;
+        }
+    }
+
 
     public function render()
     {
@@ -304,13 +317,6 @@ class PartnerRegistration extends Component
                     'registration_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
                     'kra_pin' => ['required', 'min:11', 'max:11', 'regex:/^[A-Z]\d{9}[A-Z]$/'], // Fixed
                     'pin_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-                    'responsible_officer_first_name' => 'required|min:3|max:100',
-                    'responsible_officer_last_name' => 'required|min:3|max:100',
-
-                    // 'responsible_officer_phone' => ['required', 'regex:/^(\+254|0)[1-9]\d{8}$/'], // Fixed
-                    'responsible_officer_phone' => 'required', // Fixed
-
-                    'responsible_officer_email' => 'nullable|email',
                 ];
 
                 $this->validate($rules);
@@ -415,10 +421,6 @@ class PartnerRegistration extends Component
                 'company_name' => $this->company_name,
                 'registration_number' => $this->registration_number,
                 'kra_pin' => $this->kra_pin,
-                'responsible_officer_first_name' => $this->responsible_officer_first_name,
-                'responsible_officer_last_name' => $this->responsible_officer_last_name,
-                'responsible_officer_phone' => $this->responsible_officer_phone,
-                'responsible_officer_email' => $this->responsible_officer_email,
                 'registration_certificate' => $this->registration_certificate,
                 'pin_certificate' => $this->pin_certificate,
 
@@ -484,13 +486,11 @@ class PartnerRegistration extends Component
             ];
 
             $ownerPassword = generate_random_string(12);
-            $inChargePassword = generate_random_string(12);
-
             $owner = User::create([
                 'first_name'  => $data['owner_first_name'],
                 'second_name' => $data['owner_second_name'],
                 'last_name' => $data['owner_last_name'],
-                'user_name' => explode('@', $data['owner_email'])[0],
+                'user_name' => $data['owner_email'] ? explode('@', $data['owner_email'])[0] : NULL,
                 'user_type' => $data['partner_type'],
                 'email' => $data['owner_email'],
                 'phone_number' => $data['owner_phone_number'],
@@ -500,44 +500,14 @@ class PartnerRegistration extends Component
                 'status' => 'active',
             ]);
 
-            $inCharge = User::create([
-                'first_name'  => $data['responsible_officer_first_name'],
-                'last_name' => $data['responsible_officer_last_name'],
-                'user_name' => explode('@', $data['responsible_officer_email'])[0],
-                'user_type' => 'in-charge',
-                'email' => $data['responsible_officer_email'],
-                'phone_number' => $data['responsible_officer_phone'],
-                'password' => Hash::make($inChargePassword),
-                'terms_and_conditions' => $data['terms_and_conditions'],
-                'privacy_policy' => $data['privacy_policy'],
-                'status' => 'active',
-
-            ]);
 
             $data['owner_id'] = $owner->id;
-            $data['incharge_id'] = $inCharge->id;
 
 
             $partner = Partner::create($data);
             Log::info('Created Partner' . $partner);
             Log::info('Created Owner' . $owner);
-            Log::info('Created In Charge' . $inCharge);
 
-            
-            // $partnerOwner = PartnerOwner::create([
-            //     'partner_id' => $partner->id,
-            //     'user_id' => $owner->id,
-            //     'from' => null,
-            //     'to' => null,
-            //     'status' => 'active',
-            // ]);
-            // $partnerInCharge = PartnerInCharge::create([
-            //     'partner_id' => $partner->id,
-            //     'user_id' => $inCharge->id,
-            //     'from' => null,
-            //     'to' => null,
-            //     'status' => 'active',
-            // ]);
             $partnerFinanceAccount = PartnerFinanceAccount::create([
                 'partner_id' => $partner->id,
                 'bank_account_number' => $this->bank_account_number ?? null,
@@ -557,11 +527,18 @@ class PartnerRegistration extends Component
                 }
             }
 
+
+            $partnerAdmin = $this->createRole($owner->id, $this->company_name . '-admin');
+            Permission::all()->each(fn(Permission $permission): Permission => $permission->assignRole($partnerAdmin));
+            $owner->assignRole($partnerAdmin->name);
+
+
             SendWelcomeEmail::dispatch($owner,  true, $ownerPassword);
-            SendWelcomeEmail::dispatch($inCharge, true, $inChargePassword);
 
 
-            // TODO: Send email notification to Admin, Owner, Incharge
+
+
+            // TODO: Send email notification to Admin, Owner
 
             // TODO: Send confirmation email to partner
             // TODO  Send sms notification to partner
@@ -628,5 +605,15 @@ class PartnerRegistration extends Component
         } else {
             $this->serviceTowns = collect();
         }
+    }
+
+    public function createRole(int $userId, string $name): Role
+    {
+        return Role::query()->updateOrCreate(
+            [
+                'user_id' => $userId,
+                'name' => $name
+            ]
+        );
     }
 }

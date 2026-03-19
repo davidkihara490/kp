@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Partners\Auth;
 
+use App\Models\Partner;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -15,6 +16,8 @@ class PartnerLogin extends Component
     public bool $remember = false;
     public bool $showPassword = false;
     public string $errorMessage = '';
+
+    public Partner $partner;
 
     protected $rules = [
         'identifier' => 'required|min:3',
@@ -35,7 +38,7 @@ class PartnerLogin extends Component
 
             $credentials = $this->buildCredentials();
 
-            if (! Auth::guard('partner')->attempt($credentials, )) {
+            if (! Auth::guard('partner')->attempt($credentials,)) {
                 throw ValidationException::withMessages([
                     'identifier' => 'Invalid credentials.',
                 ]);
@@ -43,7 +46,21 @@ class PartnerLogin extends Component
 
             $user = Auth::guard('partner')->user();
 
-            dd($user);
+            if ($user->user_type == 'pha') {
+                $this->partner = $user->parcelHandlingAssistant->partner;
+            } elseif ($user->user_type == 'driver') {
+                $this->partner = $user->driver->partner;
+            } else {
+                $this->partner = $user->partner;
+            }
+
+            if ($this->partner->verification_status != 'verified') {
+                Auth::guard('partner')->logout();
+
+                throw ValidationException::withMessages([
+                    'identifier' => 'Your account has been deactivated. Please contact support.',
+                ]);
+            }
 
             if ($user->status != 'active') {
                 Auth::guard('partner')->logout();

@@ -12,7 +12,7 @@
                         <p class="page-subtitle mb-0">Manage and track all parcels in one place</p>
                     </div>
 
-                    @if($partnerType == "pickup-dropoff")
+                    @if($partnerType == "pickup-dropoff" || $loggedUser->i_am_responsible && $loggedUser->i_am_assistant )
                     <div class="header-actions">
                         <a href="{{ route('partners.parcels.create') }}" class="btn btn-primary btn-modern">
                             <i class="bi bi-plus-circle me-2"></i>

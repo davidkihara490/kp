@@ -46,10 +46,18 @@ return [
         'api_key' => env('MOBITECH_API_KEY'),
         'sender_name' => env('MOBITECH_SENDER', 'FULL_CIRCLE'),
         'api_url' => env('MOBITECH_API_URL', 'https://app.mobitechtechnologies.com/sms/sendsms'),
+        'access_key' => env('ONFONMEDIA_ACCESS_KEY'),
     ],
+
+    'onfonmedia' => [
+        'api_key' => env('ONFONMEDIA_API_KEY'),
+        'sender_name' => env('ONFONMEDIA_CLIENT_ID'),
+        'api_url' => env('ONFONMEDIA_API_URL'),
+    ],
+
     'whatsapp' => [
-    'phone' => env('WHATSAPP_PHONE', '254700130759'),
-    'message' => env('WHATSAPP_MESSAGE', 'Hello, I need more information about your services.'),
-],
+        'phone' => env('WHATSAPP_PHONE', '254700130759'),
+        'message' => env('WHATSAPP_MESSAGE', 'Hello, I need more information about your services.'),
+    ],
 
 ];

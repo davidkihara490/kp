@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Spatie\Permission\Models\Role;
 
 class EditParcelHandlingAssistant extends Component
 {
@@ -23,81 +24,90 @@ class EditParcelHandlingAssistant extends Component
     public $last_name = '';
     public $phone_number = '';
     public $email = '';
-    public $role = 'assistant';
     public $id_number = '';
     public $status = 'active';
     public $originalStatus = 'active';
-    
+
     // User account fields
     public $create_user_account = false;
     public $new_password = '';
     public $confirm_password = '';
     public $send_welcome_email = false;
     public $send_password_email = false;
-    
+
     // Station assignment
     public $showAssignStationModal = false;
     public $selectedStation = '';
     public $stations = [];
 
-    // protected $rules = [
-    //     'first_name' => 'required|string|min:2|max:50',
-    //     'second_name' => 'nullable|string|min:2|max:50',
-    //     'last_name' => 'required|string|min:2|max:50',
-    //     'phone_number' => [
-    //         'required',
-    //         'string',
-    //         'min:10',
-    //         'max:15',
-    //         Rule::unique('parcel_handling_assistants', 'phone_number')->ignore(null, 'id'),
-    //         Rule::unique('users', 'phone_number')->whereNull('deleted_at')->ignore(null, 'id'),
-    //     ],
-    //     'email' => [
-    //         'required',
-    //         'email',
-    //         Rule::unique('parcel_handling_assistants', 'email')->ignore(null, 'id'),
-    //         Rule::unique('users', 'email')->whereNull('deleted_at')->ignore(null, 'id'),
-    //     ],
-    //     'role' => 'required|in:assistant,supervisor,manager',
-    //     'id_number' => [
-    //         'required',
-    //         'string',
-    //         'min:5',
-    //         'max:20',
-    //         Rule::unique('parcel_handling_assistants', 'id_number')->ignore(null, 'id'),
-    //     ],
-    //     'status' => 'required|in:active,inactive,suspended,pending',
-    //     'create_user_account' => 'boolean',
-    //     'send_welcome_email' => 'boolean',
-    //     'send_password_email' => 'boolean',
-    //     'new_password' => 'nullable|min:8',
-    //     'confirm_password' => 'nullable|same:new_password',
-    //     'selectedStation' => 'nullable|exists:station_partners,id',
-    // ];
+    public $role_id;
+    public $roles = [];
+    public $role;
 
-    // protected $messages = [
-    //     'first_name.required' => 'First name is required.',
-    //     'last_name.required' => 'Last name is required.',
-    //     'phone_number.required' => 'Phone number is required.',
-    //     'phone_number.unique' => 'This phone number is already registered.',
-    //     'email.required' => 'Email address is required.',
-    //     'email.unique' => 'This email address is already registered.',
-    //     'id_number.required' => 'ID number is required.',
-    //     'id_number.unique' => 'This ID number is already registered.',
-    //     'confirm_password.same' => 'Passwords do not match.',
-    // ];
+public function rules()
+{
+    return [
+        'first_name' => 'required|string|min:2|max:50',
+        'second_name' => 'nullable|string|min:2|max:50',
+        'last_name' => 'required|string|min:2|max:50',
+        'phone_number' => [
+            'required',
+            'string',
+            'min:10',
+            'max:15',
+            Rule::unique('parcel_handling_assistants', 'phone_number')->ignore($this->assistant->id ?? null),
+            Rule::unique('users', 'phone_number')->whereNull('deleted_at')->ignore($this->assistant->user->id ?? null),
+        ],
+        'email' => [
+            'required',
+            'email',
+            Rule::unique('parcel_handling_assistants', 'email')->ignore($this->assistant->id ?? null),
+            Rule::unique('users', 'email')->whereNull('deleted_at')->ignore($this->assistant->user->id ?? null),
+        ],
+        'id_number' => [
+            'required',
+            'string',
+            'min:5',
+            'max:20',
+            Rule::unique('parcel_handling_assistants', 'id_number')->ignore($this->assistant->id ?? null),
+        ],
+        'status' => 'required|in:active,inactive,suspended,pending',
+        'create_user_account' => 'boolean',
+        'send_welcome_email' => 'boolean',
+        'send_password_email' => 'boolean',
+        'new_password' => 'nullable|min:8',
+        'confirm_password' => 'nullable|same:new_password',
+        'selectedStation' => 'nullable|exists:station_partners,id',
+        'role_id' => 'required|exists:roles,id',
+    ];
+}
+
+    protected $messages = [
+        'first_name.required' => 'First name is required.',
+        'last_name.required' => 'Last name is required.',
+        'phone_number.required' => 'Phone number is required.',
+        'phone_number.unique' => 'This phone number is already registered.',
+        'email.required' => 'Email address is required.',
+        'email.unique' => 'This email address is already registered.',
+        'id_number.required' => 'ID number is required.',
+        'id_number.unique' => 'This ID number is already registered.',
+        'confirm_password.same' => 'Passwords do not match.',
+        'role_id.exists' => 'This role does not exist.',
+        'role_id.required' => 'Role is required.',
+    ];
 
     public function mount($id)
     {
         $this->assistant_id = $id;
         $this->loadAssistant();
         $this->loadStations();
+        $this->roles = Role::where('user_id', Auth::guard('partner')->user()->id)->get();
     }
 
     public function loadAssistant()
     {
         $this->assistant = ParcelHandlingAssistant::findOrFail($this->assistant_id);
-        
+
         // Populate form fields
         $this->first_name = $this->assistant->first_name;
         $this->second_name = $this->assistant->second_name;
@@ -108,7 +118,7 @@ class EditParcelHandlingAssistant extends Component
         $this->id_number = $this->assistant->id_number;
         $this->status = $this->assistant->status;
         $this->originalStatus = $this->assistant->status;
-        
+        $this->role_id = $this->assistant->user->roles->first()?->id;
         // Update validation rules with actual ID
         // $this->rules['phone_number'] = [
         //     'required',
@@ -118,14 +128,14 @@ class EditParcelHandlingAssistant extends Component
         //     Rule::unique('parcel_handling_assistants', 'phone_number')->ignore($this->assistant->id),
         //     Rule::unique('users', 'phone_number')->whereNull('deleted_at')->ignore($this->assistant->user_id),
         // ];
-        
+
         // $this->rules['email'] = [
         //     'required',
         //     'email',
         //     Rule::unique('parcel_handling_assistants', 'email')->ignore($this->assistant->id),
         //     Rule::unique('users', 'email')->whereNull('deleted_at')->ignore($this->assistant->user_id),
         // ];
-        
+
         // $this->rules['id_number'] = [
         //     'required',
         //     'string',
@@ -163,13 +173,13 @@ class EditParcelHandlingAssistant extends Component
     public function assignStation()
     {
         $this->validate(['selectedStation' => 'required|exists:station_partners,id']);
-        
+
         try {
             // Check if already employed at this station
             $existingEmployment = $this->assistant->employments()
                 ->where('station_partner_id', $this->selectedStation)
                 ->first();
-            
+
             if ($existingEmployment) {
                 // Update existing employment to active
                 $existingEmployment->update(['status' => 'active']);
@@ -183,11 +193,11 @@ class EditParcelHandlingAssistant extends Component
                 ]);
                 $message = "Assistant assigned to station successfully.";
             }
-            
+
             // Reload assistant data
             $this->loadAssistant();
             $this->showAssignStationModal = false;
-            
+
             session()->flash('success', $message);
         } catch (\Exception $e) {
             session()->flash('error', 'Failed to assign station: ' . $e->getMessage());
@@ -237,10 +247,13 @@ class EditParcelHandlingAssistant extends Component
     public function update()
     {
         $validated = $this->validate();
-        
+
         try {
             DB::beginTransaction();
-            
+
+            $this->role = Role::findOrFail($this->role_id);
+
+
             // Update assistant
             $this->assistant->update([
                 'first_name' => $this->first_name,
@@ -248,11 +261,13 @@ class EditParcelHandlingAssistant extends Component
                 'last_name' => $this->last_name,
                 'phone_number' => $this->phone_number,
                 'email' => $this->email,
-                'role' => $this->role,
+                'role' => $this->role->name,
                 'id_number' => $this->id_number,
                 'status' => $this->status,
             ]);
-            
+
+
+
             // Handle user account
             if ($this->assistant->user) {
                 // Update existing user
@@ -264,18 +279,8 @@ class EditParcelHandlingAssistant extends Component
                     'phone_number' => $this->phone_number,
                     'status' => $this->status,
                 ]);
-                
-                // Update password if provided
-                if ($this->new_password) {
-                    $this->assistant->user->update([
-                        'password' => Hash::make($this->new_password)
-                    ]);
-                    
-                    // Send password reset email if requested
-                    if ($this->send_password_email) {
-                        // \Mail::to($this->assistant->user->email)->send(new PasswordResetEmail($this->assistant->user, $this->new_password));
-                    }
-                }
+
+                $this->assistant->user->assignRole($this->role->name);
             } elseif ($this->create_user_account && $this->new_password) {
                 // Create new user account
                 $user = User::create([
@@ -289,29 +294,20 @@ class EditParcelHandlingAssistant extends Component
                     'status' => $this->status,
                     'login_attempts' => 0,
                 ]);
-                
-                // Assign role to user
-                // $user->assignRole('parcel-handling-assistant');
-                
-                // Link user to assistant
+                $user->assignRole($this->role->name);
+
                 $this->assistant->update(['user_id' => $user->id]);
-                
-                // Send welcome email if requested
-                if ($this->send_welcome_email) {
-                    // \Mail::to($user->email)->send(new WelcomeEmail($user, $this->new_password));
-                }
             }
-            
+
             DB::commit();
-            
+
             // Reload assistant data
             $this->loadAssistant();
-            
+
             session()->flash('success', 'Assistant updated successfully!');
-            
+
             // Dispatch event to refresh parent component
             $this->dispatch('assistantUpdated', $this->assistant->id);
-            
         } catch (\Exception $e) {
             DB::rollBack();
             session()->flash('error', 'Failed to update assistant: ' . $e->getMessage());
