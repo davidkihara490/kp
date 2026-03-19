@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,6 +19,7 @@
     <link rel="stylesheet" href="{{ asset('frontend/f2.css') }}">
     <script src="https://cdn.tiny.cloud/1/3culyhhybbcchz5f5d6o066dedtcc2ugjb92n22l8ocyw9rv/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
@@ -502,7 +504,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        @endforeach
+                                        @endforeach`
                                     </div>
                                 </div>
                             </div>
@@ -515,20 +517,20 @@
         </div>
     </section>
 
-    <!-- Blog Section - Pure Blade, No JavaScript -->
+    <!-- Blog Section - Smaller Width -->
     <section id="blogs" class="blog-section">
-        <div class="container-fluid px-4 px-lg-5">
+        <div class="container">
             <div class="section-title">
                 <h2>Latest from Our Blog</h2>
                 <p class="text-muted">Stay updated with courier tips, news, and announcements</p>
             </div>
 
             @if($blogPosts && $blogPosts->count() > 0)
-            <div class="row g-4">
+            <div class="row g-4 justify-content-center">
                 @foreach($blogPosts as $post)
                 <div class="col-xl-3 col-lg-4 col-md-6">
                     <div class="blog-card h-100">
-                        <a href="#" class="text-decoration-none">
+                        <a href="{{ route('blog.show', $post->slug ?? $post->id) }}" class="text-decoration-none">
                             @if($post->featured_image)
                             <div class="blog-image" style="background-image: url('{{ asset('logo.jpeg') }}'); background-size: cover; background-position: center;">
                             </div>
@@ -558,13 +560,17 @@
                 @endforeach
             </div>
 
-            @if($blogPosts->count() >= 8)
-            <div class="text-center mt-5">
-                <a href="#" class="btn btn-outline-primary btn-lg">
-                    <i class="bi bi-arrow-right me-2"></i> View All Posts
+            <!-- View More Button Section -->
+            <div class="text-center mt-5 pt-3">
+                <a href="{{ route('blogs.index') }}" class="btn btn-outline-primary btn-lg px-5 py-3 rounded-pill">
+                    <i class="bi bi-journal-text me-2"></i> View All Blog Posts
+                    <i class="bi bi-arrow-right ms-2"></i>
                 </a>
+                <p class="text-muted mt-3 small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Explore more articles and updates
+                </p>
             </div>
-            @endif
             @else
             <div class="text-center py-5">
                 <i class="bi bi-newspaper" style="font-size: 4rem; color: #dee2e6;"></i>
