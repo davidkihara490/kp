@@ -15,6 +15,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+
+            CountySeeder::class,
+            SubCountySeeder::class,
+            TownSeeder::class,
+
             UserSeeder::class,
             RolesAndPermissionSeeder::class,
             PartnerSeeder::class,
@@ -23,12 +28,9 @@ class DatabaseSeeder extends Seeder
             FleetSeeder::class,
             PickUpAndDropOffPointSeeder::class,
             FleetSeeder::class,
-            DriverFleetAssignmentSeeder::class,
-            ParcelHandlingAssistantPickUpAndDropOffPointAssignmentSeeder::class,
+
             BankSeeder::class,
-            CountySeeder::class,
-            SubCountySeeder::class,
-            TownSeeder::class,
+
             ZoneSeeder::class,
             CategorySeeder::class,
             SubCategorySeeder::class,
@@ -42,8 +44,12 @@ class DatabaseSeeder extends Seeder
             BlogPostSeeder::class,
             TermsAndConditionSeeder::class,
             PrivacyPolicySeeder::class,
-            ParcelSeeder::class,
-            PaymentSeeder::class
+            // ParcelSeeder::class,
+            // PaymentSeeder::class,
+
+            // DriverFleetAssignmentSeeder::class,
+            // ParcelHandlingAssistantPickUpAndDropOffPointAssignmentSeeder::class,
+
         ]);
     }
 }
