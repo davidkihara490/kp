@@ -14,7 +14,7 @@ class AdminLogin extends Component
     public function mount()
     {
         $this->email = 'karibuparcels@gmail.com';
-        $this->password = 'test1234KP';
+        $this->password = 'admin123KP';
     }
 
     public function rules()

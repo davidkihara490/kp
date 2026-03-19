@@ -31,7 +31,7 @@
                                             id="name" wire:model="name"
                                             placeholder="Enter tag name (e.g., Laravel, Web Development)">
                                         @error('name')
-                                            <span class="invalid-feedback">{{ $message }}</span>
+                                        <span class="invalid-feedback">{{ $message }}</span>
                                         @enderror
                                         <small class="form-text text-muted">
                                             Choose a descriptive name that represents your content
@@ -52,7 +52,7 @@
                                             </div>
                                         </div>
                                         @error('slug')
-                                            <span class="invalid-feedback">{{ $message }}</span>
+                                        <span class="invalid-feedback">{{ $message }}</span>
                                         @enderror
                                         <small class="form-text text-muted">
                                             This will be used in the URL:
@@ -60,12 +60,12 @@
                                         </small>
                                     </div>
 
-                                    <div class="form-group">
+                                    <div class="form-group" wire:ignore>
                                         <label for="description">Description</label>
-                                        <textarea class="form-control @error('description') is-invalid @enderror" id="description" wire:model="description"
+                                        <textarea class="form-control tinymce @error('description') is-invalid @enderror" id="description" data-model="description"
                                             rows="4" placeholder="Brief description of what this tag represents"></textarea>
                                         @error('description')
-                                            <span class="invalid-feedback">{{ $message }}</span>
+                                        <span class="invalid-feedback">{{ $message }}</span>
                                         @enderror
                                         <small class="form-text text-muted">
                                             {{ strlen($description) }}/500 characters.
@@ -96,7 +96,7 @@
                                             id="meta_title" wire:model="meta_title"
                                             placeholder="SEO title for search engines">
                                         @error('meta_title')
-                                            <span class="invalid-feedback">{{ $message }}</span>
+                                        <span class="invalid-feedback">{{ $message }}</span>
                                         @enderror
                                         <div class="d-flex justify-content-between">
                                             <small class="form-text text-muted">
@@ -109,12 +109,12 @@
                                         </div>
                                     </div>
 
-                                    <div class="form-group">
+                                    <div class="form-group" wire:ignore>
                                         <label for="meta_description">Meta Description</label>
-                                        <textarea class="form-control @error('meta_description') is-invalid @enderror" id="meta_description"
-                                            wire:model="meta_description" rows="3" placeholder="SEO description for search engines"></textarea>
+                                        <textarea class="form-control tinymce @error('meta_description') is-invalid @enderror" id="meta_description" data-model="meta_description"
+                                            rows="3" placeholder="SEO description for search engines"></textarea>
                                         @error('meta_description')
-                                            <span class="invalid-feedback">{{ $message }}</span>
+                                        <span class="invalid-feedback">{{ $message }}</span>
                                         @enderror
                                         <div class="d-flex justify-content-between">
                                             <small class="form-text text-muted">
@@ -252,19 +252,19 @@
     </div>
 
     @push('styles')
-        <style>
-            .seo-preview {
-                border-left: 4px solid #4dabf7 !important;
-            }
+    <style>
+        .seo-preview {
+            border-left: 4px solid #4dabf7 !important;
+        }
 
-            .badge {
-                transition: all 0.3s ease;
-            }
+        .badge {
+            transition: all 0.3s ease;
+        }
 
-            .form-control:focus {
-                border-color: #80bdff;
-                box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-            }
-        </style>
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+    </style>
     @endpush
 </div>

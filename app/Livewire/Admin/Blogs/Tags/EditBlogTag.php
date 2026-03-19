@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Blogs\Tags;
 
 use App\Models\BlogTag;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Illuminate\Support\Str;
 
@@ -26,20 +27,20 @@ class EditBlogTag extends Component
         ];
     }
 
-    public function mount(BlogTag $tag)
+    public function mount($id)
     {
-        $this->tag = $tag;
-        $this->name = $tag->name;
-        $this->slug = $tag->slug;
-        $this->description = $tag->description;
-        $this->meta_title = $tag->meta_title;
-        $this->meta_description = $tag->meta_description;
+        $this->tag = BlogTag::findOrFail($id);
+        $this->name = $this->tag->name;
+        $this->slug = $this->tag->slug;
+        $this->description = $this->tag->description;
+        $this->meta_title = $this->tag->meta_title;
+        $this->meta_description = $this->tag->meta_description;
     }
 
     public function render()
     {
         $popularity = $this->getPopularityBadge($this->tag->post_count);
-        
+
         return view('livewire.admin.blogs.tags.edit-blog-tag', [
             'popularity' => $popularity,
         ]);
@@ -52,18 +53,25 @@ class EditBlogTag extends Component
 
     public function update()
     {
-        $this->validate();
+        // $this->validate();
 
-        $this->tag->update([
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'description' => $this->description,
-            'meta_title' => $this->meta_title,
-            'meta_description' => $this->meta_description,
-        ]);
+        try {
+            DB::beginTransaction();
+            $this->tag->update([
+                'name' => $this->name,
+                'slug' => $this->slug,
+                'description' => $this->description,
+                'meta_title' => $this->meta_title,
+                'meta_description' => $this->meta_description,
+            ]);
 
-        session()->flash('success', 'Tag updated successfully!');
-        return redirect()->route('blog-tags.index');
+            DB::commit();
+
+            return redirect()->route('admin.blog-tags.index')->with('success', 'Tag updated successfully!');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            session()->flash('error', 'Error updating tag' . $th->getMessage());
+        }
     }
 
     public function generateSlug()
@@ -83,12 +91,12 @@ class EditBlogTag extends Component
     public function generateMetaDescription()
     {
         if ($this->name) {
-            $this->meta_description = "Discover the best articles, tutorials and resources about " . 
-                                     strtolower($this->name) . ". Learn from experts and improve your skills.";
+            $this->meta_description = "Discover the best articles, tutorials and resources about " .
+                strtolower($this->name) . ". Learn from experts and improve your skills.";
         }
     }
 
-        private function getPopularityBadge($postCount): array
+    private function getPopularityBadge($postCount): array
     {
         if ($postCount >= 50) {
             return ['color' => 'danger', 'text' => 'Very Popular', 'icon' => 'fa-fire'];
@@ -103,4 +111,3 @@ class EditBlogTag extends Component
         }
     }
 }
-

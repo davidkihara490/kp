@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Blogs\Categories;
 
 use App\Models\BlogCategory;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Illuminate\Support\Str;
 use Livewire\WithFileUploads;
@@ -28,12 +29,12 @@ class CreateBlogCategory extends Component
     protected $rules = [
         'name' => 'required|string|max:255|unique:blog_categories,name',
         'slug' => 'required|string|max:255|unique:blog_categories,slug',
-        'description' => 'nullable|string|max:500',
+        'description' => 'nullable|string',
         'parent_id' => 'nullable|exists:blog_categories,id',
         'order' => 'required|integer|min:0',
         'is_active' => 'boolean',
         'meta_title' => 'nullable|string|max:255',
-        'meta_description' => 'nullable|string|max:500',
+        'meta_description' => 'nullable|string',
         'meta_keywords' => 'array',
         'meta_keywords.*' => 'string|max:50',
         'featured_image' => 'nullable|image|max:2048',
@@ -90,27 +91,34 @@ class CreateBlogCategory extends Component
     {
         $this->validate();
 
-        // Handle featured image upload
-        $featuredImagePath = null;
-        if ($this->featured_image) {
-            $featuredImagePath = $this->featured_image->store('blog-categories', 'public');
+        try {
+            DB::beginTransaction();
+            // Handle featured image upload
+            $featuredImagePath = null;
+            if ($this->featured_image) {
+                $featuredImagePath = $this->featured_image->store('blog-categories', 'public');
+            }
+
+            $category = BlogCategory::create([
+                'name' => $this->name,
+                'slug' => $this->slug,
+                'description' => $this->description,
+                'parent_id' => $this->parent_id,
+                'order' => $this->order,
+                'is_active' => $this->is_active,
+                'meta_title' => $this->meta_title,
+                'meta_description' => $this->meta_description,
+                'meta_keywords' => $this->meta_keywords,
+                'featured_image' => $featuredImagePath,
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('admin.blog-categories.index')->with('success', 'Blog Category created successfully');
+        } catch (\Throwable $th) {
+            DB::rollback();
+            session()->flash('error', 'Error creating blog category' . $th->getMessage());
         }
-
-        $category = BlogCategory::create([
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'description' => $this->description,
-            'parent_id' => $this->parent_id,
-            'order' => $this->order,
-            'is_active' => $this->is_active,
-            'meta_title' => $this->meta_title,
-            'meta_description' => $this->meta_description,
-            'meta_keywords' => $this->meta_keywords,
-            'featured_image' => $featuredImagePath,
-        ]);
-
-        session()->flash('success', 'Category created successfully!');
-        return redirect()->route('blog-categories.index');
     }
 
     public function removeFeaturedImage()

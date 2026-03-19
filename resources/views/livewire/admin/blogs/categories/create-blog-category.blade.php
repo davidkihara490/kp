@@ -63,11 +63,11 @@
                                     </small>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group" wire:ignore>
                                     <label for="description">Description</label>
-                                    <textarea class="form-control @error('description') is-invalid @enderror" 
+                                    <textarea class="form-control tinymce @error('description') is-invalid @enderror" 
                                               id="description" 
-                                              wire:model="description"
+                                              data-model="description"
                                               rows="3"
                                               placeholder="Brief description of the category"></textarea>
                                     @error('description')
@@ -135,11 +135,11 @@
                                     </small>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group" wire:ignore>
                                     <label for="meta_description">Meta Description</label>
-                                    <textarea class="form-control @error('meta_description') is-invalid @enderror" 
+                                    <textarea class="form-control tinymce @error('meta_description') is-invalid @enderror" 
                                               id="meta_description" 
-                                              wire:model="meta_description"
+                                              data-model="meta_description"
                                               rows="2"
                                               placeholder="SEO description for search engines"></textarea>
                                     @error('meta_description')

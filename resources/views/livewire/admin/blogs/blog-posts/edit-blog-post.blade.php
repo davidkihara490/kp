@@ -8,22 +8,22 @@
                             <i class="fas fa-edit mr-2"></i>Edit Post: {{ $post->title }}
                         </h3>
                         @php
-                            $statusBadge = $this->getStatusBadge();
+                        $statusBadge = $this->getStatusBadge();
                         @endphp
                         <span class="badge badge-{{ $statusBadge['color'] }} ml-2">
                             <i class="fas {{ $statusBadge['icon'] }} mr-1"></i>
                             {{ $statusBadge['text'] }}
                         </span>
                         @if ($post->is_featured)
-                            <span class="badge badge-warning ml-2">
-                                <i class="fas fa-star mr-1"></i>Featured
-                            </span>
+                        <span class="badge badge-warning ml-2">
+                            <i class="fas fa-star mr-1"></i>Featured
+                        </span>
                         @endif
                     </div>
                     <div>
-                        {{-- <a href="{{ route('admin.blog-posts.view', $post->id) }}" class="btn btn-info btn-sm mr-2">
+                        <a href="{{ route('admin.blog-posts.view', $post->id) }}" class="btn btn-info btn-sm mr-2">
                             <i class="fas fa-eye mr-2"></i>View
-                        </a> --}}
+                        </a>
                         <a href="{{ route('admin.blog-posts.index') }}" class="btn btn-secondary btn-sm">
                             <i class="fas fa-arrow-left mr-2"></i>Back to Posts
                         </a>
@@ -77,7 +77,7 @@
                                     <input type="text" class="form-control @error('title') is-invalid @enderror"
                                         id="title" wire:model.live="title" placeholder="Enter post title">
                                     @error('title')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
                                 </div>
 
@@ -94,14 +94,14 @@
                                         </div>
                                     </div>
                                     @error('slug')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
                                     <small class="form-text text-muted">
                                         URL: /blog/<strong>{{ $slug }}</strong>
                                         @if ($slug !== $post->slug)
-                                            <span class="text-warning ml-2">
-                                                <i class="fas fa-exclamation-triangle"></i> URL will change
-                                            </span>
+                                        <span class="text-warning ml-2">
+                                            <i class="fas fa-exclamation-triangle"></i> URL will change
+                                        </span>
                                         @endif
                                     </small>
                                 </div>
@@ -113,14 +113,14 @@
                                             <select class="form-control @error('category_id') is-invalid @enderror"
                                                 id="category_id" wire:model="category_id">
                                                 @foreach ($categories as $category)
-                                                    <option value="{{ $category->id }}"
-                                                        {{ $category->id == $category_id ? 'selected' : '' }}>
-                                                        {{ $category->name }}
-                                                    </option>
+                                                <option value="{{ $category->id }}"
+                                                    {{ $category->id == $category_id ? 'selected' : '' }}>
+                                                    {{ $category->name }}
+                                                </option>
                                                 @endforeach
                                             </select>
                                             @error('category_id')
-                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </div>
@@ -140,18 +140,18 @@
                                                 </div>
                                             </div>
                                             @error('reading_time')
-                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group" wire:ignore>
                                     <label for="excerpt">Excerpt</label>
-                                    <textarea class="form-control @error('excerpt') is-invalid @enderror" id="excerpt" wire:model.live="excerpt"
+                                    <textarea class="form-control tinymce @error('excerpt') is-invalid @enderror" id="excerpt" data-model="excerpt"
                                         rows="3" placeholder="Brief summary of the post"></textarea>
                                     @error('excerpt')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
                                     <small class="form-text text-muted">
                                         {{ strlen($excerpt) }}/500 characters
@@ -165,12 +165,12 @@
                             <div class="card-header">
                                 <h5 class="card-title mb-0"><i class="fas fa-file-alt mr-2"></i>Content *</h5>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body" wire:ignore>
                                 <div class="form-group">
-                                    <textarea class="form-control @error('content') is-invalid @enderror" id="content" wire:model="content"
+                                    <textarea class="form-control tinymce @error('content') is-invalid @enderror" id="content" data-model="content"
                                         rows="15" placeholder="Write your post content here..."></textarea>
                                     @error('content')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror>
                                     <small class="form-text text-muted">
                                         Supports HTML and Markdown
@@ -189,14 +189,14 @@
                                     <label>Select Tags</label>
                                     <div class="d-flex flex-wrap gap-2 mb-3">
                                         @foreach ($availableTags as $tag)
-                                            <button type="button"
-                                                class="btn btn-sm {{ in_array($tag->id, $selectedTags) ? 'btn-primary' : 'btn-outline-primary' }}"
-                                                wire:click="{{ in_array($tag->id, $selectedTags) ? 'removeTag(' . $tag->id . ')' : 'addTag(' . $tag->id . ')' }}">
-                                                {{ $tag->name }}
-                                                @if (in_array($tag->id, $selectedTags))
-                                                    <i class="fas fa-check ml-1"></i>
-                                                @endif
-                                            </button>
+                                        <button type="button"
+                                            class="btn btn-sm {{ in_array($tag->id, $selectedTags) ? 'btn-primary' : 'btn-outline-primary' }}"
+                                            wire:click="{{ in_array($tag->id, $selectedTags) ? 'removeTag(' . $tag->id . ')' : 'addTag(' . $tag->id . ')' }}">
+                                            {{ $tag->name }}
+                                            @if (in_array($tag->id, $selectedTags))
+                                            <i class="fas fa-check ml-1"></i>
+                                            @endif
+                                        </button>
                                         @endforeach
                                     </div>
 
@@ -276,7 +276,7 @@
                                         class="form-control @error('meta_title') is-invalid @enderror" id="meta_title"
                                         wire:model="meta_title" placeholder="SEO title for search engines">
                                     @error('meta_title')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
                                     <div class="d-flex justify-content-between">
                                         <small class="form-text text-muted">
@@ -289,14 +289,14 @@
                                     </div>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group" wire:ignore>
                                     <label for="meta_description">Meta Description</label>
-                                    <textarea class="form-control @error('meta_description') is-invalid @enderror" id="meta_description"
-                                        wire:model="meta_description" rows="3" placeholder="SEO description for search engines"></textarea>
+                                    <textarea class="form-control tinymce @error('meta_description') is-invalid @enderror" id="meta_description"
+                                        data-model="meta_description" rows="3" placeholder="SEO description for search engines"></textarea>
                                     @error('meta_description')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
-                                    <div class="d-flex justify-content-between">
+                                    <!-- <div class="d-flex justify-content-between">
                                         <small class="form-text text-muted">
                                             Recommended: 150-160 characters
                                         </small>
@@ -308,7 +308,7 @@
                                     <button type="button" class="btn btn-sm btn-outline-primary mt-2"
                                         wire:click="generateMetaDescription">
                                         <i class="fas fa-magic mr-1"></i>Generate from Excerpt
-                                    </button>
+                                    </button> -->
                                 </div>
 
                                 <div class="form-group">
@@ -318,7 +318,7 @@
                                         id="focus_keyword" wire:model="focus_keyword"
                                         placeholder="Main keyword for SEO">
                                     @error('focus_keyword')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror>
                                 </div>
 
@@ -329,7 +329,7 @@
                                         id="canonical_url" wire:model="canonical_url"
                                         placeholder="https://example.com/canonical-url">
                                     @error('canonical_url')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror>
                                 </div>
                             </div>
@@ -348,16 +348,16 @@
                                         class="form-control @error('og_title') is-invalid @enderror" id="og_title"
                                         wire:model="og_title" placeholder="Title for Facebook shares">
                                     @error('og_title')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group" wire:ignore>
                                     <label for="og_description">OG Description</label>
-                                    <textarea class="form-control @error('og_description') is-invalid @enderror" id="og_description"
-                                        wire:model="og_description" rows="2" placeholder="Description for Facebook shares"></textarea>
+                                    <textarea class="form-control tinymce @error('og_description') is-invalid @enderror" id="og_description"
+                                        data-model="og_description" rows="2" placeholder="Description for Facebook shares"></textarea>
                                     @error('og_description')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror>
                                 </div>
 
@@ -370,7 +370,7 @@
                                         <option value="blog">Blog</option>
                                     </select>
                                     @error('og_type')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror>
                                 </div>
                             </div>
@@ -389,16 +389,16 @@
                                         id="twitter_title" wire:model="twitter_title"
                                         placeholder="Title for Twitter shares">
                                     @error('twitter_title')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group" wire:ignore>
                                     <label for="twitter_description">Twitter Description</label>
-                                    <textarea class="form-control @error('twitter_description') is-invalid @enderror" id="twitter_description"
-                                        wire:model="twitter_description" rows="2" placeholder="Description for Twitter shares"></textarea>
+                                    <textarea class="form-control tinymce @error('twitter_description') is-invalid @enderror" id="twitter_description"
+                                        data-model="twitter_description" rows="2" placeholder="Description for Twitter shares"></textarea>
                                     @error('twitter_description')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror>
                                 </div>
 
@@ -410,7 +410,7 @@
                                         <option value="summary_large_image">Summary Large Image</option>
                                     </select>
                                     @error('twitter_card_type')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror>
                                 </div>
                             </div>
@@ -475,7 +475,7 @@
                                                 <option value="1.0">1.0 - Very High</option>
                                             </select>
                                             @error('sitemap_priority')
-                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror>
                                         </div>
                                     </div>
@@ -495,7 +495,7 @@
                                         <option value="never">Never</option>
                                     </select>
                                     @error('sitemap_change_frequency')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror>
                                 </div>
 
@@ -508,7 +508,7 @@
                                         <option value="NewsArticle">News Article</option>
                                     </select>
                                     @error('article_type')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror>
                                 </div>
                             </div>
@@ -524,40 +524,40 @@
                             </div>
                             <div class="card-body text-center">
                                 @if ($temp_featured_image || $current_featured_image)
-                                    <div class="mb-3">
-                                        <img src="{{ $temp_featured_image ?: ($current_featured_image ? asset('storage/' . $current_featured_image) : '') }}"
-                                            alt="Featured Image" class="img-fluid rounded"
-                                            style="max-height: 300px;">
-                                    </div>
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-danger"
-                                            wire:click="removeFeaturedImage">
-                                            <i class="fas fa-trash mr-2"></i>Remove
-                                        </button>
-                                        <label class="btn btn-primary mb-0">
-                                            <i class="fas fa-upload mr-2"></i>Change
-                                            <input type="file" class="d-none" wire:model="featured_image"
-                                                accept="image/*">
-                                        </label>
-                                    </div>
+                                <div class="mb-3">
+                                    <img src="{{ $temp_featured_image ?: ($current_featured_image ? asset('storage/' . $current_featured_image) : '') }}"
+                                        alt="Featured Image" class="img-fluid rounded"
+                                        style="max-height: 300px;">
+                                </div>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-danger"
+                                        wire:click="removeFeaturedImage">
+                                        <i class="fas fa-trash mr-2"></i>Remove
+                                    </button>
+                                    <label class="btn btn-primary mb-0">
+                                        <i class="fas fa-upload mr-2"></i>Change
+                                        <input type="file" class="d-none" wire:model="featured_image"
+                                            accept="image/*">
+                                    </label>
+                                </div>
                                 @else
-                                    <div class="mb-3 text-muted">
-                                        <i class="fas fa-image fa-3x mb-3"></i>
-                                        <p>No featured image</p>
-                                    </div>
-                                    <div class="custom-file">
-                                        <input type="file" class="custom-file-input" id="featured_image"
-                                            wire:model="featured_image" accept="image/*">
-                                        <label class="custom-file-label" for="featured_image">
-                                            Choose featured image...
-                                        </label>
-                                    </div>
-                                    @error('featured_image')
-                                        <span class="invalid-feedback d-block">{{ $message }}</span>
-                                    @enderror>
-                                    <small class="form-text text-muted">
-                                        Recommended: 1200x630px, max 5MB
-                                    </small>
+                                <div class="mb-3 text-muted">
+                                    <i class="fas fa-image fa-3x mb-3"></i>
+                                    <p>No featured image</p>
+                                </div>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="featured_image"
+                                        wire:model="featured_image" accept="image/*">
+                                    <label class="custom-file-label" for="featured_image">
+                                        Choose featured image...
+                                    </label>
+                                </div>
+                                @error('featured_image')
+                                <span class="invalid-feedback d-block">{{ $message }}</span>
+                                @enderror>
+                                <small class="form-text text-muted">
+                                    Recommended: 1200x630px, max 5MB
+                                </small>
                                 @endif
                             </div>
                         </div>
@@ -573,68 +573,68 @@
                             <div class="card-body">
                                 <!-- Existing Gallery Images -->
                                 @if (count($existing_gallery_images) > 0)
-                                    <div class="row mb-4">
-                                        @foreach ($existing_gallery_images as $index => $image)
-                                            <div class="col-md-4 mb-3">
-                                                <div class="card">
-                                                    <div class="card-body text-center">
-                                                        <img src="{{ asset('storage/' . $image) }}"
-                                                            alt="Gallery Image {{ $index + 1 }}"
-                                                            class="img-fluid rounded mb-2" style="max-height: 150px;">
-                                                        <button type="button" class="btn btn-sm btn-danger btn-block"
-                                                            wire:click="removeExistingGalleryImage({{ $index }})">
-                                                            <i class="fas fa-trash mr-1"></i>Remove
-                                                        </button>
-                                                    </div>
-                                                </div>
+                                <div class="row mb-4">
+                                    @foreach ($existing_gallery_images as $index => $image)
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card">
+                                            <div class="card-body text-center">
+                                                <img src="{{ asset('storage/' . $image) }}"
+                                                    alt="Gallery Image {{ $index + 1 }}"
+                                                    class="img-fluid rounded mb-2" style="max-height: 150px;">
+                                                <button type="button" class="btn btn-sm btn-danger btn-block"
+                                                    wire:click="removeExistingGalleryImage({{ $index }})">
+                                                    <i class="fas fa-trash mr-1"></i>Remove
+                                                </button>
                                             </div>
-                                        @endforeach
+                                        </div>
                                     </div>
+                                    @endforeach
+                                </div>
                                 @endif
 
                                 <!-- New Gallery Images -->
                                 @if (count($gallery_images) > 0)
-                                    <div class="row">
-                                        @foreach ($gallery_images as $index => $image)
-                                            <div class="col-md-4 mb-3">
-                                                <div class="card">
-                                                    <div class="card-body text-center">
-                                                        @if (isset($temp_gallery_images[$index]) && $temp_gallery_images[$index])
-                                                            <img src="{{ $temp_gallery_images[$index] }}"
-                                                                alt="New Gallery Image {{ $index + 1 }}"
-                                                                class="img-fluid rounded mb-2"
-                                                                style="max-height: 150px;">
-                                                        @else
-                                                            <div class="bg-light rounded d-flex align-items-center justify-content-center"
-                                                                style="height: 150px;">
-                                                                <i class="fas fa-image text-muted fa-2x"></i>
-                                                            </div>
-                                                        @endif
-                                                        <div class="custom-file">
-                                                            <input type="file" class="custom-file-input"
-                                                                wire:model="gallery_images.{{ $index }}"
-                                                                accept="image/*">
-                                                            <label class="custom-file-label">
-                                                                Choose image...
-                                                            </label>
-                                                        </div>
-                                                        <button type="button"
-                                                            class="btn btn-sm btn-danger btn-block mt-2"
-                                                            wire:click="removeGalleryImage({{ $index }})">
-                                                            <i class="fas fa-trash mr-1"></i>Remove
-                                                        </button>
-                                                    </div>
+                                <div class="row">
+                                    @foreach ($gallery_images as $index => $image)
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card">
+                                            <div class="card-body text-center">
+                                                @if (isset($temp_gallery_images[$index]) && $temp_gallery_images[$index])
+                                                <img src="{{ $temp_gallery_images[$index] }}"
+                                                    alt="New Gallery Image {{ $index + 1 }}"
+                                                    class="img-fluid rounded mb-2"
+                                                    style="max-height: 150px;">
+                                                @else
+                                                <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                                                    style="height: 150px;">
+                                                    <i class="fas fa-image text-muted fa-2x"></i>
                                                 </div>
+                                                @endif
+                                                <div class="custom-file">
+                                                    <input type="file" class="custom-file-input"
+                                                        wire:model="gallery_images.{{ $index }}"
+                                                        accept="image/*">
+                                                    <label class="custom-file-label">
+                                                        Choose image...
+                                                    </label>
+                                                </div>
+                                                <button type="button"
+                                                    class="btn btn-sm btn-danger btn-block mt-2"
+                                                    wire:click="removeGalleryImage({{ $index }})">
+                                                    <i class="fas fa-trash mr-1"></i>Remove
+                                                </button>
                                             </div>
-                                        @endforeach
+                                        </div>
                                     </div>
+                                    @endforeach
+                                </div>
                                 @endif
 
                                 @if (count($existing_gallery_images) === 0 && count($gallery_images) === 0)
-                                    <div class="text-center text-muted">
-                                        <i class="fas fa-images fa-3x mb-3"></i>
-                                        <p>No gallery images</p>
-                                    </div>
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-images fa-3x mb-3"></i>
+                                    <p>No gallery images</p>
+                                </div>
                                 @endif
                             </div>
                         </div>
@@ -694,10 +694,10 @@
                                             <div>{{ $post->updated_at }}</div>
                                         </div>
                                         @if ($post->published_at)
-                                            <div>
-                                                <small class="text-muted">Published:</small>
-                                                <div>{{ $post->published_at }}</div>
-                                            </div>
+                                        <div>
+                                            <small class="text-muted">Published:</small>
+                                            <div>{{ $post->published_at }}</div>
+                                        </div>
                                         @endif
                                     </div>
                                 </div>
@@ -720,33 +720,33 @@
                                         <option value="scheduled">Scheduled</option>
                                     </select>
                                     @error('status')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror>
                                 </div>
 
                                 @if ($status === 'published')
-                                    <div class="form-group">
-                                        <label for="published_at">Publish Date & Time</label>
-                                        <input type="datetime-local"
-                                            class="form-control @error('published_at') is-invalid @enderror"
-                                            id="published_at" wire:model="published_at">
-                                        @error('published_at')
-                                            <span class="invalid-feedback">{{ $message }}</span>
-                                        @enderror>
-                                    </div>
+                                <div class="form-group">
+                                    <label for="published_at">Publish Date & Time</label>
+                                    <input type="datetime-local"
+                                        class="form-control @error('published_at') is-invalid @enderror"
+                                        id="published_at" wire:model="published_at">
+                                    @error('published_at')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                    @enderror>
+                                </div>
                                 @endif
 
                                 @if ($status === 'scheduled')
-                                    <div class="form-group">
-                                        <label for="scheduled_for">Schedule For</label>
-                                        <input type="datetime-local"
-                                            class="form-control @error('scheduled_for') is-invalid @enderror"
-                                            id="scheduled_for" wire:model="scheduled_for"
-                                            min="{{ now()->format('Y-m-d\TH:i') }}">
-                                        @error('scheduled_for')
-                                            <span class="invalid-feedback">{{ $message }}</span>
-                                        @enderror>
-                                    </div>
+                                <div class="form-group">
+                                    <label for="scheduled_for">Schedule For</label>
+                                    <input type="datetime-local"
+                                        class="form-control @error('scheduled_for') is-invalid @enderror"
+                                        id="scheduled_for" wire:model="scheduled_for"
+                                        min="{{ now()->format('Y-m-d\TH:i') }}">
+                                    @error('scheduled_for')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                    @enderror>
+                                </div>
                                 @endif
 
                                 <div class="form-group">
@@ -758,21 +758,21 @@
                                         <option value="password_protected">Password Protected</option>
                                     </select>
                                     @error('visibility')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror>
                                 </div>
 
                                 @if ($visibility === 'password_protected')
-                                    <div class="form-group">
-                                        <label for="password">Password *</label>
-                                        <input type="password"
-                                            class="form-control @error('password') is-invalid @enderror"
-                                            id="password" wire:model="password"
-                                            placeholder="Enter new password or leave empty to keep current">
-                                        @error('password')
-                                            <span class="invalid-feedback">{{ $message }}</span>
-                                        @enderror>
-                                    </div>
+                                <div class="form-group">
+                                    <label for="password">Password *</label>
+                                    <input type="password"
+                                        class="form-control @error('password') is-invalid @enderror"
+                                        id="password" wire:model="password"
+                                        placeholder="Enter new password or leave empty to keep current">
+                                    @error('password')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                    @enderror>
+                                </div>
                                 @endif
                             </div>
                         </div>
@@ -839,25 +839,25 @@
                                     </button>
 
                                     @if ($status === 'published')
-                                        <button type="submit" name="action" value="publish"
-                                            class="btn btn-success" wire:loading.attr="disabled">
-                                            <span wire:loading.remove>
-                                                <i class="fas fa-paper-plane mr-2"></i>Update & Publish
-                                            </span>
-                                            <span wire:loading>
-                                                <i class="fas fa-spinner fa-spin mr-2"></i>Updating...
-                                            </span>
-                                        </button>
+                                    <button type="submit" name="action" value="publish"
+                                        class="btn btn-success" wire:loading.attr="disabled">
+                                        <span wire:loading.remove>
+                                            <i class="fas fa-paper-plane mr-2"></i>Update & Publish
+                                        </span>
+                                        <span wire:loading>
+                                            <i class="fas fa-spinner fa-spin mr-2"></i>Updating...
+                                        </span>
+                                    </button>
                                     @elseif($status === 'scheduled')
-                                        <button type="submit" name="action" value="schedule"
-                                            class="btn btn-warning" wire:loading.attr="disabled">
-                                            <span wire:loading.remove>
-                                                <i class="fas fa-clock mr-2"></i>Update & Schedule
-                                            </span>
-                                            <span wire:loading>
-                                                <i class="fas fa-spinner fa-spin mr-2"></i>Scheduling...
-                                            </span>
-                                        </button>
+                                    <button type="submit" name="action" value="schedule"
+                                        class="btn btn-warning" wire:loading.attr="disabled">
+                                        <span wire:loading.remove>
+                                            <i class="fas fa-clock mr-2"></i>Update & Schedule
+                                        </span>
+                                        <span wire:loading>
+                                            <i class="fas fa-spinner fa-spin mr-2"></i>Scheduling...
+                                        </span>
+                                    </button>
                                     @endif
                                 </div>
                             </div>
@@ -869,41 +869,41 @@
     </div>
 
     @push('styles')
-        <style>
-            .nav-tabs .nav-link {
-                cursor: pointer;
-            }
+    <style>
+        .nav-tabs .nav-link {
+            cursor: pointer;
+        }
 
-            .custom-file-label::after {
-                content: "Browse";
-            }
+        .custom-file-label::after {
+            content: "Browse";
+        }
 
-            [x-cloak] {
-                display: none !important;
-            }
-        </style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
     @endpush
 
     @push('scripts')
-        <script>
-            // Update file input labels
-            document.querySelectorAll('.custom-file-input').forEach(input => {
-                input.addEventListener('change', function(e) {
-                    var fileName = e.target.files[0]?.name || 'Choose file...';
-                    var nextSibling = e.target.nextElementSibling;
-                    nextSibling.innerText = fileName;
-                });
+    <script>
+        // Update file input labels
+        document.querySelectorAll('.custom-file-input').forEach(input => {
+            input.addEventListener('change', function(e) {
+                var fileName = e.target.files[0]?.name || 'Choose file...';
+                var nextSibling = e.target.nextElementSibling;
+                nextSibling.innerText = fileName;
             });
+        });
 
-            // Initialize Alpine.js for tabs
-            document.addEventListener('alpine:init', () => {
-                Alpine.data('tabs', () => ({
-                    activeTab: 'content',
-                    setActiveTab(tab) {
-                        this.activeTab = tab;
-                    }
-                }));
-            });
-        </script>
+        // Initialize Alpine.js for tabs
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('tabs', () => ({
+                activeTab: 'content',
+                setActiveTab(tab) {
+                    this.activeTab = tab;
+                }
+            }));
+        });
+    </script>
     @endpush
 </div>

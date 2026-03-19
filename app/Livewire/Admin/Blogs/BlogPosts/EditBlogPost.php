@@ -6,6 +6,7 @@ use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use App\Models\BlogTag;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -16,7 +17,7 @@ class EditBlogPost extends Component
     use WithFileUploads;
 
     public $post;
-    
+
     // Basic Information
     public $title;
     public $slug;
@@ -32,7 +33,7 @@ class EditBlogPost extends Component
     public $published_at;
     public $scheduled_for;
     public $reading_time;
-    
+
     // Images
     public $featured_image;
     public $temp_featured_image;
@@ -40,12 +41,12 @@ class EditBlogPost extends Component
     public $gallery_images = [];
     public $temp_gallery_images = [];
     public $existing_gallery_images = [];
-    
+
     // Tags
     public $selectedTags = [];
     public $availableTags = [];
     public $newTag = '';
-    
+
     // SEO
     public $meta_title;
     public $meta_description;
@@ -55,7 +56,7 @@ class EditBlogPost extends Component
     public $current_meta_image;
     public $canonical_url;
     public $focus_keyword;
-    
+
     // Open Graph
     public $og_title;
     public $og_description;
@@ -63,7 +64,7 @@ class EditBlogPost extends Component
     public $temp_og_image;
     public $current_og_image;
     public $og_type;
-    
+
     // Twitter Card
     public $twitter_title;
     public $twitter_description;
@@ -71,14 +72,14 @@ class EditBlogPost extends Component
     public $temp_twitter_image;
     public $current_twitter_image;
     public $twitter_card_type;
-    
+
     // Technical
     public $noindex;
     public $nofollow;
     public $include_in_sitemap;
     public $sitemap_priority;
     public $sitemap_change_frequency;
-    
+
     // Article Type
     public $article_type;
 
@@ -88,7 +89,7 @@ class EditBlogPost extends Component
             // Basic
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:blog_posts,slug,' . $this->post->id,
-            'excerpt' => 'nullable|string|max:500',
+            'excerpt' => 'nullable|string',
             'content' => 'required|string',
             'category_id' => 'required|exists:blog_categories,id',
             'status' => 'required|in:draft,published,scheduled',
@@ -100,89 +101,90 @@ class EditBlogPost extends Component
             'published_at' => 'required_if:status,published|nullable|date',
             'scheduled_for' => 'required_if:status,scheduled|nullable|date|after:now',
             'reading_time' => 'nullable|integer|min:1',
-            
+
             // Images
             'featured_image' => 'nullable|image|max:5120',
             'gallery_images.*' => 'nullable|image|max:5120',
-            
+
             // SEO
             'meta_title' => 'nullable|string|max:255',
-            'meta_description' => 'nullable|string|max:500',
+            'meta_description' => 'nullable|string',
             'meta_image' => 'nullable|image|max:5120',
             'canonical_url' => 'nullable|url|max:255',
             'focus_keyword' => 'nullable|string|max:100',
-            
+
             // Open Graph
             'og_title' => 'nullable|string|max:255',
-            'og_description' => 'nullable|string|max:500',
+            'og_description' => 'nullable|string',
             'og_image' => 'nullable|image|max:5120',
             'og_type' => 'nullable|string|max:50',
-            
+
             // Twitter
             'twitter_title' => 'nullable|string|max:255',
-            'twitter_description' => 'nullable|string|max:500',
+            'twitter_description' => 'nullable|string',
             'twitter_image' => 'nullable|image|max:5120',
             'twitter_card_type' => 'nullable|string|max:50',
         ];
     }
 
-    public function mount(BlogPost $post)
+    public function mount($id)
     {
-        $this->post = $post->load(['category', 'tags']);
-        
+        $this->post = BlogPost::findOrFail($id);
+        $this->post = $this->post->load(['category', 'tags']);
+
         // Basic Information
-        $this->title = $post->title;
-        $this->slug = $post->slug;
-        $this->excerpt = $post->excerpt;
-        $this->content = $post->content;
-        $this->category_id = $post->category_id;
-        $this->status = $post->status;
-        $this->visibility = $post->visibility;
+        $this->title = $this->post->title;
+        $this->slug = $this->post->slug;
+        $this->excerpt = $this->post->excerpt;
+        $this->content = $this->post->content;
+        $this->category_id = $this->post->category_id;
+        $this->status = $this->post->status;
+        $this->visibility = $this->post->visibility;
         $this->password = '';
-        $this->is_featured = $post->is_featured;
-        $this->allow_comments = $post->allow_comments;
-        $this->allow_sharing = $post->allow_sharing;
-        $this->published_at = $post->published_at?->format('Y-m-d\TH:i');
-        $this->scheduled_for = $post->scheduled_for?->format('Y-m-d\TH:i');
-        $this->reading_time = $post->reading_time;
-        
+        $this->is_featured = $this->post->is_featured;
+        $this->allow_comments = $this->post->allow_comments;
+        $this->allow_sharing = $this->post->allow_sharing;
+        $this->published_at = $this->post->published_at?->format('Y-m-d\TH:i');
+        $this->scheduled_for = $this->post->scheduled_for?->format('Y-m-d\TH:i');
+        $this->reading_time = $this->post->reading_time;
+
         // Images
-        $this->current_featured_image = $post->featured_image;
-        $this->existing_gallery_images = $post->gallery_images ?? [];
-        
+        $this->current_featured_image = $this->post->featured_image;
+        $this->existing_gallery_images = $this->post->gallery_images ?? [];
+
         // Tags
-        $this->selectedTags = $post->tags?->pluck('id')->toArray() ?? [];
+        $this->selectedTags = $this->post->tags?->pluck('id')->toArray() ?? [];
         $this->availableTags = BlogTag::orderBy('name')->get();
-        
+
         // SEO
-        $this->meta_title = $post->meta_title;
-        $this->meta_description = $post->meta_description;
-        $this->meta_keywords = $post->meta_keywords ?? [];
-        $this->current_meta_image = $post->meta_image;
-        $this->canonical_url = $post->canonical_url;
-        $this->focus_keyword = $post->focus_keyword;
-        
+        $this->meta_title = $this->post->meta_title;
+        $this->meta_description = $this->post->meta_description;
+        $this->meta_keywords = $this->post->meta_keywords ?? [];
+        $this->current_meta_image = $this->post->meta_image;
+        $this->canonical_url = $this->post->canonical_url;
+        $this->focus_keyword = $this->post->focus_keyword;
+
         // Open Graph
-        $this->og_title = $post->og_title;
-        $this->og_description = $post->og_description;
-        $this->current_og_image = $post->og_image;
-        $this->og_type = $post->og_type;
-        
+        $this->og_title = $this->post->og_title;
+        $this->og_description = $this->post->og_description;
+        $this->current_og_image = $this->post->og_image;
+        $this->og_type = $this->post->og_type;
+
         // Twitter
-        $this->twitter_title = $post->twitter_title;
-        $this->twitter_description = $post->twitter_description;
-        $this->current_twitter_image = $post->twitter_image;
-        $this->twitter_card_type = $post->twitter_card_type;
-        
+        $this->twitter_title = $this->post->twitter_title;
+        $this->twitter_description = $this->post->twitter_description;
+        $this->current_twitter_image = $this->post->twitter_image;
+        $this->twitter_card_type = $this->post->twitter_card_type;
+
         // Technical
-        $this->noindex = $post->noindex;
-        $this->nofollow = $post->nofollow;
-        $this->include_in_sitemap = $post->include_in_sitemap;
-        $this->sitemap_priority = $post->sitemap_priority;
-        $this->sitemap_change_frequency = $post->sitemap_change_frequency;
-        
+        $this->noindex = $this->post->noindex;
+        $this->nofollow = $this->post->nofollow;
+        $this->include_in_sitemap = $this->post->include_in_sitemap;
+        $this->sitemap_priority = $this->post->sitemap_priority;
+        $this->sitemap_change_frequency = $this->post->sitemap_change_frequency;
+
         // Article Type
-        $this->article_type = $post->article_type;
+        $this->article_type = $this->post->article_type;
     }
 
     public function render()
@@ -200,7 +202,7 @@ class EditBlogPost extends Component
             ->values()
             ->toArray();
 
-        
+
         return view('livewire.admin.blogs.blog-posts.edit-blog-post', [
             'categories' => $categories,
             'authors' => $authors,
@@ -286,7 +288,7 @@ class EditBlogPost extends Component
                 'name' => $this->newTag,
                 'slug' => Str::slug($this->newTag),
             ]);
-            
+
             $this->availableTags->push($tag);
             $this->selectedTags[] = $tag->id;
             $this->newTag = '';
@@ -297,163 +299,176 @@ class EditBlogPost extends Component
     {
         $this->validate();
 
-        // Handle image uploads
-        $featuredImagePath = $this->current_featured_image;
-        if ($this->featured_image) {
-            // Delete old image if exists
-            if ($this->current_featured_image) {
-                Storage::disk('public')->delete($this->current_featured_image);
+
+        try {
+            DB::beginTransaction();
+            // Handle image uploads
+            $featuredImagePath = $this->current_featured_image;
+            if ($this->featured_image) {
+                // Delete old image if exists
+                if ($this->current_featured_image) {
+                    Storage::disk('public')->delete($this->current_featured_image);
+                }
+                $featuredImagePath = $this->featured_image->store('blog/posts/featured', 'public');
             }
-            $featuredImagePath = $this->featured_image->store('blog/posts/featured', 'public');
-        }
 
-        $metaImagePath = $this->current_meta_image;
-        if ($this->meta_image) {
-            if ($this->current_meta_image) {
-                Storage::disk('public')->delete($this->current_meta_image);
+            $metaImagePath = $this->current_meta_image;
+            if ($this->meta_image) {
+                if ($this->current_meta_image) {
+                    Storage::disk('public')->delete($this->current_meta_image);
+                }
+                $metaImagePath = $this->meta_image->store('blog/posts/meta', 'public');
             }
-            $metaImagePath = $this->meta_image->store('blog/posts/meta', 'public');
-        }
 
-        $ogImagePath = $this->current_og_image;
-        if ($this->og_image) {
-            if ($this->current_og_image) {
-                Storage::disk('public')->delete($this->current_og_image);
+            $ogImagePath = $this->current_og_image;
+            if ($this->og_image) {
+                if ($this->current_og_image) {
+                    Storage::disk('public')->delete($this->current_og_image);
+                }
+                $ogImagePath = $this->og_image->store('blog/posts/og', 'public');
             }
-            $ogImagePath = $this->og_image->store('blog/posts/og', 'public');
-        }
 
-        $twitterImagePath = $this->current_twitter_image;
-        if ($this->twitter_image) {
-            if ($this->current_twitter_image) {
-                Storage::disk('public')->delete($this->current_twitter_image);
+            $twitterImagePath = $this->current_twitter_image;
+            if ($this->twitter_image) {
+                if ($this->current_twitter_image) {
+                    Storage::disk('public')->delete($this->current_twitter_image);
+                }
+                $twitterImagePath = $this->twitter_image->store('blog/posts/twitter', 'public');
             }
-            $twitterImagePath = $this->twitter_image->store('blog/posts/twitter', 'public');
-        }
 
-        // Handle gallery images
-        $galleryPaths = $this->existing_gallery_images;
-        foreach ($this->gallery_images as $image) {
-            if ($image) {
-                $galleryPaths[] = $image->store('blog/posts/gallery', 'public');
-            }
-        }
-
-        // Calculate reading time if not provided
-        if (!$this->reading_time) {
-            $wordCount = str_word_count(strip_tags($this->content));
-            $this->reading_time = ceil($wordCount / 200);
-        }
-
-        // Old category for post count update
-        $oldCategoryId = $this->post->category_id;
-
-        // Update post
-        $this->post->update([
-            'title' => $this->title,
-            'slug' => $this->slug,
-            'excerpt' => $this->excerpt,
-            'content' => $this->content,
-            'category_id' => $this->category_id,
-            'featured_image' => $featuredImagePath,
-            'gallery_images' => $galleryPaths,
-            'status' => $this->status,
-            'visibility' => $this->visibility,
-            'password' => $this->visibility === 'password_protected' ? bcrypt($this->password) : $this->post->password,
-            'is_featured' => $this->is_featured,
-            'allow_comments' => $this->allow_comments,
-            'allow_sharing' => $this->allow_sharing,
-            'published_at' => $this->status === 'published' ? $this->published_at : null,
-            'scheduled_for' => $this->status === 'scheduled' ? $this->scheduled_for : null,
-            'reading_time' => $this->reading_time,
-            
-            // SEO
-            'meta_title' => $this->meta_title,
-            'meta_description' => $this->meta_description,
-            'meta_keywords' => $this->meta_keywords,
-            'meta_image' => $metaImagePath,
-            'canonical_url' => $this->canonical_url,
-            'focus_keyword' => $this->focus_keyword,
-            
-            // Open Graph
-            'og_title' => $this->og_title,
-            'og_description' => $this->og_description,
-            'og_image' => $ogImagePath,
-            'og_type' => $this->og_type,
-            
-            // Twitter
-            'twitter_title' => $this->twitter_title,
-            'twitter_description' => $this->twitter_description,
-            'twitter_image' => $twitterImagePath,
-            'twitter_card_type' => $this->twitter_card_type,
-            
-            // Technical SEO
-            'noindex' => $this->noindex,
-            'nofollow' => $this->nofollow,
-            'include_in_sitemap' => $this->include_in_sitemap,
-            'sitemap_priority' => $this->sitemap_priority,
-            'sitemap_change_frequency' => $this->sitemap_change_frequency,
-            
-            // Article Type
-            'article_type' => $this->article_type,
-        ]);
-
-        // Update tags
-        $oldTags = $this->post->tags->pluck('id')->toArray();
-        
-        // Detach old tags
-        $this->post->tags()->detach();
-        
-        // Attach new tags
-        if (!empty($this->selectedTags)) {
-            $this->post->tags()->attach($this->selectedTags);
-            
-            // Update tag post counts
-            foreach ($this->selectedTags as $tagId) {
-                $tag = BlogTag::find($tagId);
-                if ($tag && !in_array($tagId, $oldTags)) {
-                    $tag->increment('post_count');
+            // Handle gallery images
+            $galleryPaths = $this->existing_gallery_images;
+            foreach ($this->gallery_images as $image) {
+                if ($image) {
+                    $galleryPaths[] = $image->store('blog/posts/gallery', 'public');
                 }
             }
-            
-            // Decrement counts for removed tags
-            foreach ($oldTags as $tagId) {
-                if (!in_array($tagId, $this->selectedTags)) {
+
+            // Calculate reading time if not provided
+            if (!$this->reading_time) {
+                $wordCount = str_word_count(strip_tags($this->content));
+                $this->reading_time = ceil($wordCount / 200);
+            }
+
+            // Old category for post count update
+            $oldCategoryId = $this->post->category_id;
+
+            // Update post
+            $this->post->update([
+                'title' => $this->title,
+                'slug' => $this->slug,
+                'excerpt' => $this->excerpt,
+                'content' => $this->content,
+                'category_id' => $this->category_id,
+                'featured_image' => $featuredImagePath,
+                'gallery_images' => $galleryPaths,
+                'status' => $this->status,
+                'visibility' => $this->visibility,
+                'password' => $this->visibility === 'password_protected' ? bcrypt($this->password) : $this->post->password,
+                'is_featured' => $this->is_featured,
+                'allow_comments' => $this->allow_comments,
+                'allow_sharing' => $this->allow_sharing,
+                'published_at' => $this->status === 'published' ? $this->published_at : null,
+                'scheduled_for' => $this->status === 'scheduled' ? $this->scheduled_for : null,
+                'reading_time' => $this->reading_time,
+
+                // SEO
+                'meta_title' => $this->meta_title,
+                'meta_description' => $this->meta_description,
+                'meta_keywords' => $this->meta_keywords,
+                'meta_image' => $metaImagePath,
+                'canonical_url' => $this->canonical_url,
+                'focus_keyword' => $this->focus_keyword,
+
+                // Open Graph
+                'og_title' => $this->og_title,
+                'og_description' => $this->og_description,
+                'og_image' => $ogImagePath,
+                'og_type' => $this->og_type,
+
+                // Twitter
+                'twitter_title' => $this->twitter_title,
+                'twitter_description' => $this->twitter_description,
+                'twitter_image' => $twitterImagePath,
+                'twitter_card_type' => $this->twitter_card_type,
+
+                // Technical SEO
+                'noindex' => $this->noindex,
+                'nofollow' => $this->nofollow,
+                'include_in_sitemap' => $this->include_in_sitemap,
+                'sitemap_priority' => $this->sitemap_priority,
+                'sitemap_change_frequency' => $this->sitemap_change_frequency,
+
+                // Article Type
+                'article_type' => $this->article_type,
+            ]);
+
+            // Update tags
+            $oldTags = $this->post->tags?->pluck('id')->toArray();
+
+            // Detach old tags
+            $this->post->tags()->detach();
+
+            // Attach new tags
+            if (!empty($this->selectedTags)) {
+                $this->post->tags()->attach($this->selectedTags);
+
+                // Update tag post counts
+                if ($this->selectedTags) {
+                    foreach ($this->selectedTags as $tagId) {
+                        $tag = BlogTag::find($tagId);
+                        if ($tag && !in_array($tagId, $oldTags)) {
+                            $tag->increment('post_count');
+                        }
+                    }
+                }
+
+                // Decrement counts for removed tags
+                if ($this->oldTags) {
+                    foreach ($oldTags as $tagId) {
+                        if (!in_array($tagId, $this->selectedTags)) {
+                            $tag = BlogTag::find($tagId);
+                            if ($tag && $tag->post_count > 0) {
+                                $tag->decrement('post_count');
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Decrement all old tags if no tags selected
+                if($oldTags){
+                    foreach ($oldTags as $tagId) {
                     $tag = BlogTag::find($tagId);
                     if ($tag && $tag->post_count > 0) {
                         $tag->decrement('post_count');
                     }
                 }
-            }
-        } else {
-            // Decrement all old tags if no tags selected
-            foreach ($oldTags as $tagId) {
-                $tag = BlogTag::find($tagId);
-                if ($tag && $tag->post_count > 0) {
-                    $tag->decrement('post_count');
                 }
             }
-        }
 
-        // Update category post counts if category changed
-        if ($oldCategoryId != $this->category_id) {
-            $oldCategory = BlogCategory::find($oldCategoryId);
-            if ($oldCategory && $oldCategory->post_count > 0) {
-                $oldCategory->decrement('post_count');
+            // Update category post counts if category changed
+            if ($oldCategoryId != $this->category_id) {
+                $oldCategory = BlogCategory::find($oldCategoryId);
+                if ($oldCategory && $oldCategory->post_count > 0) {
+                    $oldCategory->decrement('post_count');
+                }
+
+                $newCategory = BlogCategory::find($this->category_id);
+                if ($newCategory) {
+                    $newCategory->increment('post_count');
+                }
             }
-            
-            $newCategory = BlogCategory::find($this->category_id);
-            if ($newCategory) {
-                $newCategory->increment('post_count');
-            }
+
+            // Update SEO data
+            $this->post->updateSeoScore();
+            $this->post->generateSchemaMarkup();
+
+            DB::commit();
+            return redirect()->route('admin.blog-posts.index')->with('success', 'Blog post updated successfully!');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            session()->flash('error', 'Error updating blog post' . $th->getMessage());
         }
-
-        // Update SEO data
-        $this->post->updateSeoScore();
-        $this->post->generateSchemaMarkup();
-
-        session()->flash('success', 'Blog post updated successfully!');
-        return redirect()->route('blog-posts.index');
     }
 
     public function calculateReadingTime()

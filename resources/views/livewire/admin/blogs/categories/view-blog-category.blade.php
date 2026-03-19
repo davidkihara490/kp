@@ -13,6 +13,11 @@
                 </div>
                 <div>
 
+                <a href="{{ route('admin.blog-categories.edit', $category->id) }}" 
+                       class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit mr-2"></i>Edit
+                    </a>
+
                     <a href="{{ route('admin.blog-categories.index') }}" 
                        class="btn btn-secondary btn-sm">
                         <i class="fas fa-arrow-left mr-2"></i>Back
@@ -109,7 +114,7 @@
                                                 <th>Parent Category:</th>
                                                 <td>
                                                     @if($category->parent)
-                                                        <a href="{{ route('admin.blog-categories.show', $category->parent->id) }}" 
+                                                        <a href="{{ route('admin.blog-categories.view', $category->parent->id) }}" 
                                                            class="badge badge-info">
                                                             <i class="fas fa-level-up-alt mr-1"></i>
                                                             {{ $category->parent->name }}
@@ -239,7 +244,7 @@
                                             <small class="text-muted">Parent:</small>
                                             <div class="ml-3">
                                                 <i class="fas fa-level-up-alt text-muted mr-2"></i>
-                                                <a href="{{ route('admin.blog-categories.show', $category->parent->id) }}">
+                                                <a href="{{ route('admin.blog-categories.view', $category->parent->id) }}">
                                                     {{ $category->parent->name }}
                                                 </a>
                                             </div>
@@ -261,7 +266,7 @@
                                                 @foreach($category->children as $child)
                                                     <div class="mb-1">
                                                         <i class="fas fa-folder text-info mr-2"></i>
-                                                        <a href="{{ route('admin.blog-categories.show', $child->id) }}">
+                                                        <a href="{{ route('admin.blog-categories.view', $child->id) }}">
                                                             {{ $child->name }}
                                                         </a>
                                                         <small class="text-muted ml-2">
@@ -327,7 +332,7 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <a href="{{ route('admin.blog-posts.show', $post->id) }}" 
+                                                <a href="{{ route('admin.blog-posts.view', $post->id) }}" 
                                                    class="btn btn-sm btn-info">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
@@ -383,7 +388,7 @@
                                             <div class="d-flex justify-content-between align-items-start">
                                                 <div>
                                                     <h6 class="mb-1">
-                                                        <a href="{{ route('admin.blog-categories.show', $subCategory->id) }}">
+                                                        <a href="{{ route('admin.blog-categories.view', $subCategory->id) }}">
                                                             {{ $subCategory->name }}
                                                         </a>
                                                     </h6>

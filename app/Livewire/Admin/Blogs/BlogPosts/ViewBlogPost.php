@@ -12,9 +12,10 @@ class ViewBlogPost extends Component
     public $relatedPosts;
     public $popularPosts;
 
-    public function mount(BlogPost $post)
+    public function mount($id)
     {
-        $this->post = $post->load([
+        $this->post = BlogPost::findOrFail($id);
+        $this->post = $this->post->load([
             'author', 
             'category', 
             'tags', 
@@ -26,8 +27,8 @@ class ViewBlogPost extends Component
         ]);
         
         // Get related posts (same category, excluding current)
-        $this->relatedPosts = BlogPost::where('category_id', $post->category_id)
-            ->where('id', '!=', $post->id)
+        $this->relatedPosts = BlogPost::where('category_id', $this->post->category_id)
+            ->where('id', '!=', $this->post->id)
             ->where('status', 'published')
             ->where('published_at', '<=', now())
             ->orderBy('created_at', 'desc')
@@ -42,7 +43,7 @@ class ViewBlogPost extends Component
             ->get();
             
         // Increment view count
-        $post->increment('views_count');
+        $this->post->increment('views_count');
     }
 
     public function render()

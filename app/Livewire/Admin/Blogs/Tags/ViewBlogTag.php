@@ -10,9 +10,10 @@ class ViewBlogTag extends Component
     public $tag;
     public $activeTab = 'overview';
 
-    public function mount(BlogTag $tag)
+    public function mount($id)
     {
-        $this->tag = $tag->load(['posts' => function ($query) {
+        $this->tag = BlogTag::findOrFail($id);
+        $this->tag = $this->tag->load(['posts' => function ($query) {
             $query->latest()->take(10);
         }]);
     }

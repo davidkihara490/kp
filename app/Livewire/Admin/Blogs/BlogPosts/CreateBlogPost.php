@@ -7,6 +7,7 @@ use App\Models\BlogPost;
 use App\Models\BlogTag;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -80,7 +81,7 @@ class CreateBlogPost extends Component
         // Basic
         'title' => 'required|string|max:255',
         'slug' => 'required|string|max:255|unique:blog_posts,slug',
-        'excerpt' => 'nullable|string|max:500',
+        'excerpt' => 'nullable|string',
         'content' => 'required|string',
         'category_id' => 'required|exists:blog_categories,id',
         'status' => 'required|in:draft,published,scheduled',
@@ -99,20 +100,20 @@ class CreateBlogPost extends Component
 
         // SEO
         'meta_title' => 'nullable|string|max:255',
-        'meta_description' => 'nullable|string|max:500',
+        'meta_description' => 'nullable|string',
         'meta_image' => 'nullable|image|max:5120',
         'canonical_url' => 'nullable|url|max:255',
         'focus_keyword' => 'nullable|string|max:100',
 
         // Open Graph
         'og_title' => 'nullable|string|max:255',
-        'og_description' => 'nullable|string|max:500',
+        'og_description' => 'nullable|string',
         'og_image' => 'nullable|image|max:5120',
         'og_type' => 'nullable|string|max:50',
 
         // Twitter
         'twitter_title' => 'nullable|string|max:255',
-        'twitter_description' => 'nullable|string|max:500',
+        'twitter_description' => 'nullable|string',
         'twitter_image' => 'nullable|image|max:5120',
         'twitter_card_type' => 'nullable|string|max:50',
     ];
@@ -272,117 +273,126 @@ class CreateBlogPost extends Component
     {
         $this->validate();
 
-        // Handle image uploads
-        $featuredImagePath = null;
-        if ($this->featured_image) {
-            $featuredImagePath = $this->featured_image->store('blog/posts/featured', 'public');
-        }
+        try {
+            DB::beginTransaction();
 
-        $metaImagePath = null;
-        if ($this->meta_image && $this->meta_image !== $this->featured_image) {
-            $metaImagePath = $this->meta_image->store('blog/posts/meta', 'public');
-        }
 
-        $ogImagePath = null;
-        if ($this->og_image && $this->og_image !== $this->featured_image) {
-            $ogImagePath = $this->og_image->store('blog/posts/og', 'public');
-        }
-
-        $twitterImagePath = null;
-        if ($this->twitter_image && $this->twitter_image !== $this->featured_image) {
-            $twitterImagePath = $this->twitter_image->store('blog/posts/twitter', 'public');
-        }
-
-        // Handle gallery images
-        $galleryPaths = [];
-        foreach ($this->gallery_images as $image) {
-            if ($image) {
-                $galleryPaths[] = $image->store('blog/posts/gallery', 'public');
+            // Handle image uploads
+            $featuredImagePath = null;
+            if ($this->featured_image) {
+                $featuredImagePath = $this->featured_image->store('blog/posts/featured', 'public');
             }
-        }
 
-        // Calculate reading time if not provided
-        if (!$this->reading_time) {
-            $wordCount = str_word_count(strip_tags($this->content));
-            $this->reading_time = ceil($wordCount / 200);
-        }
+            $metaImagePath = null;
+            if ($this->meta_image && $this->meta_image !== $this->featured_image) {
+                $metaImagePath = $this->meta_image->store('blog/posts/meta', 'public');
+            }
 
-        // Create post
-        $post = BlogPost::create([
-            'author_id' => Auth::id(),
-            'category_id' => $this->category_id,
-            'title' => $this->title,
-            'slug' => $this->slug,
-            'excerpt' => $this->excerpt,
-            'content' => $this->content,
-            'featured_image' => $featuredImagePath,
-            'gallery_images' => $galleryPaths,
-            'status' => $this->status,
-            'visibility' => $this->visibility,
-            'password' => $this->visibility === 'password_protected' ? bcrypt($this->password) : null,
-            'is_featured' => $this->is_featured,
-            'allow_comments' => $this->allow_comments,
-            'allow_sharing' => $this->allow_sharing,
-            'published_at' => $this->status === 'published' ? $this->published_at : null,
-            'scheduled_for' => $this->status === 'scheduled' ? $this->scheduled_for : null,
-            'reading_time' => $this->reading_time,
+            $ogImagePath = null;
+            if ($this->og_image && $this->og_image !== $this->featured_image) {
+                $ogImagePath = $this->og_image->store('blog/posts/og', 'public');
+            }
 
-            // SEO
-            'meta_title' => $this->meta_title,
-            'meta_description' => $this->meta_description,
-            'meta_keywords' => $this->meta_keywords,
-            'meta_image' => $metaImagePath ?? $featuredImagePath,
-            'canonical_url' => $this->canonical_url,
-            'focus_keyword' => $this->focus_keyword,
+            $twitterImagePath = null;
+            if ($this->twitter_image && $this->twitter_image !== $this->featured_image) {
+                $twitterImagePath = $this->twitter_image->store('blog/posts/twitter', 'public');
+            }
 
-            // Open Graph
-            'og_title' => $this->og_title,
-            'og_description' => $this->og_description,
-            'og_image' => $ogImagePath ?? $featuredImagePath,
-            'og_type' => $this->og_type,
-
-            // Twitter
-            'twitter_title' => $this->twitter_title,
-            'twitter_description' => $this->twitter_description,
-            'twitter_image' => $twitterImagePath ?? $featuredImagePath,
-            'twitter_card_type' => $this->twitter_card_type,
-
-            // Technical SEO
-            'noindex' => $this->noindex,
-            'nofollow' => $this->nofollow,
-            'include_in_sitemap' => $this->include_in_sitemap,
-            'sitemap_priority' => $this->sitemap_priority,
-            'sitemap_change_frequency' => $this->sitemap_change_frequency,
-
-            // Article Type
-            'article_type' => $this->article_type,
-        ]);
-
-        // Attach tags
-        if (!empty($this->selectedTags)) {
-            $post->tags()->attach($this->selectedTags);
-
-            // Update tag post counts
-            foreach ($this->selectedTags as $tagId) {
-                $tag = BlogTag::find($tagId);
-                if ($tag) {
-                    $tag->increment('post_count');
+            // Handle gallery images
+            $galleryPaths = [];
+            foreach ($this->gallery_images as $image) {
+                if ($image) {
+                    $galleryPaths[] = $image->store('blog/posts/gallery', 'public');
                 }
             }
+
+            // Calculate reading time if not provided
+            if (!$this->reading_time) {
+                $wordCount = str_word_count(strip_tags($this->content));
+                $this->reading_time = ceil($wordCount / 200);
+            }
+
+            // Create post
+            $post = BlogPost::create([
+                'author_id' => Auth::guard('admin')->user()->id,
+                'category_id' => $this->category_id,
+                'title' => $this->title,
+                'slug' => $this->slug,
+                'excerpt' => $this->excerpt,
+                'content' => $this->content,
+                'featured_image' => $featuredImagePath,
+                'gallery_images' => $galleryPaths,
+                'status' => $this->status,
+                'visibility' => $this->visibility,
+                'password' => $this->visibility === 'password_protected' ? bcrypt($this->password) : null,
+                'is_featured' => $this->is_featured,
+                'allow_comments' => $this->allow_comments,
+                'allow_sharing' => $this->allow_sharing,
+                'published_at' => $this->status === 'published' ? $this->published_at : null,
+                'scheduled_for' => $this->status === 'scheduled' ? $this->scheduled_for : null,
+                'reading_time' => $this->reading_time,
+
+                // SEO
+                'meta_title' => $this->meta_title,
+                'meta_description' => $this->meta_description,
+                'meta_keywords' => $this->meta_keywords,
+                'meta_image' => $metaImagePath ?? $featuredImagePath,
+                'canonical_url' => $this->canonical_url,
+                'focus_keyword' => $this->focus_keyword,
+
+                // Open Graph
+                'og_title' => $this->og_title,
+                'og_description' => $this->og_description,
+                'og_image' => $ogImagePath ?? $featuredImagePath,
+                'og_type' => $this->og_type,
+
+                // Twitter
+                'twitter_title' => $this->twitter_title,
+                'twitter_description' => $this->twitter_description,
+                'twitter_image' => $twitterImagePath ?? $featuredImagePath,
+                'twitter_card_type' => $this->twitter_card_type,
+
+                // Technical SEO
+                'noindex' => $this->noindex,
+                'nofollow' => $this->nofollow,
+                'include_in_sitemap' => $this->include_in_sitemap,
+                'sitemap_priority' => $this->sitemap_priority,
+                'sitemap_change_frequency' => $this->sitemap_change_frequency,
+
+                // Article Type
+                'article_type' => $this->article_type,
+            ]);
+
+            // Attach tags
+            if (!empty($this->selectedTags)) {
+                $post->tags()->attach($this->selectedTags);
+
+                // Update tag post counts
+                foreach ($this->selectedTags as $tagId) {
+                    $tag = BlogTag::find($tagId);
+                    if ($tag) {
+                        $tag->increment('post_count');
+                    }
+                }
+            }
+
+            // Update category post count
+            $category = BlogCategory::find($this->category_id);
+            if ($category) {
+                $category->increment('post_count');
+            }
+
+            // Generate SEO data
+            $post->updateSeoScore();
+            $post->generateSchemaMarkup();
+
+            DB::commit();
+
+            return redirect()->route('admin.blog-posts.index')->with('success', 'Blog post created successfully!');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            session()->flash('error', 'Error creating blog post' . $th->getMessage());
         }
-
-        // Update category post count
-        $category = BlogCategory::find($this->category_id);
-        if ($category) {
-            $category->increment('post_count');
-        }
-
-        // Generate SEO data
-        $post->updateSeoScore();
-        $post->generateSchemaMarkup();
-
-        session()->flash('success', 'Blog post created successfully!');
-        return redirect()->route('admin.blog-posts.index');
     }
 
     public function calculateReadingTime()

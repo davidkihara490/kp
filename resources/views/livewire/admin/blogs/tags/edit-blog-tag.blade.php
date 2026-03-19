@@ -63,9 +63,9 @@
                                         </small>
                                     </div>
 
-                                    <div class="form-group">
+                                    <div class="form-group" wire:ignore>
                                         <label for="description">Description</label>
-                                        <textarea class="form-control @error('description') is-invalid @enderror" id="description" wire:model="description"
+                                        <textarea class="form-control tinymce @error('description') is-invalid @enderror" id="description" data-model="description"
                                             rows="4" placeholder="Brief description of what this tag represents"></textarea>
                                         @error('description')
                                             <span class="invalid-feedback">{{ $message }}</span>
@@ -105,10 +105,10 @@
                                         </div>
                                     </div>
 
-                                    <div class="form-group">
+                                    <div class="form-group" wire:ignore>
                                         <label for="meta_description">Meta Description</label>
-                                        <textarea class="form-control @error('meta_description') is-invalid @enderror" id="meta_description"
-                                            wire:model="meta_description" rows="3" placeholder="SEO description for search engines"></textarea>
+                                        <textarea class="form-control tinymce @error('meta_description') is-invalid @enderror" id="meta_description"
+                                            data-model="meta_description" rows="3" placeholder="SEO description for search engines"></textarea>
                                         @error('meta_description')
                                             <span class="invalid-feedback">{{ $message }}</span>
                                         @enderror
@@ -238,9 +238,9 @@
                                         </div>
 
                                         <div class="d-flex justify-content-between">
-                                            {{-- <a href="{{ route('admin.blog-tags.view', $tag->id) }}" class="btn btn-info">
+                                            <a href="{{ route('admin.blog-tags.view', $tag->id) }}" class="btn btn-info">
                                                 <i class="fas fa-eye mr-2"></i>View
-                                            </a> --}}
+                                            </a>
                                             <button type="submit" class="btn btn-primary"
                                                 wire:loading.attr="disabled">
                                                 <span wire:loading.remove>

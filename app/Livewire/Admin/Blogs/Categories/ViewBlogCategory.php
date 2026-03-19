@@ -11,9 +11,10 @@ class ViewBlogCategory extends Component
     public $category;
     public $activeTab = 'overview';
 
-    public function mount(BlogCategory $category)
+    public function mount($id)
     {
-        $this->category = $category->load(['parent', 'children', 'posts']);
+        $this->category = BlogCategory::findOrFail($id);
+        $this->category = $this->category->load(['parent', 'children', 'posts']);
     }
 
     public function render()

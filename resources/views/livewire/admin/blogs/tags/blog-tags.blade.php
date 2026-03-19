@@ -94,6 +94,7 @@
                 <table class="table table-bordered table-hover">
                     <thead class="thead-light">
                         <tr>
+                            <th>#</th>
                             <th wire:click="sortBy('name')" style="cursor: pointer; width: 25%;">
                                 Tag Name
                                 @if ($sortField !== 'name')
@@ -116,7 +117,6 @@
                                 @endif
                             </th>
                             <th style="width: 20%;">Popularity</th>
-                            <th style="width: 15%;">Description</th>
                             <th style="width: 10%;">Actions</th>
                         </tr>
                     </thead>
@@ -126,6 +126,7 @@
                                 $popularity = $this->getPopularityBadge($tag->post_count);
                             @endphp
                             <tr>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="mr-3">
@@ -175,13 +176,6 @@
                                         </div>
                                     </div>
                                     <small class="text-muted">Relative popularity</small>
-                                </td>
-                                <td>
-                                    @if ($tag->description)
-                                        <p class="mb-0 small">{{ Str::limit($tag->description, 80) }}</p>
-                                    @else
-                                        <span class="text-muted"><i>No description</i></span>
-                                    @endif
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">

@@ -9,7 +9,7 @@ use Livewire\WithPagination;
 class BlogCategories extends Component
 {
     use WithPagination;
-
+    protected $paginationTheme = 'bootstrap';
     public $search = '';
     public $statusFilter = '';
     public $parentFilter = '';

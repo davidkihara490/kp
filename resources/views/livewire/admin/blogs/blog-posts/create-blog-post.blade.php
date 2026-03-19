@@ -126,19 +126,19 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group" wire:ignore>
                                 <label for="excerpt">Excerpt</label>
-                                <textarea class="form-control @error('excerpt') is-invalid @enderror" 
+                                <textarea class="form-control tinymce @error('excerpt') is-invalid @enderror" 
                                           id="excerpt" 
-                                          wire:model.live="excerpt"
+                                          data-model="excerpt"
                                           rows="3"
                                           placeholder="Brief summary of the post"></textarea>
                                 @error('excerpt')
                                     <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror
-                                <small class="form-text text-muted">
+                                <!-- <small class="form-text text-muted">
                                     {{ strlen($excerpt) }}/500 characters
-                                </small>
+                                </small> -->
                             </div>
                         </div>
                     </div>
@@ -148,11 +148,11 @@
                         <div class="card-header">
                             <h5 class="card-title mb-0"><i class="fas fa-file-alt mr-2"></i>Content *</h5>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body" wire:ignore>
                             <div class="form-group">
-                                <textarea class="form-control @error('content') is-invalid @enderror" 
+                                <textarea class="form-control tinymce @error('content') is-invalid @enderror" 
                                           id="content" 
-                                          wire:model="content"
+                                          data-model="content"
                                           rows="15"
                                           placeholder="Write your post content here..."></textarea>
                                 @error('content')
@@ -235,17 +235,17 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group" wire:ignore>
                                 <label for="meta_description">Meta Description</label>
-                                <textarea class="form-control @error('meta_description') is-invalid @enderror" 
+                                <textarea class="form-control tinymce @error('meta_description') is-invalid @enderror" 
                                           id="meta_description" 
-                                          wire:model="meta_description"
+                                          data-model="meta_description"
                                           rows="3"
                                           placeholder="SEO description for search engines"></textarea>
                                 @error('meta_description')
                                     <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror
-                                <div class="d-flex justify-content-between">
+                                <!-- <div class="d-flex justify-content-between">
                                     <small class="form-text text-muted">
                                         Recommended: 150-160 characters
                                     </small>
@@ -256,7 +256,7 @@
                                 <button type="button" class="btn btn-sm btn-outline-primary mt-2" 
                                         wire:click="generateMetaDescription">
                                     <i class="fas fa-magic mr-1"></i>Generate from Excerpt
-                                </button>
+                                </button> -->
                             </div>
 
                             <div class="form-group">
@@ -303,11 +303,11 @@
                                 @enderror
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group" wire:ignore>
                                 <label for="og_description">OG Description</label>
-                                <textarea class="form-control @error('og_description') is-invalid @enderror" 
+                                <textarea class="form-control tinymce @error('og_description') is-invalid @enderror" 
                                           id="og_description" 
-                                          wire:model="og_description"
+                                          data-model="og_description"
                                           rows="2"
                                           placeholder="Description for Facebook shares"></textarea>
                                 @error('og_description')
@@ -349,11 +349,11 @@
                                 @enderror
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group" wire:ignore>
                                 <label for="twitter_description">Twitter Description</label>
-                                <textarea class="form-control @error('twitter_description') is-invalid @enderror" 
+                                <textarea class="form-control tinymce @error('twitter_description') is-invalid @enderror" 
                                           id="twitter_description" 
-                                          wire:model="twitter_description"
+                                          data-model="twitter_description"
                                           rows="2"
                                           placeholder="Description for Twitter shares"></textarea>
                                 @error('twitter_description')
