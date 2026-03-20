@@ -32,8 +32,8 @@ class DatabaseSeeder extends Seeder
             BankSeeder::class,
 
             // ZoneSeeder::class,
-            CategorySeeder::class,
-            SubCategorySeeder::class,
+            // CategorySeeder::class,
+            // SubCategorySeeder::class,
             // ItemSeeder::class,
             WeightRangeSeeder::class,
             // PricingSeeder::class,
