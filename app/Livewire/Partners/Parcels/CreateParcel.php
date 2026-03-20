@@ -191,11 +191,6 @@ class CreateParcel extends Component
     public function mount()
     {
 
-        // $this->smsService->sendDriverWelcomeSMS('254706506361', 'ONFONMEDIA');
-
-        // dd(400000);
-
-
         $modelClass = current_user_type();
         $user = $modelClass ? $modelClass::find(Auth::guard('partner')->user()->id) : null;
 
