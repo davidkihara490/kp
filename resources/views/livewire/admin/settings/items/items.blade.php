@@ -50,8 +50,8 @@
                     <tr>
                         <th>#</th>
                         <th>Name</th>
-                        <th>Category</th>
-                        <th>Sub Category</th>
+                        <!-- <th>Category</th>
+                        <th>Sub Category</th> -->
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
