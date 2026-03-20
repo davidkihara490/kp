@@ -83,7 +83,7 @@ class SubCountySeeder extends Seeder
             // ISIOLO (County ID: 11)
             ['county_id' => 11, 'code' => '01101', 'name' => 'Isiolo'],
             ['county_id' => 11, 'code' => '01102', 'name' => 'Merti'],
-            ['county_id' => 11, 'code' => '01102', 'name' => 'Garbatulla'],
+            ['county_id' => 11, 'code' => '01103', 'name' => 'Garbatulla'],
 
             // MERU (County ID: 12)
             ['county_id' => 12, 'code' => '01201', 'name' => 'Igembe South'],
