@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
 
             CountySeeder::class,
             SubCountySeeder::class,
-            TownSeeder::class,
+            // TownSeeder::class,
 
             UserSeeder::class,
             RolesAndPermissionSeeder::class,
@@ -31,7 +31,7 @@ class DatabaseSeeder extends Seeder
 
             BankSeeder::class,
 
-            ZoneSeeder::class,
+            // ZoneSeeder::class,
             CategorySeeder::class,
             SubCategorySeeder::class,
             // ItemSeeder::class,

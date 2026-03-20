@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sub_category_id')->constrained()->onDelete('cascade');
+            $table->foreignId('sub_category_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('name')->unique();
             $table->boolean('status')->default(true);
             $table->timestamps();

@@ -9,30 +9,13 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Sub Category</label>
-                            <select class="form-control" wire:model="sub_category_id" style="width: 100%;">
-                                <option value="">Select Sub Category</option>
-                                @foreach ($subCategories as $subCategory)
-                                    <option value="{{ $subCategory->id }}">{{ $subCategory->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('sub_category_id')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
                             <label>Item Name</label>
                             <input type="text" class="form-control" wire:model="name" placeholder="Enter town name">
                             @error('name')
-                                <span class="text-danger">{{ $message }}</span>
+                            <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
-                </div>
-
-                <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Status</label>
@@ -41,7 +24,7 @@
                                 <option value="0">Inactive</option>
                             </select>
                             @error('status')
-                                <span class="text-danger">{{ $message }}</span>
+                            <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>

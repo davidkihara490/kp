@@ -23,14 +23,14 @@ class CreateItem extends Component
     {
         $this->validate([
             'name' => 'required|string|max:255|unique:items,name',
-            'sub_category_id' => 'required|exists:sub_categories,id',
+            // 'sub_category_id' => 'required|exists:sub_categories,id',
             'status' => 'boolean',
         ]);
 
         try {
             Item::create([
                 'name' => $this->name,
-                'sub_category_id' => $this->sub_category_id,
+                // 'sub_category_id' => $this->sub_category_id,
                 'status' => $this->status,
             ]);
 

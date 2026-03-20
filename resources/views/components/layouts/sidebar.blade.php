@@ -152,7 +152,7 @@
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
-                                <li class="nav-item">
+                                <!-- <li class="nav-item">
                                     <a href="{{ route('admin.categories.index') }}" 
                                        class="nav-link {{ request()->routeIs('admin.categories*') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon text-danger"></i>
@@ -165,7 +165,7 @@
                                         <i class="far fa-circle nav-icon text-danger"></i>
                                         <p>Sub Categories</p>
                                     </a>
-                                </li>
+                                </li> -->
                                 <li class="nav-item">
                                     <a href="{{ route('admin.items.index') }}" 
                                        class="nav-link {{ request()->routeIs('admin.items*') ? 'active' : '' }}">

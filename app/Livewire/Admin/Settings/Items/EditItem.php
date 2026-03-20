@@ -20,7 +20,7 @@ class EditItem extends Component
         $this->item = Item::findOrFail($id);
 
         $this->name = $this->item->name;
-        $this->sub_category_id = $this->item->sub_category_id;
+        // $this->sub_category_id = $this->item->sub_category_id;
         $this->status = $this->item->status;
     }
 
@@ -28,14 +28,14 @@ class EditItem extends Component
     {
         $this->validate([
             'name' => 'required|string|max:255|unique:items,name,' . $this->item->id,
-            'sub_category_id' => 'required|exists:sub_categories,id',
+            // 'sub_category_id' => 'required|exists:sub_categories,id',
             'status' => 'boolean',
         ]);
 
         try {
             $this->item->update([
                 'name' => $this->name,
-                'sub_category_id' => $this->sub_category_id,
+                // 'sub_category_id' => $this->sub_category_id,
                 'status' => $this->status,
             ]);
 
