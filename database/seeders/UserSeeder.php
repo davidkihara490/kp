@@ -32,151 +32,151 @@ class UserSeeder extends Seeder
         ]);
 
         $this->command->info('Super Admin created: karibuparcels@gmail.com / admin123KP');
-
-        // Create Transport Partner User
-        $transportPartnerUser = User::factory()->transportPartner()->active()->create([
-            'first_name' => 'James',
-            'second_name' => 'Kipchoge',
-            'last_name' => 'Kiprotich',
-            'user_name' => 'james.kiprotich',
-            'email' => 'transportpartner_test@karibuparcels.com',
-            'phone_number' => '+254722111111',
-            'password' => Hash::make('test1234KP'),
-            'terms_and_conditions' => true,
-            'privacy_policy' => true,
-            'email_verified_at' => now(),
-        ]);
-
-        // Create Partner record for Transport Partner
-        $transportPartner = Partner::factory()->transport()->verified()->create([
-            'owner_id' => $transportPartnerUser->id,
-            'company_name' => 'Express Transport Solutions Ltd',
-            'registration_number' => 'C.123456/2020',
-            'kra_pin' => 'P051234567A',
-            'fleet_count' => 25,
-            'driver_count' => 35,
-            'has_motorcycles' => true,
-            'has_vans' => true,
-            'has_trucks' => true,
-            'fleet_ownership' => 'both',
-            'operating_hours' => 'Monday - Saturday: 6:00 AM - 8:00 PM',
-            'maximum_daily_capacity' => 2500,
-            'insurance_coverage' => 'Comprehensive',
-            'insurance_coverage_amount' => 5000000,
-            'can_handle_fragile' => true,
-            'can_handle_perishable' => true,
-            'can_handle_valuables' => true,
-            'years_in_operation' => 12,
-            'tracking_system' => 'GPS Tracking',
-            'booking_emails' => ['bookings@expresstransport.co.ke', 'info@expresstransport.co.ke'],
-        ]);
-
-        $this->command->info('Transport Partner created: transportpartner_test@karibuparcels.com / test1234KP');
-
-        // Create Pickup and Dropoff Partner User
-        $pickupDropoffUser = User::factory()->pickupDropoffPartner()->active()->create([
-            'first_name' => 'Mary',
-            'second_name' => 'Wanjiku',
-            'last_name' => 'Njoroge',
-            'user_name' => 'mary.njoroge',
-            'email' => 'pickup_dropoff_partner_test@karibuparcels.com',
-            'phone_number' => '+254733222222',
-            'password' => Hash::make('test1234KP'),
-            'terms_and_conditions' => true,
-            'privacy_policy' => true,
-            'email_verified_at' => now(),
-        ]);
-
-        // Create Partner record for Pickup and Dropoff Partner
-        $pickupDropoffPartner = Partner::factory()->pickupDropoff()->verified()->create([
-            'owner_id' => $pickupDropoffUser->id,
-            'company_name' => 'Nairobi Pickup & Dropoff Services',
-            'registration_number' => 'PVT/987654/2021',
-            'kra_pin' => 'P098765432B',
-            'points_count' => 12,
-            'points_have_phone' => true,
-            'points_have_computer' => true,
-            'points_have_internet' => true,
-            'maximum_daily_capacity' => 850,
-            'operating_hours' => 'Monday - Sunday: 7:00 AM - 9:00 PM',
-            'storage_facility_type' => 'Warehouse',
-            'security_measures' => '24/7 Security Guards, CCTV Surveillance',
-            'has_computer' => true,
-            'has_internet' => true,
-            'booking_emails' => ['pickups@nairobipickup.co.ke'],
-        ]);
-
-        $this->command->info('Pickup & Dropoff Partner created: pickup_dropoff_partner_test@karibuparcels.com / test1234KP');
-
-        // Create Parcel Handling Assistant User
-        $phaUser = User::factory()->pha()->active()->create([
-            'first_name' => 'David',
-            'second_name' => 'Odhiambo',
-            'last_name' => 'Omondi',
-            'user_name' => 'david.omondi',
-            'email' => 'pha_test@karibuparcels.com',
-            'phone_number' => '+254744333333',
-            'password' => Hash::make('test1234KP'),
-            'terms_and_conditions' => true,
-            'privacy_policy' => true,
-            'email_verified_at' => now(),
-        ]);
-
-        // Create Parcel Handling Assistant record
-        $pha = ParcelHandlingAssistant::factory()->active()->withRole('Supervisor')->create([
-            'user_id' => $phaUser->id,
-            'partner_id' => $pickupDropoffPartner->id,
-            'first_name' => $phaUser->first_name,
-            'second_name' => $phaUser->second_name,
-            'last_name' => $phaUser->last_name,
-            'email' => $phaUser->email,
-            'phone_number' => $phaUser->phone_number,
-            'id_number' => '28765432',
-            'role' => 'Supervisor',
-        ]);
-
-        $this->command->info('Parcel Handling Assistant created: pha_test@karibuparcels.com / test1234KP');
-
-        // Create Driver User
-        $driverUser = User::factory()->driver()->active()->create([
-            'first_name' => 'Peter',
-            'second_name' => 'Kamau',
-            'last_name' => 'Mwangi',
-            'user_name' => 'peter.mwangi',
-            'email' => 'driver_test@karibuparcels.com',
-            'phone_number' => '+254755444444',
-            'password' => Hash::make('test1234KP'),
-            'terms_and_conditions' => true,
-            'privacy_policy' => true,
-            'email_verified_at' => now(),
-        ]);
-
-        // Create Driver record
-        $driver = Driver::factory()->active()->available()->withValidLicense()->create([
-            'user_id' => $driverUser->id,
-            'partner_id' => $transportPartner->id,
-            'first_name' => $driverUser->first_name,
-            'second_name' => $driverUser->second_name,
-            'last_name' => $driverUser->last_name,
-            'email' => $driverUser->email,
-            'phone_number' => $driverUser->phone_number,
-            'id_number' => '31234567',
-            'driving_license_number' => 'B12345678',
-            'license_class' => 'B, C, CE',
-            'driving_license_issue_date' => '2020-03-15',
-            'driving_license_expiry_date' => '2025-03-14',
-            'emergency_contact_name' => 'Jane Mwangi',
-            'emergency_contact_phone' => '+254722555555',
-            'emergency_contact_relationship' => 'Spouse',
-            'bank_name' => 'Equity Bank',
-            'bank_account_number' => '1234567890',
-            'bank_account_name' => 'Peter Kamau Mwangi',
-        ]);
-
-        $this->command->info('Driver created: driver_test@karibuparcels.com / test1234KP');
-
-        // Create additional Kenyan test data for development
         if (app()->environment('local', 'development')) {
+
+            // Create Transport Partner User
+            $transportPartnerUser = User::factory()->transportPartner()->active()->create([
+                'first_name' => 'James',
+                'second_name' => 'Kipchoge',
+                'last_name' => 'Kiprotich',
+                'user_name' => 'james.kiprotich',
+                'email' => 'transportpartner_test@karibuparcels.com',
+                'phone_number' => '+254722111111',
+                'password' => Hash::make('test1234KP'),
+                'terms_and_conditions' => true,
+                'privacy_policy' => true,
+                'email_verified_at' => now(),
+            ]);
+
+            // Create Partner record for Transport Partner
+            $transportPartner = Partner::factory()->transport()->verified()->create([
+                'owner_id' => $transportPartnerUser->id,
+                'company_name' => 'Express Transport Solutions Ltd',
+                'registration_number' => 'C.123456/2020',
+                'kra_pin' => 'P051234567A',
+                'fleet_count' => 25,
+                'driver_count' => 35,
+                'has_motorcycles' => true,
+                'has_vans' => true,
+                'has_trucks' => true,
+                'fleet_ownership' => 'both',
+                'operating_hours' => 'Monday - Saturday: 6:00 AM - 8:00 PM',
+                'maximum_daily_capacity' => 2500,
+                'insurance_coverage' => 'Comprehensive',
+                'insurance_coverage_amount' => 5000000,
+                'can_handle_fragile' => true,
+                'can_handle_perishable' => true,
+                'can_handle_valuables' => true,
+                'years_in_operation' => 12,
+                'tracking_system' => 'GPS Tracking',
+                'booking_emails' => ['bookings@expresstransport.co.ke', 'info@expresstransport.co.ke'],
+            ]);
+
+            $this->command->info('Transport Partner created: transportpartner_test@karibuparcels.com / test1234KP');
+
+            // Create Pickup and Dropoff Partner User
+            $pickupDropoffUser = User::factory()->pickupDropoffPartner()->active()->create([
+                'first_name' => 'Mary',
+                'second_name' => 'Wanjiku',
+                'last_name' => 'Njoroge',
+                'user_name' => 'mary.njoroge',
+                'email' => 'pickup_dropoff_partner_test@karibuparcels.com',
+                'phone_number' => '+254733222222',
+                'password' => Hash::make('test1234KP'),
+                'terms_and_conditions' => true,
+                'privacy_policy' => true,
+                'email_verified_at' => now(),
+            ]);
+
+            // Create Partner record for Pickup and Dropoff Partner
+            $pickupDropoffPartner = Partner::factory()->pickupDropoff()->verified()->create([
+                'owner_id' => $pickupDropoffUser->id,
+                'company_name' => 'Nairobi Pickup & Dropoff Services',
+                'registration_number' => 'PVT/987654/2021',
+                'kra_pin' => 'P098765432B',
+                'points_count' => 12,
+                'points_have_phone' => true,
+                'points_have_computer' => true,
+                'points_have_internet' => true,
+                'maximum_daily_capacity' => 850,
+                'operating_hours' => 'Monday - Sunday: 7:00 AM - 9:00 PM',
+                'storage_facility_type' => 'Warehouse',
+                'security_measures' => '24/7 Security Guards, CCTV Surveillance',
+                'has_computer' => true,
+                'has_internet' => true,
+                'booking_emails' => ['pickups@nairobipickup.co.ke'],
+            ]);
+
+            $this->command->info('Pickup & Dropoff Partner created: pickup_dropoff_partner_test@karibuparcels.com / test1234KP');
+
+            // Create Parcel Handling Assistant User
+            $phaUser = User::factory()->pha()->active()->create([
+                'first_name' => 'David',
+                'second_name' => 'Odhiambo',
+                'last_name' => 'Omondi',
+                'user_name' => 'david.omondi',
+                'email' => 'pha_test@karibuparcels.com',
+                'phone_number' => '+254744333333',
+                'password' => Hash::make('test1234KP'),
+                'terms_and_conditions' => true,
+                'privacy_policy' => true,
+                'email_verified_at' => now(),
+            ]);
+
+            // Create Parcel Handling Assistant record
+            $pha = ParcelHandlingAssistant::factory()->active()->withRole('Supervisor')->create([
+                'user_id' => $phaUser->id,
+                'partner_id' => $pickupDropoffPartner->id,
+                'first_name' => $phaUser->first_name,
+                'second_name' => $phaUser->second_name,
+                'last_name' => $phaUser->last_name,
+                'email' => $phaUser->email,
+                'phone_number' => $phaUser->phone_number,
+                'id_number' => '28765432',
+                'role' => 'Supervisor',
+            ]);
+
+            $this->command->info('Parcel Handling Assistant created: pha_test@karibuparcels.com / test1234KP');
+
+            // Create Driver User
+            $driverUser = User::factory()->driver()->active()->create([
+                'first_name' => 'Peter',
+                'second_name' => 'Kamau',
+                'last_name' => 'Mwangi',
+                'user_name' => 'peter.mwangi',
+                'email' => 'driver_test@karibuparcels.com',
+                'phone_number' => '+254755444444',
+                'password' => Hash::make('test1234KP'),
+                'terms_and_conditions' => true,
+                'privacy_policy' => true,
+                'email_verified_at' => now(),
+            ]);
+
+            // Create Driver record
+            $driver = Driver::factory()->active()->available()->withValidLicense()->create([
+                'user_id' => $driverUser->id,
+                'partner_id' => $transportPartner->id,
+                'first_name' => $driverUser->first_name,
+                'second_name' => $driverUser->second_name,
+                'last_name' => $driverUser->last_name,
+                'email' => $driverUser->email,
+                'phone_number' => $driverUser->phone_number,
+                'id_number' => '31234567',
+                'driving_license_number' => 'B12345678',
+                'license_class' => 'B, C, CE',
+                'driving_license_issue_date' => '2020-03-15',
+                'driving_license_expiry_date' => '2025-03-14',
+                'emergency_contact_name' => 'Jane Mwangi',
+                'emergency_contact_phone' => '+254722555555',
+                'emergency_contact_relationship' => 'Spouse',
+                'bank_name' => 'Equity Bank',
+                'bank_account_number' => '1234567890',
+                'bank_account_name' => 'Peter Kamau Mwangi',
+            ]);
+
+            $this->command->info('Driver created: driver_test@karibuparcels.com / test1234KP');
+
+            // Create additional Kenyan test data for development
             // Create additional Kenyan counties as service areas
             $kenyanTowns = [
                 'Nairobi',
