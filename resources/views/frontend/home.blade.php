@@ -440,6 +440,7 @@
         </div>
     </section>
 
+    @if($pickUpAndDropOffPoints->count() > 0)
     <!-- Stations Section with Click-to-Expand Grid -->
     <section id="stations" class="stations-section">
         <div class="container-fluid px-4 px-lg-5">
@@ -528,7 +529,7 @@
                                         </div>
                                         @endforeach
                                     </div>
-                                    
+
                                     <!-- View More Button -->
                                     <div class="text-center mt-4">
                                         <a href="#" class="btn btn-outline-primary view-more-stations">
@@ -547,7 +548,10 @@
             </div>
         </div>
     </section>
+    @endif
 
+
+    @if($blogPosts->count() > 0)
     <!-- Blog Section - Smaller Width -->
     <section id="blogs" class="blog-section">
         <div class="container">
@@ -611,8 +615,10 @@
             @endif
         </div>
     </section>
+    @endif
 
     <!-- FAQ Section -->
+    @if($faqs->count() > 0)
     <section id="faq" class="faq-section">
         <div class="container">
             <div class="section-title">
@@ -636,6 +642,7 @@
             </div>
         </div>
     </section>
+    @endif
 
     <!-- Contact Section -->
     <section id="contact" class="contact-section">
@@ -1047,7 +1054,7 @@
             function displayTownQuoteResult(quoteData) {
                 const fromTownText = $('#fromTownSelect .selected-text').text();
                 const toTownText = $('#toTownSelect .selected-text').text();
-                
+
                 const quoteHTML = `
                     <div class="quote-result-card">
                         <div class="quote-header">
@@ -1213,7 +1220,7 @@
                 trackingData.timeline.forEach((item, index) => {
                     const isCompleted = item.completed;
                     const statusClass = isCompleted ? 'completed' : 'pending';
-                    
+
                     timelineHTML += `
                         <div class="timeline-item ${statusClass}">
                             <div class="timeline-marker">
@@ -1233,8 +1240,8 @@
                     `;
                 });
 
-                const statusBadge = trackingData.status === 'in_transit' ? 
-                    '<span class="badge bg-warning text-dark">In Transit</span>' : 
+                const statusBadge = trackingData.status === 'in_transit' ?
+                    '<span class="badge bg-warning text-dark">In Transit</span>' :
                     '<span class="badge bg-success">Delivered</span>';
 
                 const resultHTML = `
@@ -1341,7 +1348,7 @@
             function initContactForm() {
                 $('#contactForm').on('submit', function(e) {
                     e.preventDefault();
-                    
+
                     const submitBtn = $('#contactSubmitBtn');
                     const originalText = submitBtn.html();
                     submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...');
@@ -1357,7 +1364,7 @@
                     // Simulate email sending (replace with actual AJAX)
                     setTimeout(function() {
                         submitBtn.prop('disabled', false).html(originalText);
-                        
+
                         const successMessage = $(`
                             <div class="alert alert-success alert-dismissible fade show" role="alert">
                                 <i class="bi bi-check-circle-fill me-2"></i>
@@ -1365,10 +1372,10 @@
                                 <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
                             </div>
                         `);
-                        
+
                         $('#contactFormMessage').html(successMessage).slideDown();
                         $('#contactForm')[0].reset();
-                        
+
                         setTimeout(() => {
                             $('#contactFormMessage').slideUp();
                         }, 5000);
@@ -1592,10 +1599,10 @@
             --text-dark: #343a40;
             --text-light: #6c757d;
             --border-color: #e9ecef;
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
-            --shadow-lg: 0 10px 15px rgba(0,0,0,0.05);
-            --shadow-hover: 0 20px 25px -5px rgba(0,0,0,0.1);
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -3108,9 +3115,11 @@
             0% {
                 transform: scale(1);
             }
+
             50% {
                 transform: scale(1.1);
             }
+
             100% {
                 transform: scale(1);
             }
@@ -3156,6 +3165,7 @@
                 opacity: 0;
                 transform: translateX(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0);
@@ -3342,6 +3352,7 @@
                 opacity: 0;
                 transform: translateY(-10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -3353,6 +3364,7 @@
                 opacity: 0;
                 transform: translateY(30px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -3430,7 +3442,8 @@
                 flex-direction: column;
             }
 
-            .quote-btn, .clear-btn {
+            .quote-btn,
+            .clear-btn {
                 width: 100%;
             }
 
@@ -3438,7 +3451,8 @@
                 flex-direction: column;
             }
 
-            .contact-form, .contact-info {
+            .contact-form,
+            .contact-info {
                 padding: 25px;
             }
 
@@ -3489,7 +3503,7 @@
                             'event_label': 'whatsapp_chat'
                         });
                     }
-                    
+
                     fetch('/track-whatsapp-click', {
                         method: 'POST',
                         headers: {
