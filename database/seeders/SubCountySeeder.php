@@ -56,6 +56,7 @@ class SubCountySeeder extends Seeder
             ['county_id' => 7, 'code' => '00704', 'name' => 'Dadaab'],
             ['county_id' => 7, 'code' => '00705', 'name' => 'Fafi'],
             ['county_id' => 7, 'code' => '00706', 'name' => 'Ijara'],
+            ['county_id' => 7, 'code' => '00707', 'name' => 'Hulugho'],
 
             // WAJIR (County ID: 8)
             ['county_id' => 8, 'code' => '00801', 'name' => 'Wajir North'],
@@ -80,8 +81,9 @@ class SubCountySeeder extends Seeder
             ['county_id' => 10, 'code' => '01004', 'name' => 'Laisamis'],
 
             // ISIOLO (County ID: 11)
-            ['county_id' => 11, 'code' => '01101', 'name' => 'Isiolo North'],
-            ['county_id' => 11, 'code' => '01102', 'name' => 'Isiolo South'],
+            ['county_id' => 11, 'code' => '01101', 'name' => 'Isiolo'],
+            ['county_id' => 11, 'code' => '01102', 'name' => 'Merti'],
+            ['county_id' => 11, 'code' => '01102', 'name' => 'Garbatulla'],
 
             // MERU (County ID: 12)
             ['county_id' => 12, 'code' => '01201', 'name' => 'Igembe South'],
@@ -89,15 +91,18 @@ class SubCountySeeder extends Seeder
             ['county_id' => 12, 'code' => '01203', 'name' => 'Igembe North'],
             ['county_id' => 12, 'code' => '01204', 'name' => 'Tigania West'],
             ['county_id' => 12, 'code' => '01205', 'name' => 'Tigania East'],
-            ['county_id' => 12, 'code' => '01206', 'name' => 'North Imenti'],
-            ['county_id' => 12, 'code' => '01207', 'name' => 'Buuri'],
-            ['county_id' => 12, 'code' => '01208', 'name' => 'Central Imenti'],
-            ['county_id' => 12, 'code' => '01209', 'name' => 'South Imenti'],
+            ['county_id' => 12, 'code' => '01206', 'name' => 'Buuri'],
+            ['county_id' => 12, 'code' => '01207', 'name' => 'Imenti Central'],
+            ['county_id' => 12, 'code' => '01208', 'name' => 'Imenti South'],
+            ['county_id' => 12, 'code' => '01209', 'name' => 'Imenti North'],
 
             // THARAKA-NITHI (County ID: 13)
             ['county_id' => 13, 'code' => '01301', 'name' => 'Maara'],
-            ['county_id' => 13, 'code' => '01302', 'name' => 'Chuka/Igambang\'ombe'],
-            ['county_id' => 13, 'code' => '01303', 'name' => 'Tharaka'],
+            ['county_id' => 13, 'code' => '01302', 'name' => 'Chuka'],
+            ['county_id' => 13, 'code' => '01303', 'name' => 'Tharaka North'],
+            ['county_id' => 13, 'code' => '01304', 'name' => 'Tharaka South'],
+            ['county_id' => 13, 'code' => '01305', 'name' => 'Chiakariga and Muthambi'],
+            ['county_id' => 13, 'code' => '01306', 'name' => 'Igambang\'ombe'],
 
             // EMBU (County ID: 14)
             ['county_id' => 14, 'code' => '01401', 'name' => 'Manyatta'],
@@ -118,12 +123,11 @@ class SubCountySeeder extends Seeder
             // MACHAKOS (County ID: 16)
             ['county_id' => 16, 'code' => '01601', 'name' => 'Masinga'],
             ['county_id' => 16, 'code' => '01602', 'name' => 'Yatta'],
-            ['county_id' => 16, 'code' => '01603', 'name' => 'Kangundo'],
-            ['county_id' => 16, 'code' => '01604', 'name' => 'Matungulu'],
-            ['county_id' => 16, 'code' => '01605', 'name' => 'Kathiani'],
-            ['county_id' => 16, 'code' => '01606', 'name' => 'Mavoko'],
-            ['county_id' => 16, 'code' => '01607', 'name' => 'Machakos Town'],
-            ['county_id' => 16, 'code' => '01608', 'name' => 'Mwala'],
+            ['county_id' => 16, 'code' => '01603', 'name' => 'Matungulu'],
+            ['county_id' => 16, 'code' => '01604', 'name' => 'Kathiani'],
+            ['county_id' => 16, 'code' => '01605', 'name' => 'Mavoko'],
+            ['county_id' => 16, 'code' => '01606', 'name' => 'Machakos Town'],
+            ['county_id' => 16, 'code' => '01607', 'name' => 'Mwala'],
 
             // MAKUENI (County ID: 17)
             ['county_id' => 17, 'code' => '01701', 'name' => 'Mbooni'],
@@ -142,17 +146,20 @@ class SubCountySeeder extends Seeder
 
             // NYERI (County ID: 19)
             ['county_id' => 19, 'code' => '01901', 'name' => 'Tetu'],
-            ['county_id' => 19, 'code' => '01902', 'name' => 'Kieni'],
-            ['county_id' => 19, 'code' => '01903', 'name' => 'Mathira'],
-            ['county_id' => 19, 'code' => '01904', 'name' => 'Othaya'],
-            ['county_id' => 19, 'code' => '01905', 'name' => 'Mukurweini'],
-            ['county_id' => 19, 'code' => '01906', 'name' => 'Nyeri Town'],
+            ['county_id' => 19, 'code' => '01902', 'name' => 'Kieni East'],
+            ['county_id' => 19, 'code' => '01903', 'name' => 'Kieni West'],
+            ['county_id' => 19, 'code' => '01904', 'name' => 'Mathira East'],
+            ['county_id' => 19, 'code' => '01905', 'name' => 'Mathira West'],
+            ['county_id' => 19, 'code' => '01906', 'name' => 'Othaya'],
+            ['county_id' => 19, 'code' => '01907', 'name' => 'Mukurweini'],
+            ['county_id' => 19, 'code' => '01908', 'name' => 'Nyeri Town'],
 
             // KIRINYAGA (County ID: 20)
-            ['county_id' => 20, 'code' => '02001', 'name' => 'Mwea'],
-            ['county_id' => 20, 'code' => '02002', 'name' => 'Gichugu'],
-            ['county_id' => 20, 'code' => '02003', 'name' => 'Ndia'],
-            ['county_id' => 20, 'code' => '02004', 'name' => 'Kirinyaga Central'],
+            ['county_id' => 20, 'code' => '02001', 'name' => 'Mwea East'],
+            ['county_id' => 20, 'code' => '02002', 'name' => 'Mwea West'],
+            ['county_id' => 20, 'code' => '02003', 'name' => 'Kirinyaga Central'],
+            ['county_id' => 20, 'code' => '02004', 'name' => 'Kirinyaga East'],
+            ['county_id' => 20, 'code' => '02005', 'name' => 'Kirinyaga West'],
 
             // MURANG'A (County ID: 21)
             ['county_id' => 21, 'code' => '02101', 'name' => 'Kangema'],
@@ -162,6 +169,8 @@ class SubCountySeeder extends Seeder
             ['county_id' => 21, 'code' => '02105', 'name' => 'Maragwa'],
             ['county_id' => 21, 'code' => '02106', 'name' => 'Kandara'],
             ['county_id' => 21, 'code' => '02107', 'name' => 'Gatanga'],
+            ['county_id' => 21, 'code' => '02108', 'name' => 'Kahuro'],
+            ['county_id' => 21, 'code' => '02108', 'name' => 'Murang\'a South'],
 
             // KIAMBU (County ID: 22)
             ['county_id' => 22, 'code' => '02201', 'name' => 'Gatundu South'],
@@ -170,26 +179,25 @@ class SubCountySeeder extends Seeder
             ['county_id' => 22, 'code' => '02204', 'name' => 'Thika Town'],
             ['county_id' => 22, 'code' => '02205', 'name' => 'Ruiru'],
             ['county_id' => 22, 'code' => '02206', 'name' => 'Githunguri'],
-            ['county_id' => 22, 'code' => '02207', 'name' => 'Kiambu'],
+            ['county_id' => 22, 'code' => '02207', 'name' => 'Kiambu Town'],
             ['county_id' => 22, 'code' => '02208', 'name' => 'Kiambaa'],
             ['county_id' => 22, 'code' => '02209', 'name' => 'Kabete'],
             ['county_id' => 22, 'code' => '02210', 'name' => 'Kikuyu'],
-            ['county_id' => 22, 'code' => '02211', 'name' => 'Limuru'],
+            ['county_id' => 22, 'code' => '02211', 'name' => 'Limuru Town'],
             ['county_id' => 22, 'code' => '02212', 'name' => 'Lari'],
 
             // TURKANA (County ID: 23)
             ['county_id' => 23, 'code' => '02301', 'name' => 'Turkana North'],
-            ['county_id' => 23, 'code' => '02302', 'name' => 'Turkana West'],
-            ['county_id' => 23, 'code' => '02303', 'name' => 'Turkana Central'],
-            ['county_id' => 23, 'code' => '02304', 'name' => 'Loima'],
-            ['county_id' => 23, 'code' => '02305', 'name' => 'Turkana South'],
-            ['county_id' => 23, 'code' => '02306', 'name' => 'Turkana East'],
+            ['county_id' => 23, 'code' => '02302', 'name' => 'Turkana Central'],
+            ['county_id' => 23, 'code' => '02303', 'name' => 'Loima'],
+            ['county_id' => 23, 'code' => '02304', 'name' => 'Turkana South'],
+            ['county_id' => 23, 'code' => '02305', 'name' => 'Turkana East'],
 
             // WEST POKOT (County ID: 24)
-            ['county_id' => 24, 'code' => '02401', 'name' => 'Kapenguria'],
-            ['county_id' => 24, 'code' => '02402', 'name' => 'Sigor'],
-            ['county_id' => 24, 'code' => '02403', 'name' => 'Kacheliba'],
-            ['county_id' => 24, 'code' => '02404', 'name' => 'Pokot South'],
+            ['county_id' => 24, 'code' => '02401', 'name' => 'West Pokot'],
+            ['county_id' => 24, 'code' => '02402', 'name' => 'South Pokot'],
+            ['county_id' => 24, 'code' => '02403', 'name' => 'North Pokot'],
+            ['county_id' => 24, 'code' => '02404', 'name' => 'Cenral Pokot'],
 
             // SAMBURU (County ID: 25)
             ['county_id' => 25, 'code' => '02501', 'name' => 'Samburu West'],
@@ -241,8 +249,8 @@ class SubCountySeeder extends Seeder
             ['county_id' => 31, 'code' => '03105', 'name' => 'Nyahururu'],
 
             // NAKURU (County ID: 32)
-            ['county_id' => 32, 'code' => '03201', 'name' => 'Nakuru City East'],
-            ['county_id' => 32, 'code' => '03202', 'name' => 'Nakuru City West'],
+            ['county_id' => 32, 'code' => '03201', 'name' => 'Nakuru Town East'],
+            ['county_id' => 32, 'code' => '03202', 'name' => 'Nakuru Town West'],
             ['county_id' => 32, 'code' => '03203', 'name' => 'Naivasha'],
             ['county_id' => 32, 'code' => '03204', 'name' => 'Gilgil'],
             ['county_id' => 32, 'code' => '03205', 'name' => 'Kuresoi North'],
@@ -258,15 +266,15 @@ class SubCountySeeder extends Seeder
             ['county_id' => 33, 'code' => '03302', 'name' => 'Narok East'],
             ['county_id' => 33, 'code' => '03303', 'name' => 'Narok South'],
             ['county_id' => 33, 'code' => '03304', 'name' => 'Narok West'],
-            ['county_id' => 33, 'code' => '03305', 'name' => 'Kilgoris'],
-            ['county_id' => 33, 'code' => '03306', 'name' => 'Emurua Dikirr'],
+            ['county_id' => 33, 'code' => '03305', 'name' => 'Transmara East'],
+            ['county_id' => 33, 'code' => '03306', 'name' => 'Transmara West'],
 
             // KAJIADO (County ID: 34)
             ['county_id' => 34, 'code' => '03401', 'name' => 'Kajiado North'],
             ['county_id' => 34, 'code' => '03402', 'name' => 'Kajiado Central'],
-            ['county_id' => 34, 'code' => '03403', 'name' => 'Kajiado East'],
-            ['county_id' => 34, 'code' => '03404', 'name' => 'Kajiado West'],
-            ['county_id' => 34, 'code' => '03405', 'name' => 'Kajiado South'],
+            ['county_id' => 34, 'code' => '03403', 'name' => 'Isinya'],
+            ['county_id' => 34, 'code' => '03404', 'name' => 'Mashuuru'],
+            ['county_id' => 34, 'code' => '03405', 'name' => 'Loitoktok'],
 
             // KERICHO (County ID: 35)
             ['county_id' => 35, 'code' => '03501', 'name' => 'Kipkelion East'],
@@ -286,13 +294,17 @@ class SubCountySeeder extends Seeder
             // KAKAMEGA (County ID: 37)
             ['county_id' => 37, 'code' => '03701', 'name' => 'Lurambi'],
             ['county_id' => 37, 'code' => '03702', 'name' => 'Navakholo'],
-            ['county_id' => 37, 'code' => '03703', 'name' => 'Mumias West'],
-            ['county_id' => 37, 'code' => '03704', 'name' => 'Mumias East'],
-            ['county_id' => 37, 'code' => '03705', 'name' => 'Matungu'],
-            ['county_id' => 37, 'code' => '03706', 'name' => 'Butere'],
-            ['county_id' => 37, 'code' => '03707', 'name' => 'Khwisero'],
-            ['county_id' => 37, 'code' => '03708', 'name' => 'Shinyalu'],
-            ['county_id' => 37, 'code' => '03709', 'name' => 'Ikolomani'],
+            ['county_id' => 37, 'code' => '03703', 'name' => 'Mumias'],
+            ['county_id' => 37, 'code' => '03704', 'name' => 'Butere'],
+            ['county_id' => 37, 'code' => '03705', 'name' => 'Khwisero'],
+            ['county_id' => 37, 'code' => '03706', 'name' => 'Lugari'],
+            ['county_id' => 37, 'code' => '03707', 'name' => 'Kakamega Central'],
+            ['county_id' => 37, 'code' => '03708', 'name' => 'Kakamega North'],
+            ['county_id' => 37, 'code' => '03709', 'name' => 'Kakamega South'],
+            ['county_id' => 37, 'code' => '03710', 'name' => 'Kakamega East'],
+            ['county_id' => 37, 'code' => '03711', 'name' => 'Lukuyani'],
+            ['county_id' => 37, 'code' => '03712', 'name' => 'Matete'],
+            ['county_id' => 37, 'code' => '03713', 'name' => 'Matungu'],
 
             // VIHIGA (County ID: 38)
             ['county_id' => 38, 'code' => '03801', 'name' => 'Vihiga'],
@@ -316,10 +328,9 @@ class SubCountySeeder extends Seeder
             ['county_id' => 40, 'code' => '04001', 'name' => 'Teso North'],
             ['county_id' => 40, 'code' => '04002', 'name' => 'Teso South'],
             ['county_id' => 40, 'code' => '04003', 'name' => 'Nambale'],
-            ['county_id' => 40, 'code' => '04004', 'name' => 'Matayos'],
-            ['county_id' => 40, 'code' => '04005', 'name' => 'Butula'],
-            ['county_id' => 40, 'code' => '04006', 'name' => 'Funyula'],
-            ['county_id' => 40, 'code' => '04007', 'name' => 'Budalangi'],
+            ['county_id' => 40, 'code' => '04004', 'name' => 'Butula'],
+            ['county_id' => 40, 'code' => '04005', 'name' => 'Funyula'],
+            ['county_id' => 40, 'code' => '04006', 'name' => 'Budalangi'],
 
             // SIAYA (County ID: 41)
             ['county_id' => 41, 'code' => '04101', 'name' => 'Ugenya'],
@@ -344,9 +355,9 @@ class SubCountySeeder extends Seeder
             ['county_id' => 43, 'code' => '04303', 'name' => 'Rangwe'],
             ['county_id' => 43, 'code' => '04304', 'name' => 'Suba'],
             ['county_id' => 43, 'code' => '04305', 'name' => 'Mbita'],
-            ['county_id' => 43, 'code' => '04306', 'name' => 'Rachuonyo North'],
-            ['county_id' => 43, 'code' => '04307', 'name' => 'Rachuonyo East'],
-            ['county_id' => 43, 'code' => '04308', 'name' => 'Rachuonyo South'],
+            ['county_id' => 43, 'code' => '04306', 'name' => 'Kabondo'],
+            ['county_id' => 43, 'code' => '04307', 'name' => 'Karachuonyo'],
+            ['county_id' => 43, 'code' => '04308', 'name' => 'Kaspul'],
 
             // MIGORI (County ID: 44)
             ['county_id' => 44, 'code' => '04401', 'name' => 'Rongo'],
@@ -357,6 +368,8 @@ class SubCountySeeder extends Seeder
             ['county_id' => 44, 'code' => '04406', 'name' => 'Nyatike'],
             ['county_id' => 44, 'code' => '04407', 'name' => 'Kuria West'],
             ['county_id' => 44, 'code' => '04408', 'name' => 'Kuria East'],
+            ['county_id' => 44, 'code' => '04409', 'name' => 'Mabera'],
+            ['county_id' => 44, 'code' => '04410', 'name' => 'Ntimaru'],
 
             // KISII (County ID: 45)
             ['county_id' => 45, 'code' => '04501', 'name' => 'Bonchari'],
@@ -370,10 +383,11 @@ class SubCountySeeder extends Seeder
             ['county_id' => 45, 'code' => '04509', 'name' => 'Kitutu Chache South'],
 
             // NYAMIRA (County ID: 46)
-            ['county_id' => 46, 'code' => '04601', 'name' => 'North Mugirango'],
-            ['county_id' => 46, 'code' => '04602', 'name' => 'West Mugirango'],
-            ['county_id' => 46, 'code' => '04603', 'name' => 'Borabu'],
-            ['county_id' => 46, 'code' => '04604', 'name' => 'Kitutu Masaba'],
+            ['county_id' => 46, 'code' => '04601', 'name' => 'Borabu'],
+            ['county_id' => 46, 'code' => '04602', 'name' => 'Manga'],
+            ['county_id' => 46, 'code' => '04603', 'name' => 'Masaba North'],
+            ['county_id' => 46, 'code' => '04604', 'name' => 'Nyamira North'],
+            ['county_id' => 46, 'code' => '04605', 'name' => 'Nyamira North'],
 
             // NAIROBI (County ID: 47)
             ['county_id' => 47, 'code' => '04701', 'name' => 'Westlands'],
