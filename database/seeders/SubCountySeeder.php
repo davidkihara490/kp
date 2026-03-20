@@ -170,7 +170,7 @@ class SubCountySeeder extends Seeder
             ['county_id' => 21, 'code' => '02106', 'name' => 'Kandara'],
             ['county_id' => 21, 'code' => '02107', 'name' => 'Gatanga'],
             ['county_id' => 21, 'code' => '02108', 'name' => 'Kahuro'],
-            ['county_id' => 21, 'code' => '02108', 'name' => 'Murang\'a South'],
+            ['county_id' => 21, 'code' => '02109', 'name' => 'Murang\'a South'],
 
             // KIAMBU (County ID: 22)
             ['county_id' => 22, 'code' => '02201', 'name' => 'Gatundu South'],
