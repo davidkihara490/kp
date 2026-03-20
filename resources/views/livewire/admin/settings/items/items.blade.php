@@ -14,8 +14,8 @@
                     <tr>
                         <th>#</th>
                         <th>Name</th>
-                        <th>Category</th>
-                        <th>Sub Category</th>
+                        <!-- <th>Category</th>
+                        <th>Sub Category</th> -->
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -25,8 +25,8 @@
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $item->name }}</td>
-                            <td>{{ $item->subCategory->category->name }}</td>
-                            <td>{{ $item->subCategory->name }}</td>
+                            <!-- <td>{{ $item->subCategory?->category?->name }}</td>
+                            <td>{{ $item->subCategory?->name }}</td> -->
                             <td>
                                 @if ($item->status == true)
                                     <span class="badge badge-success">Active</span>
