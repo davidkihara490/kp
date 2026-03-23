@@ -55,7 +55,7 @@ class ViewPartner extends Component
     private function getVerificationBadgeColor()
     {
         return match ($this->partner->verification_status) {
-            'active' => 'success',
+            'verified' => 'success',
             'pending' => 'warning',
             'rejected' => 'danger',
             default => 'secondary'
@@ -64,8 +64,8 @@ class ViewPartner extends Component
 
     private function getStatusBadgeColor()
     {
-        return match ($this->partner->status) {
-            'active' => 'success',
+        return match ($this->partner->verification_status) {
+            'verified' => 'success',
             'pending' => 'warning',
             'suspended' => 'danger',
             'inactive' => 'secondary',
@@ -98,7 +98,7 @@ class ViewPartner extends Component
     public function verifyPartner()
     {
         $this->partner->update([
-            'verification_status' => 'active',
+            'verification_status' => 'verified',
         ]);
 
         session()->flash('success', 'Partner verified successfully');

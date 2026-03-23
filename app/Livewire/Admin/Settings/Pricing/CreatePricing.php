@@ -14,7 +14,6 @@ class CreatePricing extends Component
     public $items = [];
     public $weightRanges = [];
     public $zones = [];
-
     // Form fields
     public $selected_item_id;
     public $selected_weight_range_id;
@@ -41,7 +40,7 @@ class CreatePricing extends Component
 
     public function mount()
     {
-        $this->items = Item::limit(10)->get();
+        $this->items = Item::all();
         $this->weightRanges = WeightRange::all();
         $this->zones = Zone::all();
 
@@ -75,7 +74,7 @@ class CreatePricing extends Component
 
             DB::beginTransaction();
             $pricing = Pricing::create([
-                'item' => $this->selected_item_id,
+                'item_id' => $this->selected_item_id,
                 'min_weight' => $weightRange->min_weight,
                 'max_weight' => $weightRange->max_weight,
 

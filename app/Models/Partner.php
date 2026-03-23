@@ -88,7 +88,6 @@ class Partner extends Model
 
         // System Fields
         'onboarding_step',
-        'verification_status',
     ];
 
     protected $casts = [
