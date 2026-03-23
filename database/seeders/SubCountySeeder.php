@@ -331,6 +331,7 @@ class SubCountySeeder extends Seeder
             ['county_id' => 40, 'code' => '04004', 'name' => 'Butula'],
             ['county_id' => 40, 'code' => '04005', 'name' => 'Funyula'],
             ['county_id' => 40, 'code' => '04006', 'name' => 'Budalangi'],
+            ['county_id' => 40, 'code' => '04007', 'name' => 'Matayos'],
 
             // SIAYA (County ID: 41)
             ['county_id' => 41, 'code' => '04101', 'name' => 'Ugenya'],
