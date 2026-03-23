@@ -20,7 +20,7 @@
                         <i class="bi bi-check-circle"></i>
                     </div>
                     <div class="stat-value">{{ $inTransitParcels }}</div>
-                    <div class="stat-label">Processed</div>
+                    <div class="stat-label">All Processed</div>
                     <!-- <div class="stat-change positive">
                         <i class="bi bi-arrow-up"></i>
                         <span>8% from yesterday</span>
@@ -32,7 +32,7 @@
                         <i class="bi bi-clock"></i>
                     </div>
                     <div class="stat-value">{{ $pendingParcels }}</div>
-                    <div class="stat-label">Pending</div>
+                    <div class="stat-label">All Pending</div>
                     <!-- <div class="stat-change negative">
                         <i class="bi bi-arrow-down"></i>
                         <span>3 from yesterday</span>
@@ -44,7 +44,7 @@
                     <div class="stat-icon">
                         <i class="bi bi-cash"></i>
                     </div>
-                    <div class="stat-value">Ksh 45,820</div>
+                    <div class="stat-value">{{ $todaysRevenue }}</div>
                     <div class="stat-label">Today's Revenue</div>
                     <!-- <div class="stat-change positive">
                         <i class="bi bi-arrow-up"></i>
@@ -94,7 +94,7 @@
         </div> -->
 
             <!-- Recent Activity & Recent Parcels -->
-            <div class="row">
+            <!-- <div class="row">
                 <div class="col-lg-6">
                     <div class="dashboard-section">
                         <div class="section-header">
@@ -188,7 +188,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </div>

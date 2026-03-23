@@ -407,6 +407,12 @@ class SubCountySeeder extends Seeder
             ['county_id' => 47, 'code' => '04715', 'name' => 'Kamukunji'],
             ['county_id' => 47, 'code' => '04716', 'name' => 'Starehe'],
             ['county_id' => 47, 'code' => '04717', 'name' => 'Mathare'],
+
+            // NAIROBI METROPOLITAN (County ID: 48)
+            ['county_id' => 48, 'code' => '04801', 'name' => 'Kajiado Urban'],
+            ['county_id' => 48, 'code' => '04802', 'name' => 'Machakos Urban'],
+            ['county_id' => 48, 'code' => '04803', 'name' => 'Kiambu Urban'],
+
         ];
 
         foreach ($subCounties as $subCounty) {

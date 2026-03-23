@@ -109,7 +109,7 @@
                                 <div class="searchable-select-container">
                                     <div class="searchable-select" id="fromTownSelect">
                                         <div class="searchable-select-display" data-target="fromTown">
-                                            <span class="selected-text">Select pickup town</span>
+                                            <span class="selected-text" style="color: black;">Select pickup town</span>
                                             <i class="bi bi-chevron-down"></i>
                                         </div>
                                         <div class="searchable-select-dropdown" id="fromTownDropdown">
@@ -121,7 +121,7 @@
                                                 @foreach($towns as $town)
                                                 <div class="option-item" data-value="{{ $town->name }}">
                                                     <i class="bi bi-building me-2"></i>
-                                                    <span class="town-name">{{ $town->subCounty?->county?->name }}-{{ $town->name }}</span>
+                                                    <span class="town-name">{{ $town->name }}</span>
                                                     <small class="town-county text-muted">{{ $town->subCounty?->county?->name ?? 'Kenya' }}</small>
                                                 </div>
                                                 @endforeach
@@ -138,7 +138,7 @@
                                 <div class="searchable-select-container">
                                     <div class="searchable-select" id="toTownSelect">
                                         <div class="searchable-select-display" data-target="toTown">
-                                            <span class="selected-text">Select delivery town</span>
+                                            <span class="selected-text" style="color: black;">Select delivery town</span>
                                             <i class="bi bi-chevron-down"></i>
                                         </div>
                                         <div class="searchable-select-dropdown" id="toTownDropdown">
@@ -150,7 +150,7 @@
                                                 @foreach($towns as $town)
                                                 <div class="option-item" data-value="{{ $town->name }}">
                                                     <i class="bi bi-building me-2"></i>
-                                                    <span class="town-name">{{ $town->subCounty?->county?->name }}-{{ $town->name }}</span>
+                                                    <span class="town-name">{{ $town->name }}</span>
                                                     <small class="town-county text-muted">{{ $town->subCounty?->county?->name ?? 'Kenya' }}</small>
                                                 </div>
                                                 @endforeach
@@ -743,10 +743,9 @@
                         </div>
 
                         <div class="social-icons mt-4">
-                            <a href="#"><i class="bi bi-facebook"></i></a>
-                            <a href="#"><i class="bi bi-instagram"></i></a>
-                            <a href="#"><i class="bi bi-whatsapp"></i></a>
-                            <a href="#"><i class="bi bi-tiktok"></i></a>
+                            <a target="_blank" href="https://www.facebook.com/karibuparcels"><i class="bi bi-facebook"></i></a>
+                            <a target="_blank" href="https://www.instagram.com/karibuparcels/"><i class="bi bi-instagram"></i></a>
+                            <a target="_blank" href="https://www.tiktok.com/@karibuparcels"><i class="bi bi-tiktok"></i></a>
                         </div>
                     </div>
                 </div>
@@ -776,40 +775,33 @@
                     <p class="opacity-75">Your trusted partner for fast, reliable, and secure courier services across
                         Kenya.</p>
                     <div class="social-icons">
-                        <a href="#"><i class="bi bi-facebook"></i></a>
-                        <a href="#"><i class="bi bi-instagram"></i></a>
-                        <a href="#"><i class="bi bi-whatsapp"></i></a>
-                        <a href="#"><i class="bi bi-tiktok"></i></a>
+                        <a target="_blank" href="https://www.facebook.com/karibuparcels"><i class="bi bi-facebook"></i></a>
+                        <a target="_blank" href="https://www.instagram.com/karibuparcels/"><i class="bi bi-instagram"></i></a>
+                        <a target="_blank" href="https://www.tiktok.com/@karibuparcels"><i class="bi bi-tiktok"></i></a>
                     </div>
                 </div>
 
                 <div class="col-lg-2 col-md-6 mb-4">
                     <h5>Services</h5>
                     <ul class="footer-links">
-                        <li><a href="#features">Express Delivery</a></li>
-                        <li><a href="#features">Standard Delivery</a></li>
-                        <li><a href="#features">Bulk Shipping</a></li>
-                        <li><a href="#features">International</a></li>
+                        <li><a href="#features">Town to Town Parcel Sending</a></li>
+                        <li><a href="#features">Town to Town Parcel Receiving</a></li>
+                        <li><a href="#features">Parcel Forwarding Service</a></li>
                     </ul>
                 </div>
 
                 <div class="col-lg-2 col-md-6 mb-4">
                     <h5>Company</h5>
                     <ul class="footer-links">
-                        <li><a href="#">About Us</a></li>
-                        <li><a href="#">Careers</a></li>
-                        <li><a href="#">News</a></li>
-                        <li><a href="#contact">Support</a></li>
+                        <li><a href="{{ route('blogs.index') }}">Blog</a></li>
                     </ul>
                 </div>
 
                 <div class="col-lg-2 col-md-6 mb-4">
                     <h5>Resources</h5>
                     <ul class="footer-links">
-                        <li><a href="#tracking">Track Package</a></li>
-                        <li><a href="#stations">Find Station</a></li>
-                        <li><a href="#blogs">Blog</a></li>
-                        <li><a href="#faq">Help Center</a></li>
+                        <li><a href="#faq">FAQs</a></li>
+                        <li><a href="{{ route('blogs.index') }}">Blog</a></li>
                     </ul>
                 </div>
 
@@ -818,8 +810,6 @@
                     <ul class="footer-links">
                         <li><a href="#">Privacy Policy</a></li>
                         <li><a href="#">Terms of Service</a></li>
-                        <li><a href="#">Cookie Policy</a></li>
-                        <li><a href="#">Shipping Policy</a></li>
                     </ul>
                 </div>
             </div>
@@ -3305,16 +3295,16 @@
 
         .option-item.selected {
             background: var(--primary-color);
-            color: white;
+            color: black;
         }
 
         .option-item.selected .town-name {
-            color: white;
+            color: black;
         }
 
         .option-item.selected .town-county {
             background: rgba(255, 255, 255, 0.2);
-            color: white;
+            color: black;
         }
 
         .option-item i {
@@ -3323,7 +3313,7 @@
         }
 
         .option-item.selected i {
-            color: white;
+            color: black;
         }
 
         /* Weight Input Group */

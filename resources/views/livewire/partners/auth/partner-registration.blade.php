@@ -293,10 +293,11 @@
                             <div class="col-12 mt-3">
                                 <div class="card border-light">
                                     <div class="card-body p-3">
-                                        <h6 class="fw-semibold mb-2 text-success" style="font-size: 0.85rem;">
+                                        {{--<h6 class="fw-semibold mb-2 text-success" style="font-size: 0.85rem;">
                                             <i class="bi bi-shield-check me-1"></i>Agreements
-                                        </h6>
-                                        <div class="form-check mb-1">
+                                        </h6>--}}
+                                        
+                                       {{-- <div class="form-check mb-1">
                                             <input class="form-check-input {{ $errors->has('terms_and_conditions') ? 'is-invalid' : '' }}"
                                                 type="checkbox" id="terms" wire:model="terms_and_conditions">
                                             <label class="form-check-label" for="terms" style="font-size: 0.8rem;">
@@ -305,8 +306,9 @@
                                             @error('terms_and_conditions')
                                             <div class="invalid-feedback d-block" style="font-size: 0.75rem;">{{ $message }}</div>
                                             @enderror
-                                        </div>
-                                        <div class="form-check">
+                                        </div>--}}
+
+                                        {{--<div class="form-check">
                                             <input class="form-check-input {{ $errors->has('privacy_policy') ? 'is-invalid' : '' }}"
                                                 type="checkbox" id="privacy" wire:model="privacy_policy">
                                             <label class="form-check-label" for="privacy" style="font-size: 0.8rem;">
@@ -315,7 +317,8 @@
                                             @error('privacy_policy')
                                             <div class="invalid-feedback d-block" style="font-size: 0.75rem;">{{ $message }}</div>
                                             @enderror
-                                        </div>
+                                        </div>--}}
+
                                     </div>
                                 </div>
                             </div>
@@ -330,13 +333,13 @@
                                     <i class="bi bi-building me-1"></i>
                                     Company Details
                                 </h4>
-                                <p class="text-muted mb-2" style="font-size: 0.8rem;">Business registration information</p>
+                                <p class="text-muted mb-2" style="font-size: 0.8rem;"> Business registration information</p>
                             </div>
 
                             <div class="row g-2">
                                 <div class="col-12">
                                     <div class="form-group">
-                                        <label class="form-label fw-semibold mb-1" style="font-size: 0.8rem;">Company Name <span class="text-danger">*</span></label>
+                                        <label class="form-label fw-semibold mb-1" style="font-size: 0.8rem;">Company Name / Business Name <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control form-control-sm {{ $errors->has('company_name') ? 'is-invalid' : '' }}"
                                             placeholder="Your company name" wire:model="company_name">
                                         @error('company_name')
@@ -347,7 +350,7 @@
 
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label fw-semibold mb-1" style="font-size: 0.8rem;">Registration Number <span class="text-danger">*</span></label>
+                                        <label class="form-label fw-semibold mb-1" style="font-size: 0.8rem;">Company Registration Number / Business Name Registration Number<span class="text-danger">*</span></label>
                                         <input type="text" class="form-control form-control-sm {{ $errors->has('registration_number') ? 'is-invalid' : '' }}"
                                             placeholder="CP12345678" wire:model="registration_number">
                                         @error('registration_number')
@@ -358,7 +361,7 @@
 
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label fw-semibold mb-1" style="font-size: 0.8rem;">KRA PIN <span class="text-danger">*</span></label>
+                                        <label class="form-label fw-semibold mb-1" style="font-size: 0.8rem;">Company KRA PIN / Personal KRA pin (When dealing with business name) <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control form-control-sm {{ $errors->has('kra_pin') ? 'is-invalid' : '' }}"
                                             placeholder="A123456789Z" wire:model="kra_pin">
                                         @error('kra_pin')
@@ -412,7 +415,7 @@
                         <div class="row g-2">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.8rem;">Account Number <span class="text-danger">*</span></label>
+                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.8rem;">Account number (The account we will use to pay you with) <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control form-control-sm {{ $errors->has('bank_account_number') ? 'is-invalid' : '' }}"
                                         placeholder="Account number" wire:model="bank_account_number">
                                     @error('bank_account_number')

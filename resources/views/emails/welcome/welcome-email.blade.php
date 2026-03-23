@@ -42,7 +42,7 @@
         
         <p style="margin-top: 10px; font-size: 13px; color: #666;">
             <i class="bi bi-info-circle"></i> 
-            Please verify your email to activate your account.
+            Please verify your email. Once you verify, wait for the admin to approve you for you to access your portal.
         </p>
     </div>
     @endif

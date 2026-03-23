@@ -81,7 +81,7 @@
         @endif
 
         <!-- Reports Section -->
-        <div class="nav-section">
+        <!-- <div class="nav-section">
             <div class="nav-section-title">Reports</div>
             <a href="#" class="nav-link">
                 <i class="bi bi-bar-chart"></i>
@@ -91,28 +91,28 @@
                 <i class="bi bi-pie-chart"></i>
                 <span>Monthly Report</span>
             </a>
-        </div>
+        </div> -->
 
         <div class="nav-section">
             <div class="nav-section-title">Settings</div>
-            @if ( auth()->guard('partner')->user()->user_type == 'pickup-dropoff' || auth()->guard('partner')->user()->user_type == 'transport' || auth()->guard('partner')->user()->user_type == 'in-charge')
+            <!-- @if ( auth()->guard('partner')->user()->user_type == 'pickup-dropoff' || auth()->guard('partner')->user()->user_type == 'transport' || auth()->guard('partner')->user()->user_type == 'in-charge')
             <a href="{{ route('partners.profile.edit') }}" class="nav-link">
                 <i class="bi bi-person-circle"></i>
                 <span>Partner Profile</span>
             </a>
-            @endif
+            @endif -->
             <a href="{{ route('partners.roles-and-permissions.index') }}" class="nav-link">
                 <i class="bi bi-lock"></i>
                 <span>Roles And Permissions</span>
             </a>
-            <a href="#" class="nav-link">
+            <!-- <a href="#" class="nav-link">
                 <i class="bi bi-shield-check"></i>
                 <span>Security</span>
             </a>
             <a href="#" class="nav-link">
                 <i class="bi bi-headset"></i>
                 <span>Support</span>
-            </a>
+            </a> -->
         </div>
     </nav>
 

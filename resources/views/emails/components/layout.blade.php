@@ -41,7 +41,7 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
 
-        /* Header styles - matching registration theme */
+        /* Header styles */
         .email-header {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             padding: 25px 30px;
@@ -57,11 +57,6 @@
             align-items: center;
             justify-content: center;
             margin-right: 12px;
-        }
-
-        .logo-circle i {
-            color: #28a745;
-            font-size: 24px;
         }
 
         .email-title {
@@ -83,7 +78,7 @@
             background: #ffffff;
         }
 
-        /* Success/status icons */
+        /* Status icon */
         .status-icon {
             width: 70px;
             height: 70px;
@@ -93,11 +88,6 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
-        }
-
-        .status-icon i {
-            font-size: 35px;
-            color: #28a745;
         }
 
         /* Typography */
@@ -130,13 +120,11 @@
 
         .logo-img {
             transition: transform 0.3s ease;
+            max-width: 100%;
+            height: auto;
         }
 
-        .logo-img:hover {
-            transform: scale(1.05);
-        }
-
-        /* Info cards - matching registration theme */
+        /* Info cards */
         .info-card {
             background: #f8f9fa;
             border: 1px solid #e9ecef;
@@ -158,12 +146,6 @@
             background: #f8f9fa;
             border-radius: 10px;
             border: 1px solid #e9ecef;
-        }
-
-        .info-item i {
-            font-size: 24px;
-            color: #28a745;
-            margin-bottom: 8px;
         }
 
         .info-item h4 {
@@ -250,13 +232,6 @@
             color: #28a745;
         }
 
-        /* Dividers */
-        .divider {
-            height: 1px;
-            background: linear-gradient(to right, transparent, #28a745, transparent);
-            margin: 25px 0;
-        }
-
         /* Progress indicators */
         .progress-steps {
             display: flex;
@@ -317,27 +292,58 @@
             border-top: 1px solid #e9ecef;
         }
 
+        /* Social Links - Using inline SVG, Plain Icons, Centered */
         .social-links {
-            margin: 15px 0;
+            margin: 0 0 20px 0;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            flex-wrap: wrap;
         }
 
         .social-link {
-            display: inline-block;
-            width: 35px;
-            height: 35px;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            border-radius: 50%;
-            line-height: 35px;
-            text-align: center;
-            margin: 0 5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-link svg {
+            width: 28px;
+            height: 28px;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover svg {
+            transform: translateY(-2px);
+        }
+
+        /* Social icon colors */
+        .social-link:hover .facebook-icon {
+            fill: #1877f2;
+        }
+        
+        .social-link:hover .instagram-icon {
+            fill: #e4405f;
+        }
+        
+        .social-link:hover .tiktok-icon {
+            fill: #000000;
         }
 
         .footer-text {
             font-size: 12px;
             color: #999999;
             margin: 10px 0;
+            text-align: center;
+        }
+
+        .footer-text a {
+            color: #28a745;
+            text-decoration: none;
         }
 
         /* Alert boxes */
@@ -373,6 +379,15 @@
             .btn {
                 display: block;
                 margin: 10px 0;
+            }
+            
+            .social-links {
+                gap: 20px;
+            }
+            
+            .social-link svg {
+                width: 24px;
+                height: 24px;
             }
         }
 
@@ -427,7 +442,7 @@
     <div class="email-wrapper">
         <!-- Header -->
         <div class="email-header">
-            <table width="100%">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                     <td>
                         <div style="display: flex; align-items: center;">
@@ -451,24 +466,51 @@
 
         <!-- Footer -->
         <div class="email-footer">
+            <!-- Social Links - Using inline SVG icons for guaranteed visibility -->
             <div class="social-links">
-                <a href="#" class="social-link">f</a>
-                <a href="#" class="social-link">t</a>
-                <a href="#" class="social-link">in</a>
-                <a href="#" class="social-link">ig</a>
+                <!-- Facebook Icon -->
+                <a href="https://www.facebook.com/karibuparcels" target="_blank" class="social-link" aria-label="Facebook">
+                    <svg class="facebook-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#3b5998">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                </a>
+                
+                <!-- Instagram Icon -->
+                <a href="https://www.instagram.com/karibuparcels/" target="_blank" class="social-link" aria-label="Instagram">
+                    <svg class="instagram-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#e4405f">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.336 3.608 1.311.975.975 1.249 2.242 1.311 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.336 2.633-1.311 3.608-.975.975-2.242 1.249-3.608 1.311-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.336-3.608-1.311-.975-.975-1.249-2.242-1.311-3.608-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.062-1.366.336-2.633 1.311-3.608.975-.975 2.242-1.249 3.608-1.311 1.266-.058 1.646-.07 4.85-.07zM12 0C8.741 0 8.332.014 7.052.072 5.77.13 4.604.353 3.531 1.079 2.458 1.805 1.805 2.458 1.079 3.531.353 4.604.13 5.77.072 7.052.014 8.332 0 8.741 0 12s.014 3.668.072 4.948c.058 1.282.281 2.448 1.007 3.521.726 1.073 1.379 1.726 2.452 2.452 1.073.726 2.239.949 3.521 1.007 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c1.282-.058 2.448-.281 3.521-1.007 1.073-.726 1.726-1.379 2.452-2.452.726-1.073.949-2.239 1.007-3.521.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.058-1.282-.281-2.448-1.007-3.521-.726-1.073-1.379-1.726-2.452-2.452-1.073-.726-2.239-.949-3.521-1.007C15.668.014 15.259 0 12 0z"/>
+                        <path d="M12 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8z"/>
+                        <circle cx="18.406" cy="5.594" r="1.44"/>
+                    </svg>
+                </a>
+                
+                <!-- TikTok Icon -->
+                <a href="https://www.tiktok.com/@karibuparcels" target="_blank" class="social-link" aria-label="TikTok">
+                    <svg class="tiktok-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#010101">
+                        <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.76-.08 1.4-.54 2.79-1.35 3.99-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.98 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.3-.69.3-1.07.1-2.76.05-5.52.07-8.28.01-2.72.01-5.44.02-8.16z"/>
+                    </svg>
+                </a>
             </div>
 
+            <!-- Contact Information -->
             <p class="footer-text">
-                © {{ date('Y') }} Karibu Parcels. All rights reserved.<br>
-                Nairobi, Kenya | hello@karibuparcels.com | +254 700 000 000
+                <strong>Karibu Parcels</strong><br>
+                Nairobi, Kenya | +254 700 130 759<br>
+                <a href="mailto:admin@karibuparcels.com">admin@karibuparcels.com</a>
             </p>
 
+            <!-- Copyright -->
+            <p class="footer-text">
+                © {{ date('Y') }} Karibu Parcels. All rights reserved.
+            </p>
+
+            <!-- Footer Links -->
             <p class="footer-text" style="margin-top: 15px;">
-                <a href="#" style="color: #28a745; text-decoration: none; margin: 0 10px;">Privacy Policy</a>
+                <a href="#">Privacy Policy</a>
                 |
-                <a href="#" style="color: #28a745; text-decoration: none; margin: 0 10px;">Terms of Service</a>
+                <a href="#">Terms of Service</a>
                 |
-                <a href="#" style="color: #28a745; text-decoration: none; margin: 0 10px;">Unsubscribe</a>
+                <a href="#">Unsubscribe</a>
             </p>
         </div>
     </div>

@@ -29,8 +29,8 @@ class PartnerRegistration extends Component
     public $owner_last_name;
     public $owner_email;
     public $owner_phone_number;
-    public $terms_and_conditions = false;
-    public $privacy_policy = false;
+    public $terms_and_conditions = true;
+    public $privacy_policy = true;
     // Company Details
     public $company_name;
     public $registration_number;
@@ -110,8 +110,8 @@ class PartnerRegistration extends Component
             'owner_last_name' => 'required|min:2|max:50',
             'owner_email' => 'required|email|unique:users,email',
             'owner_phone_number' => ['required', 'regex:/^(\+254|0)[1-9]\d{8}$/'], // Fixed regex
-            'terms_and_conditions' => 'accepted',
-            'privacy_policy' => 'accepted',
+            // 'terms_and_conditions' => 'accepted',
+            // 'privacy_policy' => 'accepted',
 
             // Step 3: Company Details
             'company_name' => 'required|min:3|max:200',
@@ -152,8 +152,8 @@ class PartnerRegistration extends Component
     protected $messages = [
         'phone_number.regex' => 'Please enter a valid Kenyan phone number (e.g., 0712345678 or +254712345678)',
         'kra_pin.regex' => 'Please enter a valid KRA PIN (format: A123456789Z)',
-        'terms_and_conditions.accepted' => 'You must accept the terms and conditions',
-        'privacy_policy.accepted' => 'You must accept the privacy policy',
+        // 'terms_and_conditions.accepted' => 'You must accept the terms and conditions',
+        // 'privacy_policy.accepted' => 'You must accept the privacy policy',
         'registration_certificate.required' => 'Registration certificate is required',
         'pin_certificate.required' => 'KRA PIN certificate is required',
         'insurance_certificate.required_if' => 'Insurance certificate is required when vehicles are insured',
@@ -305,8 +305,8 @@ class PartnerRegistration extends Component
                     'owner_email' => 'required|email|unique:users,email',
                     'owner_phone_number' => 'required', // Fixed
                     // 'owner_phone_number' => ['required', 'regex:/^(\+254|0)[1-9]\d{8}$/'], // Fixed
-                    'terms_and_conditions' => 'accepted',
-                    'privacy_policy' => 'accepted',
+                    // 'terms_and_conditions' => 'accepted',
+                    // 'privacy_policy' => 'accepted',
                 ]);
                 break;
 

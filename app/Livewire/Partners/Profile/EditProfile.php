@@ -208,7 +208,7 @@ class EditProfile extends Component
 
     public function mount()
     {
-        $this->partner = Auth::guard('partner')->user()->currentPartner();
+        $this->partner = Auth::guard('partner')->user()->partner;
         $this->loadPartnerData();
         $this->availableTowns = Town::orderBy('name')->get();
     }

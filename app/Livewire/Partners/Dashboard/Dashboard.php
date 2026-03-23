@@ -6,6 +6,7 @@ use App\Models\Driver;
 use App\Models\Parcel;
 use App\Models\ParcelHandlingAssistant;
 use App\Models\Partner;
+use Carbon\Carbon;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 
@@ -50,16 +51,18 @@ class Dashboard extends Component
         $parcels = $query->get();
 
         // Stats calculations
-        $totalParcels = $query->count();
+        $totalParcels = $query->whereDate('created_at', Carbon::today())->count();
         $pendingParcels = Parcel::where('current_status', 'pending')->count();
         $inTransitParcels = Parcel::whereIn('current_status', ['in_transit', 'at_warehouse', 'out_for_delivery'])->count();
         $deliveredParcels = Parcel::where('current_status', 'delivered')->count();
 
+        $todaysRevenue = $query->whereDate('date', Carbon::today())->sum('payout');
 
         return view('livewire.partners.dashboard.dashboard', [
             'totalParcels'=> $totalParcels,
             'pendingParcels'=> $pendingParcels,
             'inTransitParcels'=> $inTransitParcels,
+            'todaysRevenue'=> $todaysRevenue,
             // 'pendingParcels'=> $pendingParcels,
             ''
         ]);

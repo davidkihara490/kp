@@ -61,6 +61,7 @@ class CountySeeder extends Seeder
             ['code' => '045', 'name' => 'Kisii'],
             ['code' => '046', 'name' => 'Nyamira'],
             ['code' => '047', 'name' => 'Nairobi'],
+            ['code' => '048', 'name' => 'Nairobi Metropolitan'],
         ];
 
         foreach ($counties as $county) {

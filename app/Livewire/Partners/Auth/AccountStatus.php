@@ -21,9 +21,7 @@ class AccountStatus extends Component
     // Contact information
     public $ownerEmail = '';
     public $ownerPhone = '';
-    public $responsibleOfficerEmail = '';
-    public $responsibleOfficerPhone = '';
-    
+   
     // Computed properties
     public $verificationPercentage = 0;
     public $completedVerifications = 0;
@@ -56,15 +54,11 @@ class AccountStatus extends Component
         // Load verification status from partner model
         $this->ownerEmailVerified = (bool) $this->partner->owner_email_verified_at;
         $this->ownerPhoneVerified = (bool) $this->partner->owner_phone_verified_at;
-        $this->officerEmailVerified = (bool) $this->partner->responsible_officer_email_verified_at;
-        $this->officerPhoneVerified = (bool) $this->partner->responsible_officer_phone_verified_at;
         $this->adminVerified = (bool) $this->partner->admin_verified_at;
         
         // Load contact information
         $this->ownerEmail = $this->partner->owner_email;
         $this->ownerPhone = $this->partner->owner_phone_number;
-        $this->responsibleOfficerEmail = $this->partner->responsible_officer_email;
-        $this->responsibleOfficerPhone = $this->partner->responsible_officer_phone;
         
         // Calculate verification progress
         $this->calculateVerificationProgress();
@@ -78,11 +72,7 @@ class AccountStatus extends Component
             $this->adminVerified,
         ];
         
-        // Add officer email verification if email exists
-        if (!empty($this->responsibleOfficerEmail)) {
-            $verifications[] = $this->officerEmailVerified;
-        }
-        
+       
         // Officer phone is always required
         $verifications[] = $this->officerPhoneVerified;
         
@@ -159,12 +149,6 @@ class AccountStatus extends Component
     public function resendOfficerEmailVerification()
     {
         try {
-            if (empty($this->responsibleOfficerEmail)) {
-                $this->dispatch('verificationError', 
-                    message: 'Officer email not found. Please add an email first.'
-                );
-                return;
-            }
             
             \App\Jobs\SendPartnerVerificationEmail::dispatch(
                 $this->partner,
@@ -227,7 +211,6 @@ class AccountStatus extends Component
                 'responsible_officer_email' => $this->newOfficerEmail,
             ]);
             
-            $this->responsibleOfficerEmail = $this->newOfficerEmail;
             $this->newOfficerEmail = '';
             $this->showAddEmailForm = false;
             
