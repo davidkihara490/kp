@@ -67,9 +67,7 @@ class CreatePricing extends Component
     {
         $this->validate();
 
-
         try {
-
             $weightRange = WeightRange::findOrFail($this->selected_weight_range_id);
 
             DB::beginTransaction();

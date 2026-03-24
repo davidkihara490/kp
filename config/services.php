@@ -53,6 +53,7 @@ return [
         'api_key' => env('ONFONMEDIA_API_KEY'),
         'sender_name' => env('ONFONMEDIA_CLIENT_ID'),
         'api_url' => env('ONFONMEDIA_API_URL'),
+        'access_key' => env('ONFONMEDIA_ACCESS_KEY'),
     ],
 
     'whatsapp' => [

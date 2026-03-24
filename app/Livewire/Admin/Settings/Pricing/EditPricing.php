@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Settings\Pricing;
 
 use App\Models\Item;
 use App\Models\Pricing;
+use App\Models\PricingItem;
 use App\Models\PricingZone;
 use App\Models\WeightRange;
 use App\Models\Zone;
@@ -16,7 +17,6 @@ class EditPricing extends Component
     public $weightRanges = [];
     public $zones = [];
     public $pricing;
-
     // Form fields
     public $selected_item_id;
     public $selected_weight_range_id;
@@ -26,15 +26,14 @@ class EditPricing extends Component
         'selected_item_id' => 'required|exists:items,id',
         'selected_weight_range_id' => 'required|exists:weight_ranges,id',
         'pricing_rows.*.source_zone_id' => 'required|exists:zones,id',
-        'pricing_rows.*.destination_zone_id' => 'required|exists:zones,id|different:pricing_rows.*.source_zone_id',
+        'pricing_rows.*.destination_zone_id' => 'required|exists:zones,id',
         'pricing_rows.*.cost' => 'required|numeric|min:0',
-        'pricing_rows.*.id' => 'nullable|exists:pricing_zones,id',
+        'pricing_rows.*.id' => 'nullable|exists:pricing_items,id',
     ];
 
     protected $messages = [
         'pricing_rows.*.source_zone_id.required' => 'The source zone is required.',
         'pricing_rows.*.destination_zone_id.required' => 'The destination zone is required.',
-        'pricing_rows.*.destination_zone_id.different' => 'Source and destination zones must be different.',
         'pricing_rows.*.cost.required' => 'The cost is required.',
         'pricing_rows.*.cost.numeric' => 'The cost must be a number.',
         'pricing_rows.*.cost.min' => 'The cost must be at least 0.',
@@ -42,7 +41,7 @@ class EditPricing extends Component
 
     public function mount($id)
     {
-        $this->pricing = Pricing::with('zones')->findOrFail($id);
+        $this->pricing = Pricing::with('items')->findOrFail($id);
         
         $this->items = Item::all();
         $this->weightRanges = WeightRange::all();
@@ -59,7 +58,7 @@ class EditPricing extends Component
         $this->selected_weight_range_id = $weightRange ? $weightRange->id : null;
 
         // Load existing pricing zones
-        $this->pricing_rows = $this->pricing->zones->map(function($zone) {
+        $this->pricing_rows = $this->pricing->items->map(function($zone) {
             return [
                 'id' => $zone->id,
                 'source_zone_id' => $zone->source_zone_id,
@@ -119,7 +118,7 @@ class EditPricing extends Component
             ]);
 
             // Get existing zone IDs to track deletions
-            $existingZoneIds = $this->pricing->zones()->pluck('id')->toArray();
+            $existingZoneIds = $this->pricing->items()->pluck('id')->toArray();
             $submittedZoneIds = collect($this->pricing_rows)
                 ->pluck('id')
                 ->filter()
@@ -128,21 +127,21 @@ class EditPricing extends Component
             // Delete zones that were removed
             $zonesToDelete = array_diff($existingZoneIds, $submittedZoneIds);
             if (!empty($zonesToDelete)) {
-                Zone::whereIn('id', $zonesToDelete)->delete();
+                PricingItem::whereIn('id', $zonesToDelete)->delete();
             }
 
             // Update or create pricing zones
             foreach ($this->pricing_rows as $row) {
                 if (isset($row['id']) && $row['id']) {
                     // Update existing zone
-                    Zone::where('id', $row['id'])->update([
+                    PricingItem::where('id', $row['id'])->update([
                         'source_zone_id' => $row['source_zone_id'],
                         'destination_zone_id' => $row['destination_zone_id'],
                         'cost' => $row['cost'],
                     ]);
                 } else {
                     // Create new zone
-                    $this->pricing->zones()->create([
+                    $this->pricing->items()->create([
                         'source_zone_id' => $row['source_zone_id'],
                         'destination_zone_id' => $row['destination_zone_id'],
                         'cost' => $row['cost'],

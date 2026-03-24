@@ -2,368 +2,382 @@
     <div>
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">Pricing Management</h3>
-            <div class="card-tools">
-                <button class="btn btn-sm btn-success" wire:click="createPricing">
-                    <i class="fas fa-plus"></i> Add New Pricing
+            <h3 class="card-title font-weight-bold d-inline">
+                <i class="fas fa-tags mr-2"></i>Pricings
+            </h3>
+            <a href="{{ route('admin.pricing.create') }}" class="btn btn-success btn-sm float-right">
+                <i class="fas fa-plus mr-1"></i> New Pricing
+            </a>
+        </div>
+
+        <div class="card-body">
+            @include('components.alerts.response-alerts')
+
+            @if($pricings->isEmpty())
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    No pricing records found. Click "New Pricing" to create one.
+                </div>
+            @else
+                <div class="accordion" id="pricingAccordion">
+                    @foreach ($pricings as $index => $pricing)
+                        <div class="card mb-3 pricing-card" data-pricing-id="{{ $pricing->id }}">
+                            <div class="card-header pricing-header" style="background-color: #f8f9fa; cursor: pointer;" 
+                                 data-toggle="collapse" 
+                                 data-target="#collapse{{ $pricing->id }}" 
+                                 aria-expanded="{{ $loop->first ? 'true' : 'false' }}" 
+                                 aria-controls="collapse{{ $pricing->id }}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-chevron-right mr-2 collapse-icon" id="icon{{ $pricing->id }}"></i>
+                                        <div>
+                                            <h5 class="mb-0 font-weight-bold">
+                                                <i class="fas fa-box mr-2 text-primary"></i>
+                                                {{ $pricing->item->name ?? 'Unknown Item' }}
+                                            </h5>
+                                            <small class="text-muted text-bold">
+                                                <i class="fas fa-weight-hanging mr-1"></i>
+                                                Weight Range: {{ $pricing->min_weight }} - {{ $pricing->max_weight }} kg
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group">
+                                        <a href="{{ route('admin.pricing.edit', $pricing->id) }}" 
+                                           class="btn btn-sm btn-primary mr-2"
+                                           title="Edit Pricing">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-danger"
+                                                onclick="confirmDelete({{ $pricing->id }}, '{{ addslashes($pricing->item->name ?? 'Pricing') }}')"
+                                                title="Delete Pricing">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="collapse{{ $pricing->id }}" 
+                                 class="collapse {{ $loop->first ? 'show' : '' }}" 
+                                 data-parent="#pricingAccordion">
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped mb-0 pricing-table">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th style="width: 150px; background-color: #e9ecef;">
+                                                        <i class="fas fa-map-marker-alt mr-1"></i> From \ To
+                                                    </th>
+                                                    @foreach ($zones as $zone)
+                                                        <th class="text-center">
+                                                            {{ $zone->name }}
+                                                            <i class="fas fa-arrow-right ml-1 text-muted"></i>
+                                                        </th>
+                                                    @endforeach
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($zones as $source)
+                                                    <tr>
+                                                        <th class="bg-light" style="width: 150px;">
+                                                            <i class="fas fa-location-dot mr-1 text-primary"></i>
+                                                            {{ $source->name }}
+                                                        </th>
+                                                        @foreach ($zones as $destination)
+                                                            @php
+                                                                $price = $pricing->items
+                                                                    ->where('source_zone_id', $source->id)
+                                                                    ->where('destination_zone_id', $destination->id)
+                                                                    ->first();
+                                                            @endphp
+                                                            <td class="text-center {{ $price ? 'has-price' : 'no-price' }}">
+                                                                @if($price)
+                                                                    <span class="price-value">
+                                                                        <i class="fas fa-kenyan-sign mr-1 text-success"></i>
+                                                                        {{ number_format($price->cost, 2) }}
+                                                                    </span>
+                                                                @else
+                                                                    <span class="text-muted">—</span>
+                                                                @endif
+                                                            </td>
+                                                        @endforeach
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                            <tfoot class="table-secondary">
+                                                <tr>
+                                                    <td colspan="{{ count($zones) + 1 }}" class="text-muted small">
+                                                        <i class="fas fa-info-circle mr-1"></i>
+                                                        Prices shown in Kenyan Shillings (KES)
+                                                    </td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                    
+                                    <!-- Pricing Statistics -->
+                                    <div class="pricing-stats p-3 bg-light border-top">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-chart-line mr-1"></i>
+                                                    Total Routes: {{ $pricing->items->count() }}
+                                                </small>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-chart-bar mr-1"></i>
+                                                    Min Price: 
+                                                    @php
+                                                        $minPrice = $pricing->items->min('cost');
+                                                    @endphp
+                                                    @if($minPrice)
+                                                        KES {{ number_format($minPrice, 2) }}
+                                                    @else
+                                                        N/A
+                                                    @endif
+                                                </small>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-chart-bar mr-1"></i>
+                                                    Max Price: 
+                                                    @php
+                                                        $maxPrice = $pricing->items->max('cost');
+                                                    @endphp
+                                                    @if($maxPrice)
+                                                        KES {{ number_format($maxPrice, 2) }}
+                                                    @else
+                                                        N/A
+                                                    @endif
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div>
+                    {{ $pricings->links() }}
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Confirm Delete
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-        </div>
-        
-        <div class="card-body">
-            <!-- Filters -->
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <input type="text" class="form-control" placeholder="Search by item name..." 
-                           wire:model.live.debounce.300ms="search">
-                </div>
-                <div class="col-md-3">
-                    <select class="form-control" wire:model.live="itemFilter">
-                        <option value="">All Items</option>
-                        @foreach($items as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select class="form-control" wire:model.live="zoneFilter">
-                        <option value="">All Zones</option>
-                        @foreach($zones as $zone)
-                            <option value="{{ $zone->id }}">{{ $zone->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <button class="btn btn-secondary btn-block" wire:click="resetFilters">
-                        <i class="fas fa-undo"></i> Reset
+            <div class="modal-body">
+                <p>Are you sure you want to delete this pricing record?</p>
+                <p class="font-weight-bold" id="deleteItemName"></p>
+                <p class="text-danger small">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    This action cannot be undone. All associated zone pricing data will be permanently deleted.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times mr-1"></i>Cancel
+                </button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt mr-1"></i>Delete Permanently
                     </button>
-                </div>
-            </div>
-            
-            <!-- Pricing Table -->
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Item Category</th>
-                            <th>Weight Range (kg)</th>
-                            <th>Zones Covered</th>
-                            <th>Price Entries</th>
-                            <th>Created At</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($pricings as $pricing)
-                            <tr>
-                                <td>{{ $pricing->id }}</td>
-                                <td>
-                                    <strong>{{ $pricing->item->name ?? 'N/A' }}</strong>
-                                </td>
-                                <td>
-                                    <span class="badge badge-info">
-                                        {{ $pricing->min_weight }} - {{ $pricing->max_weight }} kg
-                                    </span>
-                                </td>
-                                <td>
-                                    @php
-                                        $uniqueZones = collect();
-                                        foreach($pricing->items as $item) {
-                                            $uniqueZones->push($item->source_zone_id);
-                                            $uniqueZones->push($item->destination_zone_id);
-                                        }
-                                        $zoneCount = $uniqueZones->unique()->count();
-                                    @endphp
-                                    <span class="badge badge-primary">{{ $zoneCount }} zones</span>
-                                </td>
-                                <td>
-                                    <span class="badge badge-success">{{ $pricing->items->count() }} prices</span>
-                                </td>
-                                <td>{{ $pricing->created_at->format('d M Y') }}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-info" wire:click="viewPricing({{ $pricing->id }})">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-warning" wire:click="editPricing({{ $pricing->id }})">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" wire:click="confirmDelete({{ $pricing->id }})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center">No pricing records found</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Pagination -->
-            <div class="mt-3">
-                {{ $pricings->links() }}
-            </div>
-        </div>
-    </div>
-    
-    <!-- View Pricing Modal -->
-    <div class="modal fade" id="viewPricingModal" tabindex="-1" data-backdrop="static" wire:ignore.self>
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title">
-                        <i class="fas fa-eye"></i> Pricing Details
-                    </h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    @if($selectedPricing)
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <strong>Item:</strong> {{ $selectedPricing->item->name }}
-                            </div>
-                            <div class="col-md-6">
-                                <strong>Weight Range:</strong> {{ $selectedPricing->min_weight }} - {{ $selectedPricing->max_weight }} kg
-                            </div>
-                        </div>
-                        
-                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                            <table class="table table-sm table-bordered">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>Source Zone</th>
-                                        <th>Destination Zone</th>
-                                        <th class="text-right">Cost (KES)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($pricingItems as $sourceId => $data)
-                                        @foreach($data['destinations'] as $destId => $destData)
-                                            <tr>
-                                                <td>{{ $data['zone']->name }}</td>
-                                                <td>{{ $destData['zone']->name }}</td>
-                                                <td class="text-right">
-                                                    <span class="badge badge-success badge-lg">
-                                                        KES {{ number_format($destData['cost'], 2) }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    @empty
-                                        <tr>
-                                            <td colspan="3" class="text-center">No pricing items found</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    @endif
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Edit/Create Pricing Modal -->
-    <div class="modal fade" id="editPricingModal" tabindex="-1" data-backdrop="static" wire:ignore.self>
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header {{ $editId ? 'bg-warning' : 'bg-success' }} text-white">
-                    <h5 class="modal-title">
-                        <i class="fas {{ $editId ? 'fa-edit' : 'fa-plus' }}"></i>
-                        {{ $editId ? 'Edit Pricing' : 'Create New Pricing' }}
-                    </h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <form wire:submit.prevent="updatePricing">
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Item Category <span class="text-danger">*</span></label>
-                                    <select class="form-control @error('editItemId') is-invalid @enderror" 
-                                            wire:model="editItemId">
-                                        <option value="">Select Item</option>
-                                        @foreach($items as $item)
-                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('editItemId')
-                                        <span class="invalid-feedback">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label>Min Weight (kg) <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.1" class="form-control @error('editMinWeight') is-invalid @enderror" 
-                                           wire:model="editMinWeight">
-                                    @error('editMinWeight')
-                                        <span class="invalid-feedback">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label>Max Weight (kg) <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.1" class="form-control @error('editMaxWeight') is-invalid @enderror" 
-                                           wire:model="editMaxWeight">
-                                    @error('editMaxWeight')
-                                        <span class="invalid-feedback">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="alert alert-info mt-2">
-                            <i class="fas fa-info-circle"></i>
-                            Enter prices for each source-destination zone combination. Leave empty for no pricing.
-                        </div>
-                        
-                        <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
-                            <table class="table table-bordered table-sm table-hover">
-                                <thead class="sticky-top bg-white">
-                                    <tr>
-                                        <th style="min-width: 150px; background-color: #f8f9fa;">Source Zone →</th>
-                                        @foreach($zones as $zone)
-                                            <th class="text-center" style="min-width: 120px; background-color: #f8f9fa;">
-                                                {{ $zone->name }}
-                                            </th>
-                                        @endforeach
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($zones as $sourceZone)
-                                        <tr>
-                                            <th class="bg-light">{{ $sourceZone->name }}</th>
-                                            @foreach($zones as $destZone)
-                                                <td class="text-center" style="vertical-align: middle;">
-                                                    @if($sourceZone->id == $destZone->id)
-                                                        <span class="badge badge-secondary">Local</span>
-                                                    @else
-                                                        @php
-                                                            $priceValue = $prices[$sourceZone->id][$destZone->id] ?? null;
-                                                        @endphp
-                                                        <div class="input-group input-group-sm">
-                                                            <div class="input-group-prepend">
-                                                                <span class="input-group-text">KES</span>
-                                                            </div>
-                                                            <input type="number" 
-                                                                   class="form-control form-control-sm text-right price-input"
-                                                                   wire:model="prices.{{ $sourceZone->id }}.{{ $destZone->id }}"
-                                                                   step="10"
-                                                                   min="0"
-                                                                   placeholder="Enter price"
-                                                                   value="{{ $priceValue }}">
-                                                        </div>
-                                                        @if($priceValue && $priceValue > 0)
-                                                            <small class="text-success">
-                                                                <i class="fas fa-check-circle"></i> {{ number_format($priceValue, 2) }}
-                                                            </small>
-                                                        @endif
-                                                    @endif
-                                                </td>
-                                            @endforeach
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <div class="mt-3 text-muted">
-                            <small>
-                                <i class="fas fa-info-circle"></i> 
-                                <strong>Tip:</strong> Prices are in Kenyan Shillings (KES). Leave empty for routes not serviced.
-                            </small>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> {{ $editId ? 'Update Pricing' : 'Create Pricing' }}
-                        </button>
-                    </div>
                 </form>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" data-backdrop="static" wire:ignore.self>
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">Confirm Delete</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete this pricing record?</p>
-                    <p class="text-danger"><small>This action cannot be undone and will remove all associated pricing items.</small></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" wire:click="delete">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </div>
             </div>
         </div>
     </div>
 </div>
 
+@push('styles')
+<style>
+    .pricing-card {
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid #dee2e6;
+    }
+    
+    .pricing-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .pricing-header {
+        transition: background-color 0.2s ease;
+    }
+    
+    .pricing-header:hover {
+        background-color: #e9ecef !important;
+    }
+    
+    .collapse-icon {
+        transition: transform 0.3s ease;
+        font-size: 1rem;
+        color: #6c757d;
+    }
+    
+    .pricing-table {
+        margin-bottom: 0;
+    }
+    
+    .pricing-table th,
+    .pricing-table td {
+        padding: 10px 8px;
+        vertical-align: middle;
+    }
+    
+    .pricing-table tbody tr:hover {
+        background-color: rgba(0, 143, 64, 0.05);
+    }
+    
+    .price-value {
+        font-weight: 500;
+        color: #008f40;
+    }
+    
+    .has-price {
+        background-color: rgba(0, 143, 64, 0.02);
+    }
+    
+    .no-price {
+        color: #adb5bd;
+    }
+    
+    .pricing-stats {
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .btn-group .btn {
+        border-radius: 4px;
+    }
+    
+    /* Animation for collapsed state */
+    .collapsed .collapse-icon {
+        transform: rotate(0deg);
+    }
+    
+    [aria-expanded="true"] .collapse-icon {
+        transform: rotate(90deg);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .pricing-table {
+            font-size: 0.85rem;
+        }
+        
+        .pricing-table th,
+        .pricing-table td {
+            padding: 6px 4px;
+        }
+        
+        .pricing-header h5 {
+            font-size: 1rem;
+        }
+        
+        .btn-group .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+    }
+    
+    /* Zebra striping for better readability */
+    .pricing-table tbody tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+    
+    /* Tooltip style for empty cells */
+    .no-price:hover {
+        cursor: default;
+    }
+    
+    /* Statistics icons */
+    .pricing-stats i {
+        color: #008f40;
+    }
+</style>
+@endpush
+
 @push('scripts')
 <script>
-    document.addEventListener('livewire:initialized', () => {
-        // Show modals when events are dispatched
-        Livewire.on('show-view-modal', () => {
-            $('#viewPricingModal').modal('show');
-        });
+    function confirmDelete(pricingId, pricingName) {
+        const modal = $('#deleteModal');
+        const deleteForm = $('#deleteForm');
         
-        Livewire.on('show-edit-modal', () => {
-            $('#editPricingModal').modal('show');
-        });
+        // Update modal content
+        // $('#deleteItemName').html(`<strong>${pricingName}</strong> (ID: ${pricingId})`);
         
-        Livewire.on('show-delete-modal', () => {
-            $('#deleteModal').modal('show');
-        });
+        // // Set form action
         
-        Livewire.on('pricing-updated', () => {
-            $('#editPricingModal').modal('hide');
-        });
-        
-        Livewire.on('pricing-deleted', () => {
-            $('#deleteModal').modal('hide');
-        });
-        
-        // Optional: Add visual feedback when price inputs change
-        document.addEventListener('input', function(e) {
-            if (e.target.classList && e.target.classList.contains('price-input')) {
-                let parent = e.target.closest('td');
-                if (parent) {
-                    let existingMsg = parent.querySelector('.text-success');
-                    if (!existingMsg && e.target.value && e.target.value > 0) {
-                        let msg = document.createElement('small');
-                        msg.className = 'text-success d-block mt-1';
-                        msg.innerHTML = '<i class="fas fa-check-circle"></i> ' + 
-                            new Intl.NumberFormat().format(e.target.value);
-                        parent.appendChild(msg);
-                        setTimeout(() => msg.remove(), 1500);
-                    }
+        // Show modal
+        modal.modal('show');
+    }
+    
+    // Handle collapse icon animation
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize all collapse elements
+        $('.pricing-header').on('click', function() {
+            const target = $(this).data('target');
+            const icon = $(this).find('.collapse-icon');
+            
+            // Toggle icon rotation
+            setTimeout(function() {
+                if ($(target).hasClass('show')) {
+                    icon.css('transform', 'rotate(90deg)');
+                } else {
+                    icon.css('transform', 'rotate(0deg)');
                 }
-            }
+            }, 100);
         });
+        
+        // Set initial icon state for expanded cards
+        $('.collapse.show').each(function() {
+            const parentHeader = $(this).closest('.pricing-card').find('.pricing-header');
+            const icon = parentHeader.find('.collapse-icon');
+            icon.css('transform', 'rotate(90deg)');
+        });
+        
+        // Add keyboard accessibility
+        $('.pricing-header').on('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                $(this).click();
+            }
+        }).attr('tabindex', '0');
+        
+        // Add tooltip for empty cells
+        $('.no-price').attr('title', 'No pricing configured for this route');
     });
+    
+    // Handle delete confirmation with enter key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && $('#deleteModal').hasClass('show')) {
+            const activeElement = document.activeElement;
+            if (activeElement && activeElement.type === 'submit') {
+                activeElement.click();
+            }
+        }
+    });
+    
+    // Flash message auto-hide after 5 seconds
+    setTimeout(function() {
+        $('.alert').fadeOut('slow');
+    }, 5000);
 </script>
 @endpush
 </div>
