@@ -536,8 +536,6 @@ class PartnerRegistration extends Component
             SendWelcomeEmail::dispatch($owner,  true, $ownerPassword);
 
 
-
-
             // TODO: Send email notification to Admin, Owner
 
             // TODO: Send confirmation email to partner

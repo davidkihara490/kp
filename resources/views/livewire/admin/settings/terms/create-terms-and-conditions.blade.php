@@ -28,13 +28,13 @@
                                     <div class="col-md-8">
                                         <div class="form-group">
                                             <label for="title">Document Title *</label>
-                                            <input type="text" 
-                                                   class="form-control @error('title') is-invalid @enderror"
-                                                   id="title" 
-                                                   wire:model="title"
-                                                   placeholder="e.g., Terms of Service, Terms of Use">
+                                            <input type="text"
+                                                class="form-control @error('title') is-invalid @enderror"
+                                                id="title"
+                                                wire:model="title"
+                                                placeholder="e.g., Terms of Service, Terms of Use">
                                             @error('title')
-                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </div>
@@ -43,18 +43,18 @@
                                             <label for="version">Version *</label>
                                             <div class="input-group">
                                                 <input type="text"
-                                                       class="form-control @error('version') is-invalid @enderror" 
-                                                       id="version"
-                                                       wire:model="version">
+                                                    class="form-control @error('version') is-invalid @enderror"
+                                                    id="version"
+                                                    wire:model="version">
                                                 <div class="input-group-append">
                                                     <button class="btn btn-outline-secondary" type="button"
-                                                            wire:click="generateVersion">
+                                                        wire:click="generateVersion">
                                                         <i class="fas fa-sync-alt"></i>
                                                     </button>
                                                 </div>
                                             </div>
                                             @error('version')
-                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </div>
@@ -62,30 +62,29 @@
 
                                 <div class="form-group">
                                     <label for="locale">Language</label>
-                                    <select class="form-control @error('locale') is-invalid @enderror" 
-                                            id="locale" 
-                                            wire:model="locale">
+                                    <select class="form-control @error('locale') is-invalid @enderror"
+                                        id="locale"
+                                        wire:model="locale">
                                         <option value="en">English</option>
                                         <option value="es">Spanish</option>
                                         <option value="fr">French</option>
                                         <option value="de">German</option>
                                     </select>
                                     @error('locale')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
                                 </div>
 
-                                <!-- CKEditor Content -->
-                                <div class="form-group">
+                                <div class="form-group" wire:ignore>
                                     <label for="content">Terms Content *</label>
-                                    <div wire:ignore>
-                                        <textarea id="content" 
-                                                  class="form-control @error('content') is-invalid @enderror"
-                                                  wire:model="content"
-                                                  name="content"></textarea>
+                                    <div>
+                                        <textarea id="content"
+                                            class="form-control tinymce @error('content') is-invalid @enderror"
+                                            data-model="content"
+                                            name="content"></textarea>
                                     </div>
                                     @error('content')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
                                 </div>
                             </div>
@@ -104,10 +103,10 @@
                             <div class="card-body">
                                 <div class="form-group">
                                     <div class="custom-control custom-switch">
-                                        <input type="checkbox" 
-                                               class="custom-control-input" 
-                                               id="is_active" 
-                                               wire:model="is_active">
+                                        <input type="checkbox"
+                                            class="custom-control-input"
+                                            id="is_active"
+                                            wire:model="is_active">
                                         <label class="custom-control-label" for="is_active">
                                             Publish immediately
                                         </label>
@@ -116,10 +115,10 @@
 
                                 <div class="form-group">
                                     <div class="custom-control custom-switch">
-                                        <input type="checkbox" 
-                                               class="custom-control-input" 
-                                               id="requires_acceptance" 
-                                               wire:model="requires_acceptance">
+                                        <input type="checkbox"
+                                            class="custom-control-input"
+                                            id="requires_acceptance"
+                                            wire:model="requires_acceptance">
                                         <label class="custom-control-label" for="requires_acceptance">
                                             Requires user acceptance
                                         </label>
@@ -130,12 +129,12 @@
 
                                 <div class="form-group">
                                     <label for="effective_date">Effective Date</label>
-                                    <input type="datetime-local" 
-                                           class="form-control @error('effective_date') is-invalid @enderror" 
-                                           id="effective_date"
-                                           wire:model="effective_date">
+                                    <input type="datetime-local"
+                                        class="form-control @error('effective_date') is-invalid @enderror"
+                                        id="effective_date"
+                                        wire:model="effective_date">
                                     @error('effective_date')
-                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
                                 </div>
                             </div>
@@ -170,42 +169,12 @@
         </div>
     </div>
 
-    @push('scripts')
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
-    <script>
-        document.addEventListener('livewire:init', function() {
-            let editor;
-
-            ClassicEditor
-                .create(document.querySelector('#content'), {
-                    toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'undo', 'redo'],
-                    heading: {
-                        options: [
-                            { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                            { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
-                            { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
-                            { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
-                        ]
-                    }
-                })
-                .then(newEditor => {
-                    editor = newEditor;
-                    editor.model.document.on('change:data', () => {
-                        @this.set('content', editor.getData());
-                    });
-                })
-                .catch(error => {
-                    console.error(error);
-                });
-        });
-    </script>
-    @endpush
-
     @push('styles')
     <style>
         .ck-editor__editable {
             min-height: 400px;
         }
+
         .form-control:focus {
             border-color: #80bdff;
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);

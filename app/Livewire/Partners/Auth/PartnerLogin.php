@@ -55,11 +55,14 @@ class PartnerLogin extends Component
             }
 
             if ($this->partner->verification_status != 'verified') {
-                Auth::guard('partner')->logout();
+                request()->session()->regenerate();
 
-                throw ValidationException::withMessages([
-                    'identifier' => 'Your account has been deactivated. Please contact support.',
-                ]);
+                return redirect()->route('partners.account-status', $this->partner->id)->with('Error', 'Your account has not been verified.  ');
+                // Auth::guard('partner')->logout();
+
+                // throw ValidationException::withMessages([
+                //     'identifier' => 'Your account has been deactivated. Please contact support.',
+                // ]);
             }
 
             if ($user->status != 'active') {

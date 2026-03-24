@@ -79,12 +79,12 @@
                                 </div>
 
                                 <!-- CKEditor Content -->
-                                <div class="form-group">
+                                <div class="form-group" wire:ignore>
                                     <label for="content">Policy Content *</label>
-                                    <div wire:ignore>
+                                    <div>
                                         <textarea id="content" 
-                                                  class="form-control @error('content') is-invalid @enderror"
-                                                  wire:model="content"
+                                                  class="form-control tinymce @error('content') is-invalid @enderror"
+                                                  data-model="content"
                                                   name="content"
                                                   placeholder="Enter the full policy content..."></textarea>
                                     </div>

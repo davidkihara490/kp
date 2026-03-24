@@ -36,6 +36,8 @@ class User extends Authenticatable
         'login_attempts',
         'last_login_at',
         'last_login_ip',
+        'email_verification_token',
+        'email_verification_expires_at',
     ];
 
     /**

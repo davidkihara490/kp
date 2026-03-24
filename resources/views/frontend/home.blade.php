@@ -808,8 +808,8 @@
                 <div class="col-lg-2 col-md-6 mb-4">
                     <h5>Legal</h5>
                     <ul class="footer-links">
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Terms of Service</a></li>
+                        <li><a target="_blank" href="{{ route('policy') }}">Privacy Policy</a></li>
+                        <li><a target="_blank" href="{{ route('terms') }}">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>

@@ -7,8 +7,11 @@ use App\Models\County;
 use App\Models\FAQ;
 use App\Models\Item;
 use App\Models\PickUpAndDropOffPoint;
+use App\Models\PrivacyPolicy;
 use App\Models\SubCounty;
+use App\Models\TermsAndCondition;
 use App\Models\Town;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -76,5 +79,17 @@ class HomeController extends Controller
                 'message' => 'Failed to calculate quote: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function terms()
+    {
+        $terms = TermsAndCondition::where('is_active', true)->orderBy('id', 'DESC')->first();
+        return view('frontend.terms', compact('terms'));
+    }
+
+    public function policy()
+    {
+        $policy = PrivacyPolicy::where('is_active', true)->orderBy('id', 'DESC')->first();
+        return view('frontend.policy', compact('policy'));
     }
 }
