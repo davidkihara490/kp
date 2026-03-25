@@ -232,9 +232,8 @@ class PartnerRegistration extends Component
 
     public function nextStep()
     {
+        $this->validateCurrentStep();
         $this->step++;
-                $this->validateCurrentStep();
-
         // Scroll to top
         $this->dispatch('scroll-to-top');
     }
