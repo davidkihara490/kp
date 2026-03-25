@@ -51,9 +51,12 @@ return [
 
     'onfonmedia' => [
         'api_key' => env('ONFONMEDIA_API_KEY'),
-        'sender_name' => env('ONFONMEDIA_CLIENT_ID'),
+        'client_id' => env('ONFONMEDIA_CLIENT_ID'),
+        'sender_name' => env('ONFONMEDIA_SENDER_NAME'),
         'api_url' => env('ONFONMEDIA_API_URL'),
+        'balance_api_url' => env('ONFONMEDIA_BALANCE_API_URL'),
         'access_key' => env('ONFONMEDIA_ACCESS_KEY'),
+        'admin_phone' => env('ADMIN_PHONE'),
     ],
 
     'whatsapp' => [

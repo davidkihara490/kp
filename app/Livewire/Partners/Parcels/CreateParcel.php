@@ -183,13 +183,18 @@ class CreateParcel extends Component
         ];
     }
 
-    public function boot(SMSService $smsService)
+    public function mount(SMSService $smsService)
     {
-        $this->smsService = $smsService;
-    }
 
-    public function mount()
-    {
+        $this->smsService = $smsService;
+
+
+        // $this->smsService->sendBulkSMS([
+        //     [
+        //         'phone' => '254706506361',
+        //         'message' => 'This is a test from OnFonMedia. Its working Well'
+        //     ],
+        // ]);
 
         $modelClass = current_user_type();
         $user = $modelClass ? $modelClass::find(Auth::guard('partner')->user()->id) : null;

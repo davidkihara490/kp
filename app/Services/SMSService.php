@@ -3,179 +3,177 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class SMSService
 {
+    protected string $balanceApiUrl;
     protected string $apiUrl;
     protected string $apiKey;
     protected string $senderName;
-    protected $accessKey;
+    protected string $accessKey;
+    protected string $clientId;
+    protected string $adminPhoneNumber;
 
     public function __construct()
     {
-        // $this->apiUrl = 'https://app.mobitechtechnologies.com/sms/sendsms';
-        // $this->apiKey = config('services.mobitech.api_key');
-        // $this->senderName = config('services.mobitech.sender_name', '23107');
-
-
         $this->apiUrl = config('services.onfonmedia.api_url');
         $this->apiKey = config('services.onfonmedia.api_key');
         $this->senderName = config('services.onfonmedia.sender_name');
         $this->accessKey = config('services.onfonmedia.access_key');
+        $this->balanceApiUrl = config('services.onfonmedia.balance_api_url');
+        $this->clientId = config('services.onfonmedia.client_id');
+        $this->adminPhoneNumber = config('services.onfonmedia.admin_phone');
     }
 
-    // protected function send(string $phoneNumber, string $message)
-    // {
-    //     $response = Http::withHeaders([
-    //         'Accesskey' => $this->accessKey,
-    //         'Content-Type' => 'application/json',
-    //     ])->post($this->apiUrl, [
-    //         "SenderId" => $this->senderName,
-    //         "MessageParameters" => [
-    //             [
-    //                 "Number" => $phoneNumber,
-    //                 "Text" => $message
-    //             ]
-    //         ],
-    //         "ApiKey" => $this->apiKey,
-    //         "ClientId" => $this->senderName
-    //     ]);
-
-    //     if ($response->successful()) {
-    //         return $response->json();
-    //     }
-
-    //     return $response->body();
-    // }
-
-
-    public function send()
+    public function checkBalance(): float
     {
-        $response = Http::withHeaders([
-            'AccessKey' => config('services.onfonmedia.access_key'),
-            'Content-Type' => 'application/json',
-        ])->post("https://api.onfonmedia.co.ke/v1/sms/SendBulkSMS", [
-            "SenderId" => config('services.onfonmedia.sender_name'),
-            "MessageParameters" => [
-                [
-                    "Number" => "254706506361",
-                    "Text" => "Test Message"
-                ],
-            ],
-            "ApiKey" => config('services.onfonmedia.api_key'),
-            "ClientId" => config('services.onfonmedia.client_id'),
-        ]);
+        $url = $this->balanceApiUrl;
 
-        return $response->json();
+        $queryParams = [
+            'ApiKey' => $this->apiKey,
+            'ClientId' => $this->clientId,
+        ];
+
+        $response = Http::withHeaders([
+            'AccessKey' => $this->accessKey,
+            'Content-Type' => 'application/json',
+        ])->get($url, $queryParams);
+
+        if ($response->successful()) {
+            $data = $response->json();
+            return isset($data['Data'][0]['Credits'])
+                ? floatval($data['Data'][0]['Credits'])
+                : 0;
+        }
+
+        return 0;
     }
 
+    public function sendMessage(string $phoneNumber, string $message)
+    {
+        $balance = $this->checkBalance();
 
-    // protected function send(string $phoneNumber, string $message): ?string
-    // {
-    //     $payload = [
-    //         'mobile' => $phoneNumber,
-    //         'response_type' => 'json',
-    //         'sender_name' => $this->senderName,
-    //         'service_id' => 0,
-    //         'message' => $message,
-    //     ];
+        if ($balance < 10) {
+            $this->sendAdminAlert("SMS balance is low ({$balance}). Please top up.");
+        }
 
-    //     $curl = curl_init();
+        return $this->sendBulkSMS([
+            [
+                'phone' => $phoneNumber,
+                'message' => $message,
+            ],
+        ]);
+    }
 
-    //     curl_setopt_array($curl, [
-    //         CURLOPT_URL => $this->apiUrl,
-    //         CURLOPT_RETURNTRANSFER => true,
-    //         CURLOPT_TIMEOUT => 15,
-    //         CURLOPT_POST => true,
-    //         CURLOPT_POSTFIELDS => json_encode($payload),
-    //         CURLOPT_HTTPHEADER => [
-    //             'h_api_key: ' . $this->apiKey,
-    //             'Content-Type: application/json',
-    //         ],
-    //     ]);
+    protected function sendAdminAlert(string $alertMessage)
+    {
+        $adminPhoneNumber = $this->adminPhoneNumber; // set in .env
+        $this->sendBulkSMS(
+            [
+                [
+                    'phone' => $adminPhoneNumber,
+                    'message' => $alertMessage,
+                ],
+            ]
+        );
+    }
 
-    //     $response = curl_exec($curl);
-    //     curl_close($curl);
+    public function sendBulkSMS(array $recipients)
+    {
+        $payload = [
+            "SenderId" => $this->senderName,
+            "MessageParameters" => array_map(function ($item) {
+                return [
+                    "Number" => $item['phone'],
+                    "Text" => $item['message'],
+                ];
+            }, $recipients),
+            "ApiKey" => $this->apiKey,
+            "ClientId" => $this->clientId,
+        ];
 
-    //     return $response;
-    // }
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'AccessKey' => $this->accessKey,
+        ])->post($this->apiUrl, $payload);
 
-    //     protected function send(){
-    //         curl --location 'https://api.onfonmedia.com/v1/sms/SendBulkSMS' \
-    // --header 'Accesskey: Valuehere' \
-    // --header 'Content-Type: application/json' \
-    // --data '{
-    //   "SenderId": "senderid value",
-    //   "MessageParameters": [
+        if ($response->successful()) {
+            return $response->json();
+        }
 
-    //         {
-    //       "Number":"msisdn here", 
-    //       "Text": "content"
-    //     }
-    //   ],
-    //   "ApiKey":"apikey value here",
-    //   "ClientId": "client id value here"
-    // }'
-    //     }
-
-
+        Log::info("ERROR:", $response->json());
+        return null;
+    }
 
     public function sendDriverWelcomeSMS(string $phoneNumber, string $driverName)
     {
-        return $this->send(
-            $phoneNumber,
-            "Hi {$driverName}! You have been successfully registered as a driver at Karibu Parcels. Check the link on your email for further instructions."
-        );
+        return $this->sendBulkSMS([
+            [
+                'phone' => $phoneNumber,
+                'message' => "Hi {$driverName}! You have been successfully registered as a driver at Karibu Parcels. Check the link on your email for further instructions.",
+            ],
+        ]);
     }
 
-    /* ================== PUBLIC METHODS ================== */
-
-    public function notifyRecipientParcelDropOff(string $phoneNumber)
+    public function sendDriverAssignmentSMS(string $phoneNumber, string $driverName, string $code)
     {
-        return $this->send(
-            $phoneNumber,
-            'KARIBU PARCELS: We have received your parcel. We will notify you when to pick it.'
-        );
+        return $this->sendBulkSMS([
+            [
+                'phone' => $phoneNumber,
+                'message' => "Hi {$driverName}! You have been assigned to deliver a parcel. Parcel code is {$code}. Use this code at the pick up point",
+            ],
+        ]);
     }
 
+    // /* ================== PUBLIC METHODS ================== */
 
-    public function notifySenderParcelReceived(string $phoneNumber)
-    {
-        return $this->send(
-            $phoneNumber,
-            'KARIBU PARCELS: Your parcel has been received and is ready for shipping.'
-        );
-    }
+    // public function notifyRecipientParcelDropOff(string $phoneNumber)
+    // {
+    //     return $this->send(
+    //         $phoneNumber,
+    //         'KARIBU PARCELS: We have received your parcel. We will notify you when to pick it.'
+    //     );
+    // }
 
-    public function notifyCompanyNewParcel(string $phoneNumber)
-    {
-        return $this->send(
-            $phoneNumber,
-            'KARIBU PARCELS: Dear Admin, a new parcel has been processed and is waiting to be shipped.'
-        );
-    }
 
-    public function notifySenderOnShipping(string $phoneNumber)
-    {
-        return $this->send(
-            $phoneNumber,
-            'KARIBU PARCELS: Your parcel has been shipped to your selected location.'
-        );
-    }
+    // public function notifySenderParcelReceived(string $phoneNumber)
+    // {
+    //     return $this->send(
+    //         $phoneNumber,
+    //         'KARIBU PARCELS: Your parcel has been received and is ready for shipping.'
+    //     );
+    // }
 
-    public function notifyRecipientParcelArrived(string $phoneNumber, string $parcelId)
-    {
-        return $this->send(
-            $phoneNumber,
-            "KARIBU PARCELS: Your parcel with ID {$parcelId} has arrived and is ready for picking."
-        );
-    }
+    // public function notifyCompanyNewParcel(string $phoneNumber)
+    // {
+    //     return $this->send(
+    //         $phoneNumber,
+    //         'KARIBU PARCELS: Dear Admin, a new parcel has been processed and is waiting to be shipped.'
+    //     );
+    // }
 
-    public function notifyAgentOnShipping(string $phoneNumber)
-    {
-        return $this->send(
-            $phoneNumber,
-            'KARIBU PARCELS: A parcel is being shipped to your pick-up location. Please wait to pick it up.'
-        );
-    }
+    // public function notifySenderOnShipping(string $phoneNumber)
+    // {
+    //     return $this->send(
+    //         $phoneNumber,
+    //         'KARIBU PARCELS: Your parcel has been shipped to your selected location.'
+    //     );
+    // }
+
+    // public function notifyRecipientParcelArrived(string $phoneNumber, string $parcelId)
+    // {
+    //     return $this->send(
+    //         $phoneNumber,
+    //         "KARIBU PARCELS: Your parcel with ID {$parcelId} has arrived and is ready for picking."
+    //     );
+    // }
+
+    // public function notifyAgentOnShipping(string $phoneNumber)
+    // {
+    //     return $this->send(
+    //         $phoneNumber,
+    //         'KARIBU PARCELS: A parcel is being shipped to your pick-up location. Please wait to pick it up.'
+    //     );
+    // }
 }
