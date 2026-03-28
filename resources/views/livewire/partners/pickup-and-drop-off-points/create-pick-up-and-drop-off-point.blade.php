@@ -47,7 +47,7 @@
                                 <div class="mb-3">
                                     <label for="name" class="form-label">
                                         <i class="bi bi-building me-2"></i>
-                                        Point Name <span class="text-danger">*</span>
+                                        Pick-Up/Drop-Off Point Name <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" class="form-control @error('name') is-invalid @enderror"
                                         id="name" wire:model="name" placeholder="Enter point name">
@@ -97,7 +97,7 @@
                                 <div class="mb-3">
                                     <label for="address" class="form-label">
                                         <i class="bi bi-house-door me-2"></i>
-                                        Address <span class="text-danger">*</span>
+                                        Address <span class="text-danger">*</span>(E.g. Uhuru Street, Uhuru Building/Hous, opposite Equity Bank, Ground floor/ Rm 6")
                                     </label>
                                     <textarea class="form-control @error('address') is-invalid @enderror" id="address" wire:model="address"
                                         rows="2" placeholder="Enter full address"></textarea>
@@ -234,7 +234,7 @@
                                         </div>
                                     </div>
                                     @error('closing_hours')
-                                    
+
                                     <div class="text-danger small mt-1">Closing time must be after opening time
                                     </div>
                                     @enderror

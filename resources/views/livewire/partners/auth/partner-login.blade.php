@@ -102,8 +102,7 @@
                                    </label>
                                </div>
                                <div>
-                                   <a href="#" class="btn btn-link btn-sm p-0 text-decoration-none"
-                                       wire:click="forgotPassword">
+                                   <a href="{{ route('partners.recover-password') }}" class="btn btn-link btn-sm p-0 text-decoration-none">
                                        Forgot password?
                                    </a>
                                </div>
@@ -399,6 +398,5 @@
            if (window.history.replaceState) {
                window.history.replaceState(null, null, window.location.href);
            }
-
        </script>
    </div>

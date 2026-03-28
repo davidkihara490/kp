@@ -5,6 +5,7 @@ namespace App\Livewire\Partners\ParcelHandlingAssistants;
 use App\Jobs\SendWelcomeEmail;
 use App\Models\ParcelHandlingAssistant;
 use App\Models\User;
+use App\Services\SMSService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -26,6 +27,8 @@ class CreateParcelHandlingAssistant extends Component
     public $role_id;
     public $roles = [];
     public $role;
+    protected SMSService $smsService;
+
 
     protected function rules()
     {
@@ -76,8 +79,10 @@ class CreateParcelHandlingAssistant extends Component
         'role_id.required' => 'Role is required.',
     ];
 
-    public function mount()
+    public function mount(SMSService $smsService)
     {
+        $this->smsService = $smsService;
+
         // Generate a random password
         $this->password = $this->generateRandomPassword();
         $this->confirm_password = $this->password;
@@ -101,7 +106,6 @@ class CreateParcelHandlingAssistant extends Component
         $validated = $this->validate();
 
         try {
-            // Start database transaction
             DB::beginTransaction();
 
             $user = User::create([
@@ -136,6 +140,12 @@ class CreateParcelHandlingAssistant extends Component
             ]);
 
             SendWelcomeEmail::dispatch($user, true, $this->password);
+
+            $this->smsService->sendParcelHandlingAssistantWelcomeSMS(
+                $this->phone_number,
+                trim($this->first_name . ' ' . $this->second_name . ' ' . $this->last_name)
+            );
+
 
             DB::commit();
 

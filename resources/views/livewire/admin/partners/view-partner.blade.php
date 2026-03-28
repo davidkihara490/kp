@@ -1188,9 +1188,7 @@
                                         <th>#</th>
                                         <th>Town Name</th>
                                         <th>County</th>
-                                        <th>Service Radius (km)</th>
-                                        <th>Delivery Days</th>
-                                        <th>Pickup Days</th>
+                                        <th>Sub County</th>
                                         <th>Status</th>
                                         <th>Added On</th>
                                     </tr>
@@ -1200,28 +1198,8 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $partnerTown->town->name ?? 'Unknown' }}</td>
-                                        <td>{{ $partnerTown->town->county->name ?? 'Unknown' }}</td>
-                                        <td>
-                                            @if($partnerTown->service_radius)
-                                            <span class="badge badge-info">{{ $partnerTown->service_radius }} km</span>
-                                            @else
-                                            <span class="badge badge-secondary">N/A</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($partnerTown->delivery_days)
-                                            {{ $partnerTown->delivery_days }}
-                                            @else
-                                            <span class="badge badge-secondary">N/A</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($partnerTown->pickup_days)
-                                            {{ $partnerTown->pickup_days }}
-                                            @else
-                                            <span class="badge badge-secondary">N/A</span>
-                                            @endif
-                                        </td>
+                                        <td>{{ $partnerTown->town->subCounty->county->name ?? 'Unknown' }}</td>
+                                        <td>{{ $partnerTown->town->subCounty->name ?? 'Unknown' }}</td>
                                         <td>
                                             <span class="badge badge-{{ $partnerTown->status === 'active' ? 'success' : ($partnerTown->status === 'pending' ? 'warning' : 'danger') }}">
                                                 {{ ucfirst($partnerTown->status) }}

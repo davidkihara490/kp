@@ -16,7 +16,7 @@
                         <th>#</th>
                         <th>Name</th>
                         <th>Town</th>
-                        <th>Station Partner</th>
+                        <th>Partner</th>
                         <th>Contact Email</th>
                         <th>Contact Phone</th>
                         <th>Parcels</th>
@@ -30,7 +30,7 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $station->name }}</td>
                             <td>{{ $station->town->name ?? 'N/A' }}</td>
-                            <td>{{ $station->stationPartner->name ?? 'N/A' }}</td>
+                            <td>{{ $station->partner->company_name ?? 'N/A' }}</td>
                             <td>{{ $station->contact_email ?? 'N/A' }}</td>
                             <td>{{ $station->contact_phone_number ?? 'N/A' }}</td>
                             <td>

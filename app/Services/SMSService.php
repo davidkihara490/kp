@@ -126,6 +126,16 @@ class SMSService
         ]);
     }
 
+    public function sendParcelHandlingAssistantWelcomeSMS(string $phoneNumber, string $name)
+    {
+        return $this->sendBulkSMS([
+            [
+                'phone' => $phoneNumber,
+                'message' => "Hi {$name}! You have been registered as a parcel handling assistant at Karibu Parcels. Check your email for further instructions.",
+            ],
+        ]);
+    }
+
     // /* ================== PUBLIC METHODS ================== */
 
     // public function notifyRecipientParcelDropOff(string $phoneNumber)
