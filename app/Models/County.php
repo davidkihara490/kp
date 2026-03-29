@@ -23,4 +23,11 @@ class County extends Model
     {
         return $this->belongsTo(Zone::class);
     }
+
+public function getPickupPointsAttribute()
+{
+    return $this->subCounties
+        ->flatMap(fn($subCounty) => $subCounty->towns)
+        ->flatMap(fn($town) => $town->pickUpAndDropOffPoint);
+}
 }

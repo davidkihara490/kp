@@ -30,6 +30,12 @@ class HomeController extends Controller
             ->orderBy('name')
             ->limit(5)
             ->get();
+        foreach ($counties as $county) {
+            $county->points_count = $county->subCounties->sum(function ($subCounty) {
+                return $subCounty->towns->sum(fn($town) => $town->pickUpAndDropOffPoint->count());
+            });
+        }
+
         return  view('frontend.home', compact('towns', 'pickUpAndDropOffPoints', 'blogPosts', 'faqs', 'counties', 'parcelTypes', 'itemCategories'));
     }
 

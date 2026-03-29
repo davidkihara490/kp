@@ -77,8 +77,8 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-3">
-                                <label>Name/Email/Phone</label>
+                            <div class="col-md-4">
+                                <label>Partner Name</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text">
@@ -91,17 +91,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-3">
-                                <label>County</label>
-                                <select class="form-control" wire:model.live="county">
-                                    <option value="">All Counties</option>
-                                    @foreach($counties as $id => $name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label>Town</label>
                                 <select class="form-control" wire:model.live="town">
                                     <option value="">All Towns</option>
@@ -111,7 +101,7 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label>Status</label>
                                 <select class="form-control" wire:model.live="status">
                                     @foreach($statuses as $value => $label)
@@ -183,8 +173,8 @@
                                 <td>{{ $loop->iteration + (($partners->currentPage() - 1) * $partners->perPage()) }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                            <strong>{{ $partner->company_name }}</strong>
-                                            
+                                        <strong>{{ $partner->company_name }}</strong>
+
                                     </div>
                                 </td>
                                 <td>
@@ -192,10 +182,10 @@
                                         @if($partner->partner_type === 'transport') badge-primary
                                         @elseif($partner->partner_type === 'pickup-dropoff') badge-primary
                                         @endif">
-                                                {{ ucfirst($partner->partner_type) }}
-                                            </span>
+                                        {{ ucfirst($partner->partner_type) }}
+                                    </span>
                                 </td>
-                                
+
                                 <td>
                                     <span class="badge 
                                         @if($partner->verification_status === 'active') badge-success
@@ -208,8 +198,8 @@
                                 </td>
 
                                 <td>{{ 250 }}</td>
-                               
-                                
+
+
                                 <td class="text-center">
                                     <div class="btn-group" role="group">
                                         <a href="{{ route('admin.partners.view', $partner->id) }}"

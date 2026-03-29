@@ -74,9 +74,8 @@
     <section id="home" class="hero-section">
         <div class="container">
             <div class="hero-content animate-fade-up">
-                <h1>Fast & Reliable Courier Services Across Kenya</h1>
-                <p class="lead">We deliver your packages with speed, security, and professionalism. Trusted by
-                    businesses and individuals nationwide.</p>
+                <h1>A revolutionary concept that democratises parcel delivery in Kenya.</h1>
+                <p class="lead">You can now send and receive your parcels from any town, thanks to our unmatched technology, data, and reliable network</p>
             </div>
 
             <div class="compact-booking-engine animate-fade-up" style="animation-delay: 0.2s;">
@@ -462,16 +461,56 @@
                                 {{ $county->name }}
                             </h4>
                         </div>
-                        <span class="badge bg-primary">{{ $county->subCounties->count() }} Subcounties</span>
+                        <span class="badge bg-primary">{{ $county->points_count }} Pick-up/DropOff Points</span>
                     </div>
 
                     <!-- Subcounties Container (Hidden by default) -->
                     <div class="subcounties-container" id="county-{{ $county->id }}" style="display: none;">
                         <div class="subcounties-grid">
-                            @foreach($county->subCounties as $subCountyIndex => $subCounty)
-                            <div class="subcounty-card mb-3">
-                                <!-- Subcounty Header (Clickable) -->
-                                <div class="subcounty-header" data-subcounty-id="subcounty-{{ $subCounty->id }}">
+                            <div class="row g-4 points-grid">
+                                @foreach($county->pickup_points as $point)
+                                <div class="col-xl-3 col-lg-4 col-md-6">
+                                    <div class="station-card">
+                                        <div class="station-card-header">
+                                            <h5 class="mb-0">{{ $point->name }}</h5>
+                                            <span class="station-type-badge {{ $point->type }}">
+                                                @if($point->type == 'both')
+                                                <i class="bi bi-arrow-left-right"></i>
+                                                @elseif($point->type == 'pickup')
+                                                <i class="bi bi-arrow-up"></i>
+                                                @else
+                                                <i class="bi bi-arrow-down"></i>
+                                                @endif
+                                            </span>
+                                        </div>
+                                        <div class="station-card-body">
+                                            <p class="mb-2">
+                                                <i class="bi bi-geo-alt text-primary me-2"></i>
+                                                {{ $point->address }}
+                                            </p>
+                                            <p class="mb-2">
+                                                <i class="bi bi-telephone text-primary me-2"></i>
+                                                {{ $point->contact_phone_number }}
+                                            </p>
+                                            @if($point->email)
+                                            <p class="mb-2">
+                                                <i class="bi bi-envelope text-primary me-2"></i>
+                                                {{ $point->contact_email }}
+                                            </p>
+                                            @endif
+                                            <p class="mb-0">
+                                                <i class="bi bi-clock text-primary me-2"></i>
+                                                {{ $point->opening_hours }} - {{ $point->closing_hours }}
+                                            </p>
+                                        </div>
+                                        </div>
+                                </div>
+                                @endforeach
+                            </div>
+                            <!-- @foreach($county->subCounties as $subCountyIndex => $subCounty)
+                            <div class="subcounty-card mb-3"> -->
+                            <!-- Subcounty Header (Clickable) -->
+                            <!-- <div class="subcounty-header" data-subcounty-id="subcounty-{{ $subCounty->id }}">
                                     <div class="d-flex align-items-center">
                                         <i class="bi bi-chevron-right me-3 chevron-icon"></i>
                                         <h5 class="mb-0">
@@ -480,11 +519,11 @@
                                         </h5>
                                     </div>
                                     <span class="badge bg-secondary">{{ $subCounty->pickupPoints->count() }} Stations</span>
-                                </div>
+                                </div> -->
 
-                                <!-- Pickup Points Grid (Hidden by default) -->
-                                <div class="points-container" id="subcounty-{{ $subCounty->id }}" style="display: none;">
-                                    <div class="row g-4 points-grid">
+                            <!-- Pickup Points Grid (Hidden by default) -->
+                            <!-- <div class="points-container" id="subcounty-{{ $subCounty->id }}" style="display: none;"> -->
+                            <!-- <div class="row g-4 points-grid">
                                         @foreach($subCounty->pickupPoints as $point)
                                         <div class="col-xl-3 col-lg-4 col-md-6">
                                             <div class="station-card">
@@ -530,17 +569,16 @@
                                         @endforeach
                                     </div>
 
-                                    <!-- View More Button -->
                                     <div class="text-center mt-4">
                                         <a href="#" class="btn btn-outline-primary view-more-stations">
                                             <i class="bi bi-grid-3x3-gap-fill me-2"></i>
                                             View All Stations in {{ $subCounty->name }}
                                             <i class="bi bi-arrow-right ms-2"></i>
                                         </a>
-                                    </div>
-                                </div>
-                            </div>
-                            @endforeach
+                                    </div> -->
+                            <!-- </div> -->
+                            <!-- </div>
+                            @endforeach -->
                         </div>
                     </div>
                 </div>

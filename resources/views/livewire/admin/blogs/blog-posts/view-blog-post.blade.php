@@ -1011,7 +1011,7 @@
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle mr-2"></i>
                             This is how your post will appear on the website.
-                            <a href="{{ $post->full_url }}" target="_blank" class="alert-link">
+                            <a href="{{ route('blog.show', $post->slug) }}" target="_blank" class="alert-link">
                                 Click here to view the live version
                             </a>
                         </div>

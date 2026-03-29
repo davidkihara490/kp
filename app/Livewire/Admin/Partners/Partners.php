@@ -66,7 +66,7 @@ class Partners extends Component
         $this->statuses = [
             '' => 'All Statuses',
             'pending' => 'Pending',
-            'active' => 'Active',
+            'verified' => 'Active',
             'suspended' => 'Suspended',
             'inactive' => 'Inactive',
         ];
@@ -275,11 +275,7 @@ class Partners extends Component
         return Partner::query()
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('first_name', 'like', '%' . $this->search . '%')
-                        ->orWhere('last_name', 'like', '%' . $this->search . '%')
-                        ->orWhere('email', 'like', '%' . $this->search . '%')
-                        ->orWhere('phone_number', 'like', '%' . $this->search . '%')
-                        ->orWhere('company_name', 'like', '%' . $this->search . '%');
+                    $q->where('company_name', 'like', '%' . $this->search . '%');
                 });
             })
             ->when($this->partner_type, function ($query) {

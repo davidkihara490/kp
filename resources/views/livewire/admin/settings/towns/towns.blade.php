@@ -8,8 +8,15 @@
         </div>
 
         <div class="card-body">
-
             @include('components.alerts.response-alerts')
+
+            <div>
+                <div class="row">
+                    <div class="col-4">
+                        <input type="text" wire:model.live.debounce.500ms="search" class="form-control mb-3" placeholder="Search by town name...">
+                    </div>
+                </div>
+            </div>
 
             <table id="example1" class="table table-bordered table-striped">
                 <thead>
