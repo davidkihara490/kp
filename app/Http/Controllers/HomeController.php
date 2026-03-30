@@ -92,7 +92,6 @@ class HomeController extends Controller
         $counties = County::whereHas('subCounties.towns.pickUpAndDropOffPoint')
             ->with(['subCounties.towns.pickUpAndDropOffPoint'])
             ->orderBy('name')
-            ->limit(5)
             ->get();
         foreach ($counties as $county) {
             $county->points_count = $county->subCounties->sum(function ($subCounty) {
