@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -46,9 +47,11 @@
             background: rgba(255, 255, 255, 0.95) !important;
             box-shadow: var(--shadow-sm);
         }
+
         .navbar-brand .brand-text span {
             color: var(--text-dark);
         }
+
         .navbar-nav .nav-link {
             font-weight: 500;
             padding: 0.5rem 1rem !important;
@@ -58,10 +61,12 @@
             font-size: 0.95rem;
             color: var(--text-dark) !important;
         }
+
         .navbar-nav .nav-link:hover {
             background: var(--primary-light);
             color: var(--primary-color) !important;
         }
+
         .navbar-nav .nav-link.active {
             background: var(--primary-color);
             color: white !important;
@@ -75,19 +80,22 @@
             text-align: center;
             margin-bottom: 50px;
         }
+
         .stations-hero h1 {
             font-weight: 800;
             font-size: 2.8rem;
             margin-bottom: 15px;
         }
+
         .stations-hero p {
             font-size: 1.1rem;
             opacity: 0.9;
             max-width: 700px;
             margin: 0 auto;
         }
+
         .stats-badge {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 40px;
             padding: 8px 20px;
             display: inline-block;
@@ -114,11 +122,13 @@
             align-items: center;
             justify-content: space-between;
         }
+
         .search-wrapper {
             flex: 1;
             min-width: 250px;
             position: relative;
         }
+
         .search-wrapper i {
             position: absolute;
             left: 20px;
@@ -126,6 +136,7 @@
             transform: translateY(-50%);
             color: var(--text-light);
         }
+
         .search-input-custom {
             width: 100%;
             padding: 14px 20px 14px 48px;
@@ -136,16 +147,19 @@
             outline: none;
             transition: var(--transition);
         }
+
         .search-input-custom:focus {
             background: white;
             box-shadow: 0 0 0 2px var(--primary-light);
         }
+
         .stats-info {
             padding: 0 20px;
             color: var(--text-light);
             font-weight: 500;
             font-size: 0.9rem;
         }
+
         .stats-info strong {
             color: var(--primary-color);
         }
@@ -160,6 +174,7 @@
             transition: var(--transition);
             overflow: hidden;
         }
+
         .county-accordion-card:hover {
             box-shadow: var(--shadow-hover);
             border-color: var(--primary-color);
@@ -175,19 +190,23 @@
             align-items: center;
             transition: background 0.2s;
         }
+
         .county-header:hover {
             background: var(--primary-light);
         }
+
         .county-header.active {
             background: linear-gradient(135deg, var(--primary-light), white);
             border-bottom: 1px solid var(--border-color);
         }
+
         .county-title {
             display: flex;
             align-items: center;
             gap: 14px;
             flex-wrap: wrap;
         }
+
         .county-icon {
             width: 48px;
             height: 48px;
@@ -199,12 +218,14 @@
             font-size: 1.5rem;
             color: var(--primary-color);
         }
+
         .county-name {
             font-weight: 700;
             font-size: 1.35rem;
             margin: 0;
             color: var(--text-dark);
         }
+
         .points-count-badge {
             background: var(--primary-color);
             color: white;
@@ -213,11 +234,13 @@
             font-size: 0.8rem;
             font-weight: 600;
         }
+
         .chevron-icon {
             font-size: 1.3rem;
             color: var(--text-light);
             transition: transform 0.3s ease;
         }
+
         .county-header.active .chevron-icon {
             transform: rotate(90deg);
             color: var(--primary-color);
@@ -230,13 +253,22 @@
             background: #fefefe;
             border-top: 1px solid var(--border-color);
         }
+
         .points-panel.show {
             display: block;
             animation: fadeSlide 0.3s ease-out;
         }
+
         @keyframes fadeSlide {
-            from { opacity: 0; transform: translateY(-8px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Station Cards Grid */
@@ -255,6 +287,7 @@
             border: 1px solid var(--border-color);
             height: 100%;
         }
+
         .station-card:hover {
             transform: translateY(-5px);
             box-shadow: var(--shadow-hover);
@@ -268,16 +301,18 @@
             justify-content: space-between;
             align-items: center;
         }
+
         .station-card-header h5 {
             margin: 0;
             font-size: 1rem;
             font-weight: 600;
             color: white;
         }
+
         .station-type-badge {
             width: 34px;
             height: 34px;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -289,6 +324,7 @@
         .station-card-body {
             padding: 1.2rem;
         }
+
         .station-detail {
             display: flex;
             align-items: flex-start;
@@ -298,16 +334,19 @@
             color: var(--text-light);
             line-height: 1.4;
         }
+
         .station-detail i {
             width: 20px;
             color: var(--primary-color);
             margin-top: 2px;
             font-size: 0.9rem;
         }
+
         .station-detail strong {
             color: var(--text-dark);
             font-weight: 600;
         }
+
         .hours-badge {
             background: var(--primary-light);
             border-radius: 30px;
@@ -334,6 +373,7 @@
             text-align: center;
             margin-top: 2.5rem;
         }
+
         .btn-view-all {
             background: white;
             border: 2px solid var(--primary-color);
@@ -345,11 +385,12 @@
             text-decoration: none;
             display: inline-block;
         }
+
         .btn-view-all:hover {
             background: var(--primary-color);
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,143,64,0.2);
+            box-shadow: 0 10px 20px rgba(0, 143, 64, 0.2);
         }
 
         /* Footer */
@@ -360,6 +401,7 @@
             position: relative;
             margin-top: 40px;
         }
+
         footer::before {
             content: '';
             position: absolute;
@@ -369,46 +411,54 @@
             height: 4px;
             background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
         }
+
         .footer-links {
             list-style: none;
             padding: 0;
         }
+
         .footer-links li {
             margin-bottom: 10px;
         }
+
         .footer-links a {
             color: #adb5bd;
             text-decoration: none;
             transition: var(--transition);
             font-size: 0.9rem;
         }
+
         .footer-links a:hover {
             color: white;
             padding-left: 5px;
         }
+
         .social-icons a {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             width: 40px;
             height: 40px;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
             color: white;
             margin-right: 8px;
             transition: var(--transition);
             font-size: 1.1rem;
         }
+
         .social-icons a:hover {
             background: var(--primary-color);
             transform: translateY(-3px);
         }
+
         .business-solutions {
             background: linear-gradient(to right, var(--primary-light), white);
             border-radius: 20px;
             padding: 30px;
             border: 1px solid var(--border-color);
         }
+
         .business-btn {
             display: inline-flex;
             align-items: center;
@@ -418,32 +468,64 @@
             text-decoration: none;
             transition: var(--transition);
         }
+
         .marketplace-btn {
             background: var(--primary-color);
             color: white;
         }
+
         .partner-btn {
             background: white;
             color: var(--primary-color);
             border: 2px solid var(--primary-color);
         }
+
         .business-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,143,64,0.2);
+            box-shadow: 0 10px 20px rgba(0, 143, 64, 0.2);
         }
 
         @media (max-width: 768px) {
-            body { padding-top: 70px; }
-            .stations-hero h1 { font-size: 2rem; }
-            .stations-main { padding: 0 1rem 2rem; }
-            .county-header { padding: 1rem 1.2rem; flex-wrap: wrap; gap: 10px; }
-            .county-name { font-size: 1.1rem; }
-            .points-panel { padding: 1rem; }
-            .filter-bar { border-radius: 20px; flex-direction: column; gap: 10px; padding: 12px; }
-            .stats-info { text-align: center; }
+            body {
+                padding-top: 70px;
+            }
+
+            .stations-hero h1 {
+                font-size: 2rem;
+            }
+
+            .stations-main {
+                padding: 0 1rem 2rem;
+            }
+
+            .county-header {
+                padding: 1rem 1.2rem;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .county-name {
+                font-size: 1.1rem;
+            }
+
+            .points-panel {
+                padding: 1rem;
+            }
+
+            .filter-bar {
+                border-radius: 20px;
+                flex-direction: column;
+                gap: 10px;
+                padding: 12px;
+            }
+
+            .stats-info {
+                text-align: center;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <!-- Navigation -->
@@ -506,70 +588,66 @@
         <!-- Counties Accordion Container -->
         <div id="countiesContainer" class="counties-accordion">
             @if($counties->count() > 0)
-                @foreach($counties as $county)
-                <div class="county-accordion-card" data-county-name="{{ strtolower($county->name) }}">
-                    <div class="county-header" data-target="county-{{ $county->id }}">
-                        <div class="county-title">
-                            <div class="county-icon">
-                                <i class="bi bi-building"></i>
-                            </div>
-                            <h4 class="county-name">{{ $county->name }}</h4>
-                            <span class="points-count-badge">{{ $county->points_count ?? $county->pickup_points->count() }} Point{{ ($county->points_count ?? $county->pickup_points->count()) != 1 ? 's' : '' }}</span>
+            @foreach($counties as $county)
+            <div class="county-accordion-card" data-county-name="{{ strtolower($county->name) }} County">
+                <div class="county-header" data-target="county-{{ $county->id }}">
+                    <div class="county-title">
+                        <div class="county-icon">
+                            <i class="bi bi-building"></i>
                         </div>
-                        <i class="bi bi-chevron-right chevron-icon"></i>
+                        <h4 class="county-name">{{ $county->name }}</h4>
+                        <span class="points-count-badge">{{ $county->points_count ?? $county->pickup_points->count() }} Point{{ ($county->points_count ?? $county->pickup_points->count()) != 1 ? 's' : '' }}</span>
                     </div>
-                    <div class="points-panel" id="county-{{ $county->id }}">
-                        <div class="stations-grid">
-                            @forelse($county->pickup_points as $point)
-                            <div class="station-card">
-                                <div class="station-card-header">
-                                    <h5>{{ $point->name }}</h5>
-                                    <div class="station-type-badge" title="{{ $point->type == 'both' ? 'Pickup & Dropoff' : ($point->type == 'pickup' ? 'Pickup Only' : 'Dropoff Only') }}">
-                                        @if($point->type == 'both')
-                                        <i class="bi bi-arrow-left-right"></i>
-                                        @elseif($point->type == 'pickup')
-                                        <i class="bi bi-arrow-up"></i>
-                                        @else
-                                        <i class="bi bi-arrow-down"></i>
-                                        @endif
-                                    </div>
+                    <i class="bi bi-chevron-right chevron-icon"></i>
+                </div>
+                <div class="points-panel" id="county-{{ $county->id }}">
+                    <div class="stations-grid">
+                        @forelse($county->pickup_points as $point)
+                        <div class="station-card">
+                            <div class="station-card-header">
+                                <h5>{{ $point->town->name }}</h5>
+
+                            </div>
+                            <div class="station-card-body">
+                                <div class="station-detail">
+                                    <i class="bi bi-house"></i>
+                                    <span><strong>Name:</strong> {{ $point->name }}</span>
                                 </div>
-                                <div class="station-card-body">
-                                    <div class="station-detail">
-                                        <i class="bi bi-geo-alt-fill"></i>
-                                        <span><strong>Address:</strong> {{ $point->address }}</span>
-                                    </div>
-                                    <div class="station-detail">
-                                        <i class="bi bi-telephone-fill"></i>
-                                        <span><strong>Phone:</strong> {{ $point->contact_phone_number }}</span>
-                                    </div>
-                                    @if($point->contact_email)
-                                    <div class="station-detail">
-                                        <i class="bi bi-envelope-fill"></i>
-                                        <span><strong>Email:</strong> {{ $point->contact_email }}</span>
-                                    </div>
-                                    @endif
-                                    <div class="hours-badge">
-                                        <i class="bi bi-clock"></i> {{ $point->opening_hours }} - {{ $point->closing_hours }}
-                                    </div>
+                                <div class="station-detail">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <span><strong>Address:</strong> {{ $point->address }}</span>
+                                </div>
+                                <div class="station-detail">
+                                    <i class="bi bi-telephone-fill"></i>
+                                    <span><strong>Phone:</strong> {{ $point->contact_phone_number }}</span>
+                                </div>
+                                @if($point->contact_email)
+                                <div class="station-detail">
+                                    <i class="bi bi-envelope-fill"></i>
+                                    <span><strong>Email:</strong> {{ $point->contact_email }}</span>
+                                </div>
+                                @endif
+                                <div class="hours-badge">
+                                    <i class="bi bi-clock"></i> {{ $point->opening_hours }} - {{ $point->closing_hours }}
                                 </div>
                             </div>
-                            @empty
-                            <div class="empty-state">
-                                <i class="bi bi-info-circle fs-1"></i>
-                                <p class="mt-2">No pickup points available in this county yet.</p>
-                            </div>
-                            @endforelse
                         </div>
+                        @empty
+                        <div class="empty-state">
+                            <i class="bi bi-info-circle fs-1"></i>
+                            <p class="mt-2">No pickup points available in this county yet.</p>
+                        </div>
+                        @endforelse
                     </div>
                 </div>
-                @endforeach
+            </div>
+            @endforeach
             @else
-                <div class="empty-state">
-                    <i class="bi bi-geo-alt fs-1"></i>
-                    <h5 class="mt-3">No counties found</h5>
-                    <p class="text-muted">No service points are currently available.</p>
-                </div>
+            <div class="empty-state">
+                <i class="bi bi-geo-alt fs-1"></i>
+                <h5 class="mt-3">No counties found</h5>
+                <p class="text-muted">No service points are currently available.</p>
+            </div>
             @endif
         </div>
 
@@ -721,14 +799,14 @@
 
             // Accordion toggle functionality
             const countyHeaders = document.querySelectorAll('.county-header');
-            
+
             countyHeaders.forEach(header => {
                 header.addEventListener('click', function(e) {
                     e.stopPropagation();
                     const targetId = this.getAttribute('data-target');
                     const panel = document.getElementById(targetId);
                     const isActive = this.classList.contains('active');
-                    
+
                     // Close all other open panels
                     countyHeaders.forEach(h => {
                         if (h !== header && h.classList.contains('active')) {
@@ -738,7 +816,7 @@
                             if (otherPanel) otherPanel.classList.remove('show');
                         }
                     });
-                    
+
                     // Toggle current panel
                     if (!isActive) {
                         this.classList.add('active');
@@ -761,4 +839,5 @@
         });
     </script>
 </body>
+
 </html>

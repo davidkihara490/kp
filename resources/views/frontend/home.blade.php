@@ -458,7 +458,7 @@
                             <i class="bi bi-chevron-right me-3 chevron-icon"></i>
                             <h4 class="mb-0">
                                 <i class="bi bi-geo-alt-fill me-2"></i>
-                                {{ $county->name }}
+                                {{ $county->name }} County
                             </h4>
                         </div>
                         <span class="badge bg-primary">{{ $county->points_count }} Pick-up/DropOff Points</span>
