@@ -17,7 +17,7 @@ class CreatePickUpAndDropOffPoint extends Component
     public $town_id;
     public $contact_person;
     public $contact_email;
-    public $contact_phone;
+    public $contact_phone_number;
     public $is_24_hours = false;
     public $opening_hours = '08:00';
     public $closing_hours = '17:00';
@@ -36,7 +36,7 @@ class CreatePickUpAndDropOffPoint extends Component
         'town_id' => 'required|exists:towns,id',
         'contact_person' => 'required|string|max:255',
         'contact_email' => 'required|email|max:255',
-        'contact_phone' => 'required|string|max:20',
+        'contact_phone_number' => 'required|string|max:20',
         'is_24_hours' => 'boolean',
         'opening_hours' => 'required_if:is_24_hours,false|date_format:H:i',
         'closing_hours' => 'required_if:is_24_hours,false|date_format:H:i|after:opening_hours',
@@ -51,7 +51,7 @@ class CreatePickUpAndDropOffPoint extends Component
         'town_id.exists' => 'The selected town does not exist.',
         'closing_hours.after' => 'Closing time must be after opening time.',
         'contact_email.email' => 'Please enter a valid email address.',
-        'contact_phone.required' => 'Phone number is required.',
+        'contact_phone_number.required' => 'Phone number is required.',
         'contact_person.required' => 'Contact person name is required.',
         'code.unique' => 'This point code already exists. Please use a different code.',
         'operating_days.required' => 'Please select at least one operating day.',
@@ -113,7 +113,7 @@ class CreatePickUpAndDropOffPoint extends Component
                 'town_id' => $this->town_id,
                 'contact_person' => $this->contact_person,
                 'contact_email' => $this->contact_email,
-                'contact_phone' => $this->contact_phone,
+                'contact_phone_number' => $this->contact_phone_number,
                 'is_24_hours' => $this->is_24_hours,
                 'opening_hours' => $this->is_24_hours ? null : $this->opening_hours . ':00',
                 'closing_hours' => $this->is_24_hours ? null : $this->closing_hours . ':00',

@@ -170,15 +170,15 @@
 
                                 <!-- Contact Phone -->
                                 <div class="mb-3">
-                                    <label for="contact_phone" class="form-label">
+                                    <label for="contact_phone_number" class="form-label">
                                         <i class="bi bi-telephone me-2"></i>
                                         Phone Number <span class="text-danger">*</span>
                                     </label>
                                     <input type="text"
-                                        class="form-control @error('contact_phone') is-invalid @enderror"
-                                        id="contact_phone" wire:model="contact_phone"
+                                        class="form-control @error('contact_phone_number') is-invalid @enderror"
+                                        id="contact_phone_number" wire:model="contact_phone_number"
                                         placeholder="Enter phone number">
-                                    @error('contact_phone')
+                                    @error('contact_phone_number')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>

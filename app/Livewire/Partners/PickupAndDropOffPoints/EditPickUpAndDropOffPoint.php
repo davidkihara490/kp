@@ -20,7 +20,7 @@ class EditPickUpAndDropOffPoint extends Component
     public $town_id;
     public $contact_person;
     public $contact_email;
-    public $contact_phone;
+    public $contact_phone_number;
     public $is_24_hours = false;
     public $opening_hours = '08:00';
     public $closing_hours = '17:00';
@@ -39,12 +39,12 @@ class EditPickUpAndDropOffPoint extends Component
         
         'contact_person' => 'required|string|max:255',
         'contact_email' => 'required|email|max:255',
-        'contact_phone' => 'required|string|max:20',
+        'contact_phone_number' => 'required|string|max:20',
         'is_24_hours' => 'boolean',
         'opening_hours' => 'required_if:is_24_hours,false|date_format:H:i',
         'closing_hours' => 'required_if:is_24_hours,false|date_format:H:i|after:opening_hours',
-        'operating_days' => 'required|array|min:1',
-        'operating_days.*' => 'in:Mon,Tue,Wed,Thu,Fri,Sat,Sun',
+        // 'operating_days' => 'required|array|min:1',
+        // 'operating_days.*' => 'in:Mon,Tue,Wed,Thu,Fri,Sat,Sun',
         'capacity' => 'nullable|integer|min:1',
         'notes' => 'nullable|string|max:1000',
     ];
@@ -54,9 +54,9 @@ class EditPickUpAndDropOffPoint extends Component
         'town_id.exists' => 'The selected town does not exist.',
         'closing_hours.after' => 'Closing time must be after opening time.',
         'contact_email.email' => 'Please enter a valid email address.',
-        'contact_phone.required' => 'Phone number is required.',
+        'contact_phone_number.required' => 'Phone number is required.',
         'contact_person.required' => 'Contact person name is required.',
-        'operating_days.required' => 'Please select at least one operating day.',
+        // 'operating_days.required' => 'Please select at least one operating day.',
     ];
 
     public function mount($id)
@@ -79,7 +79,7 @@ class EditPickUpAndDropOffPoint extends Component
        
         $this->contact_person = $this->point->contact_person;
         $this->contact_email = $this->point->contact_email;
-        $this->contact_phone = $this->point->contact_phone;
+        $this->contact_phone_number = $this->point->contact_phone_number;
         $this->is_24_hours = $this->point->is_24_hours;
         $this->opening_hours = $this->point->opening_hours ? substr($this->point->opening_hours, 0, 5) : '08:00';
         $this->closing_hours = $this->point->closing_hours ? substr($this->point->closing_hours, 0, 5) : '17:00';
@@ -88,7 +88,7 @@ class EditPickUpAndDropOffPoint extends Component
         $this->notes = $this->point->notes;
 
         // Update validation rule with actual ID
-        $this->rules['code'] = 'required|string|max:50|unique:pick_up_and_drop_off_points,code,' . $this->point->id . ',id';
+        // $this->rules['code'] = 'required|string|max:50|unique:pick_up_and_drop_off_points,code,' . $this->point->id . ',id';
     }
 
     public function loadTowns()
@@ -120,7 +120,7 @@ class EditPickUpAndDropOffPoint extends Component
     {
 
     // dd($this->all());
-        $this->validate();
+        // $this->validate();
 
         try {
             DB::beginTransaction();
@@ -132,7 +132,7 @@ class EditPickUpAndDropOffPoint extends Component
                 'town_id' => $this->town_id,
                 'contact_person' => $this->contact_person,
                 'contact_email' => $this->contact_email,
-                'contact_phone' => $this->contact_phone,
+                'contact_phone_number' => $this->contact_phone_number,
                 'is_24_hours' => $this->is_24_hours,
                 'opening_hours' => $this->is_24_hours ? null : $this->opening_hours . ':00',
                 'closing_hours' => $this->is_24_hours ? null : $this->closing_hours . ':00',
@@ -147,6 +147,7 @@ class EditPickUpAndDropOffPoint extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
+            dd($e->getMessage());
             session()->flash('error', 'Failed to update point: ' . $e->getMessage());
         }
     }

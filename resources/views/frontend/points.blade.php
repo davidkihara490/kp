@@ -589,13 +589,13 @@
         <div id="countiesContainer" class="counties-accordion">
             @if($counties->count() > 0)
             @foreach($counties as $county)
-            <div class="county-accordion-card" data-county-name="{{ strtolower($county->name) }} County">
+            <div class="county-accordion-card" data-county-name="{{ strtolower($county->name) }}">
                 <div class="county-header" data-target="county-{{ $county->id }}">
                     <div class="county-title">
                         <div class="county-icon">
                             <i class="bi bi-building"></i>
                         </div>
-                        <h4 class="county-name">{{ $county->name }}</h4>
+                        <h4 class="county-name">{{ $county->name }} County</h4>
                         <span class="points-count-badge">{{ $county->points_count ?? $county->pickup_points->count() }} Point{{ ($county->points_count ?? $county->pickup_points->count()) != 1 ? 's' : '' }}</span>
                     </div>
                     <i class="bi bi-chevron-right chevron-icon"></i>
