@@ -22,7 +22,6 @@ class ViewPartner extends Component
         'documents' => 'Documents',
         'points' => 'PickUp/DropOff Points',
         'pha' => 'Parcel Handling Assistants',
-        'owners' => 'Owners',
         'drivers' => 'Drivers',
         'towns' => 'Service Towns',
 

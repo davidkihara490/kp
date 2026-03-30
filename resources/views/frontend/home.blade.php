@@ -464,7 +464,6 @@
                         <span class="badge bg-primary">{{ $county->points_count }} Pick-up/DropOff Points</span>
                     </div>
 
-                    <!-- Subcounties Container (Hidden by default) -->
                     <div class="subcounties-container" id="county-{{ $county->id }}" style="display: none;">
                         <div class="subcounties-grid">
                             <div class="row g-4 points-grid">
@@ -503,86 +502,21 @@
                                                 {{ $point->opening_hours }} - {{ $point->closing_hours }}
                                             </p>
                                         </div>
-                                        </div>
+                                    </div>
                                 </div>
                                 @endforeach
                             </div>
-                            <!-- @foreach($county->subCounties as $subCountyIndex => $subCounty)
-                            <div class="subcounty-card mb-3"> -->
-                            <!-- Subcounty Header (Clickable) -->
-                            <!-- <div class="subcounty-header" data-subcounty-id="subcounty-{{ $subCounty->id }}">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-chevron-right me-3 chevron-icon"></i>
-                                        <h5 class="mb-0">
-                                            <i class="bi bi-building me-2"></i>
-                                            {{ $subCounty->name }}
-                                        </h5>
-                                    </div>
-                                    <span class="badge bg-secondary">{{ $subCounty->pickupPoints->count() }} Stations</span>
-                                </div> -->
-
-                            <!-- Pickup Points Grid (Hidden by default) -->
-                            <!-- <div class="points-container" id="subcounty-{{ $subCounty->id }}" style="display: none;"> -->
-                            <!-- <div class="row g-4 points-grid">
-                                        @foreach($subCounty->pickupPoints as $point)
-                                        <div class="col-xl-3 col-lg-4 col-md-6">
-                                            <div class="station-card">
-                                                <div class="station-card-header">
-                                                    <h5 class="mb-0">{{ $point->name }}</h5>
-                                                    <span class="station-type-badge {{ $point->type }}">
-                                                        @if($point->type == 'both')
-                                                        <i class="bi bi-arrow-left-right"></i>
-                                                        @elseif($point->type == 'pickup')
-                                                        <i class="bi bi-arrow-up"></i>
-                                                        @else
-                                                        <i class="bi bi-arrow-down"></i>
-                                                        @endif
-                                                    </span>
-                                                </div>
-                                                <div class="station-card-body">
-                                                    <p class="mb-2">
-                                                        <i class="bi bi-geo-alt text-primary me-2"></i>
-                                                        {{ $point->address }}
-                                                    </p>
-                                                    <p class="mb-2">
-                                                        <i class="bi bi-telephone text-primary me-2"></i>
-                                                        {{ $point->contact_phone_number }}
-                                                    </p>
-                                                    @if($point->email)
-                                                    <p class="mb-2">
-                                                        <i class="bi bi-envelope text-primary me-2"></i>
-                                                        {{ $point->contact_email }}
-                                                    </p>
-                                                    @endif
-                                                    <p class="mb-0">
-                                                        <i class="bi bi-clock text-primary me-2"></i>
-                                                        {{ $point->opening_hours }} - {{ $point->closing_hours }}
-                                                    </p>
-                                                </div>
-                                                <div class="station-card-footer">
-                                                    <a href="#" class="btn btn-outline-primary btn-sm w-100">
-                                                        <i class="bi bi-eye me-2"></i>View Details
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        @endforeach
-                                    </div>
-
-                                    <div class="text-center mt-4">
-                                        <a href="#" class="btn btn-outline-primary view-more-stations">
-                                            <i class="bi bi-grid-3x3-gap-fill me-2"></i>
-                                            View All Stations in {{ $subCounty->name }}
-                                            <i class="bi bi-arrow-right ms-2"></i>
-                                        </a>
-                                    </div> -->
-                            <!-- </div> -->
-                            <!-- </div>
-                            @endforeach -->
                         </div>
                     </div>
                 </div>
                 @endforeach
+                <div class="text-center mt-4">
+                    <a target="_blank" href="{{ route('points') }}" class="btn btn-outline-primary view-more-stations">
+                        <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                        View All Pick Up/Drop Off Points
+                        <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </section>

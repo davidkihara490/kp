@@ -314,7 +314,7 @@ class Partners extends Component
 
     public function render()
     {
-        $partners = $this->getPartnersQuery()->paginate(20);
+        $partners = $this->getPartnersQuery()->paginate(10);
 
         return view('livewire.admin.partners.partners', [
             'partners' => $partners,

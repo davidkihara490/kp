@@ -87,6 +87,21 @@ class HomeController extends Controller
         }
     }
 
+    public function getPoints()
+    {
+        $counties = County::whereHas('subCounties.towns.pickUpAndDropOffPoint')
+            ->with(['subCounties.towns.pickUpAndDropOffPoint'])
+            ->orderBy('name')
+            ->limit(5)
+            ->get();
+        foreach ($counties as $county) {
+            $county->points_count = $county->subCounties->sum(function ($subCounty) {
+                return $subCounty->towns->sum(fn($town) => $town->pickUpAndDropOffPoint->count());
+            });
+        }
+        return view('frontend.points', compact('counties'));
+    }
+
     public function terms()
     {
         $terms = TermsAndCondition::where('is_active', true)->orderBy('id', 'DESC')->first();

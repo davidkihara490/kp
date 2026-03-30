@@ -24,16 +24,16 @@
                                 </button>
                                 @endif
 
-                                @if($partner->status === 'pending')
-                                <button class="btn btn-sm btn-primary mr-2" wire:click="approvePartner">
-                                    <i class="fas fa-thumbs-up mr-1"></i> Approve
-                                </button>
-                                @endif
-
-                                <!-- <a href="{{ route('admin.partners.edit', ['id' => $partner->id]) }}"
+                                <a href="{{ route('admin.partners.edit', ['id' => $partner->id]) }}"
                                     class="btn btn-sm btn-warning mr-2">
                                     <i class="fas fa-edit mr-1"></i> Edit
-                                </a> -->
+                                </a>
+
+                                @if($partner->verification_status === 'verified')
+                                <button class="btn btn-sm btn-danger mr-2" wire:click="suspendPartner">
+                                    <i class="fas fa-pause mr-1"></i> Suspend
+                                </button>
+                                @endif
 
                                 <button class="btn btn-sm btn-danger mr-2" wire:click="confirmDelete">
                                     <i class="fas fa-trash mr-1"></i> Delete
@@ -1021,69 +1021,89 @@
                 </div>
                 @endif
 
-                @if($activeTab === 'owners')
-                <!-- Owners Tab -->
+                @if($activeTab === 'points')
                 <div class="card">
                     <div class="card-header">
                         <h5 class="card-title mb-0">
-                            <i class="fas fa-users mr-2"></i>Owners
+                            <i class="fas fa-map-marker-alt mr-2"></i>Pick Up/ Drop Off Points ({{ $partner->pickUpAndDropOffPoints->count() }})
                         </h5>
                     </div>
                     <div class="card-body">
-                        @if($partner->owners && $partner->owners->count() > 0)
+                        @if($partner->pickUpAndDropOffPoints->count() > 0)
                         <div class="table-responsive">
                             <table class="table table-bordered table-hover">
                                 <thead class="thead-light">
                                     <tr>
                                         <th>#</th>
                                         <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Phone</th>
-                                        <th>ID Number</th>
-                                        <th>KRA PIN</th>
-                                        <th>Ownership %</th>
+                                        <th>Town</th>
+                                        <th>Contact Phone</th>
+                                        <th>Contact Email</th>
                                         <th>Status</th>
-                                        <th>Actions</th>
+
+                                        <th>Parcels</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($partner->owners as $owner)
+                                    @foreach($partner->pickUpAndDropOffPoints as $point)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $point->name }}</td>
+                                        <td>{{ $point->town->name ?? 'Unknown' }}</td>
+                                        <td>{{ $point->contact_phone_number ?? 'Not provided' }}</td>
+                                        <td>{{ $point->contact_email ?? 'Not provided' }}</td>
                                         <td>
-                                            {{ $owner->first_name }} {{ $owner->last_name }}
-                                            @if($owner->user)
-                                            <br>
-                                            <small class="text-muted">User ID: {{ $owner->user->id }}</small>
-                                            @endif
-                                        </td>
-                                        <td>{{ $owner->email }}</td>
-                                        <td>{{ $owner->phone_number }}</td>
-                                        <td>{{ $owner->id_number }}</td>
-                                        <td>{{ $owner->kra_pin }}</td>
-                                        <td>
-                                            @if($owner->ownership_percentage)
-                                            <span class="badge badge-info">{{ $owner->ownership_percentage }}%</span>
-                                            @else
-                                            <span class="badge badge-secondary">N/A</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($owner->user)
-                                            <span class="badge badge-{{ $owner->user->is_active ? 'success' : 'danger' }}">
-                                                {{ $owner->user->is_active ? 'Active' : 'Inactive' }}
+                                            <span class="badge badge-{{ $point->status === 'active' ? 'success' : ($point->status === 'pending' ? 'warning' : 'danger') }}">
+                                                {{ ucfirst($point->status) }}
                                             </span>
-                                            @else
-                                            <span class="badge badge-warning">No User Account</span>
-                                            @endif
                                         </td>
+                                        <td>{{ $point->parcels?->count() ?? 0}}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        @else
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            This partner does not have pick-up/drop-off points.
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
+                @if($activeTab === 'pha')
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-map-marker-alt mr-2"></i>Parcel Handling Assistants ({{ $partner->parcelHandlingAssistants->count() }})
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if($partner->parcelHandlingAssistants->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Contact Phone</th>
+                                        <th>Contact Email</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($partner->parcelHandlingAssistants as $assistant)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $assistant->full_name }}</td>
+                                        <td>{{ $assistant->phone_number ?? 'Not provided' }}</td>
+                                        <td>{{ $assistant->email ?? 'Not provided' }}</td>
                                         <td>
-                                            @if($owner->user)
-                                            <a href="{{ route('admin.users.view', $owner->user->id) }}"
-                                                class="btn btn-sm btn-info" title="View User">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            @endif
+                                            <span class="badge badge-{{ $assistant->status === 'active' ? 'success' : ($assistant->status === 'pending' ? 'warning' : 'danger') }}">
+                                                {{ ucfirst($assistant->status) }}
+                                            </span>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -1093,13 +1113,12 @@
                         @else
                         <div class="alert alert-warning">
                             <i class="fas fa-exclamation-triangle mr-2"></i>
-                            No owners found for this partner.
+                            This partner does not have parcel handling assistants.
                         </div>
                         @endif
                     </div>
                 </div>
                 @endif
-
                 @if($activeTab === 'drivers')
                 <!-- Drivers Tab -->
                 <div class="card">

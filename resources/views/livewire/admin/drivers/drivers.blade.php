@@ -78,7 +78,7 @@
                             </th>
                             <th>Driver</th>
                             <th>Contact</th>
-                            <th>Transport Partner</th>
+                            <th>Partner</th>
                             <th wire:click="sortBy('status')" style="cursor: pointer;">
                                 Status 
                                 @if($sortField !== 'status')
@@ -115,11 +115,7 @@
                                     <small><i class="fas fa-envelope mr-1"></i>{{ $driver->email }}</small>
                                 </td>
                                 <td>
-                                    @if($driver->transportPartner)
-                                        <span class="badge badge-info">{{ $driver->transportPartner->name }}</span>
-                                    @else
-                                        <span class="badge badge-secondary">Not Assigned</span>
-                                    @endif
+                                    <a target="_blank" href="{{ route('admin.partners.view',  $driver->partner->id) }}">{{ $driver->partner->company_name }}</a>
                                 </td>
                                 <td>
                                     <span class="badge badge-{{ $statusBadge['color'] }}">

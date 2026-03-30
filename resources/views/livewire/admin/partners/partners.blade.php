@@ -7,20 +7,6 @@
                         <i class="fas fa-users mr-2"></i>
                         Partners Management
                     </h3>
-
-                    <!-- <div class="d-flex gap-2">
-                        <a href="{{ route('admin.partners.create') }}" class="btn btn-success btn-sm">
-                            <i class="fas fa-plus mr-1"></i> Add New Partner
-                        </a>
-
-                        <button class="btn btn-outline-primary btn-sm" wire:click="exportPartners('csv')">
-                            <i class="fas fa-download mr-1"></i> Export CSV
-                        </button>
-
-                        <button class="btn btn-outline-secondary btn-sm" wire:click="exportPartners('pdf')">
-                            <i class="fas fa-file-pdf mr-1"></i> Export PDF
-                        </button>
-                    </div> -->
                 </div>
             </div>
 
@@ -77,7 +63,7 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label>Partner Name</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
@@ -91,7 +77,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label>Town</label>
                                 <select class="form-control" wire:model.live="town">
                                     <option value="">All Towns</option>
@@ -101,7 +87,7 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label>Status</label>
                                 <select class="form-control" wire:model.live="status">
                                     @foreach($statuses as $value => $label)
@@ -109,6 +95,17 @@
                                     @endforeach
                                 </select>
                             </div>
+
+                            <div class="col-md-3">
+                                <label>Partner Type</label>
+                                <select class="form-control" wire:model.live="partner_type">
+                                    <option value="">Select Partner Type</option>
+                                    @foreach(['transport', 'pickup-dropoff'] as $label)
+                                    <option value="{{ $label }}">{{ucfirst( $label) }} Partner</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                         </div>
                     </div>
                 </div>
