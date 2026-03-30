@@ -621,12 +621,12 @@
                                     <i class="bi bi-telephone-fill"></i>
                                     <span><strong>Phone:</strong> {{ $point->contact_phone_number }}</span>
                                 </div>
-                                @if($point->contact_email)
+                                <!-- @if($point->contact_email)
                                 <div class="station-detail">
                                     <i class="bi bi-envelope-fill"></i>
                                     <span><strong>Email:</strong> {{ $point->contact_email }}</span>
                                 </div>
-                                @endif
+                                @endif -->
                                 <div class="hours-badge">
                                     <i class="bi bi-clock"></i> {{ $point->opening_hours }} - {{ $point->closing_hours }}
                                 </div>

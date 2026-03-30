@@ -486,12 +486,12 @@
                                                 <i class="bi bi-telephone text-primary me-2"></i>
                                                 {{ $point->contact_phone_number }}
                                             </p>
-                                            @if($point->email)
+                                            <!-- @if($point->email)
                                             <p class="mb-2">
                                                 <i class="bi bi-envelope text-primary me-2"></i>
                                                 {{ $point->contact_email }}
                                             </p>
-                                            @endif
+                                            @endif -->
                                             <p class="mb-0">
                                                 <i class="bi bi-clock text-primary me-2"></i>
                                                 {{ $point->opening_hours }} - {{ $point->closing_hours }}
