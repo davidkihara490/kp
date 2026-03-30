@@ -69,7 +69,7 @@ class CreateDriver extends Component
         'notes' => 'nullable|string',
 
         'password' => 'required|string|min:8|confirmed',
-        'role_id' => 'required|exists:roles,id',
+        // 'role_id' => 'required|exists:roles,id',
     ];
 
     protected $messages = [
@@ -78,8 +78,8 @@ class CreateDriver extends Component
         'phone_number.unique' => 'This phone number is already registered.',
         'email.unique' => 'This email address is already registered.',
         'driving_license_number.unique' => 'This driving license number is already registered.',
-        'role_id.required' => 'Role is required',
-        'role_id.exists' => 'The role was not found',
+        // 'role_id.required' => 'Role is required',
+        // 'role_id.exists' => 'The role was not found',
     ];
     public function mount()
     {
@@ -123,10 +123,10 @@ class CreateDriver extends Component
                 'status' => 'active',
             ]);
 
-            if ($this->role_id) {
-                $this->role = Role::findOrFail($this->role_id);
-                $user->assignRole($this->role->name);
-            }
+            // if ($this->role_id) {
+            //     $this->role = Role::findOrFail($this->role_id);
+            //     $user->assignRole($this->role->name);
+            // }
 
             // Create driver
             $driver = Driver::create([

@@ -259,7 +259,7 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Password *</label>
                                     <div class="input-group">
@@ -278,32 +278,13 @@
                                     <small class="text-muted">Minimum 8 characters</small>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Confirm Password *</label>
                                     <input type="text" class="form-control @error('password_confirmation') is-invalid @enderror"
                                         wire:model="password_confirmation" placeholder="Confirm password">
                                 </div>
                             </div>
-
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>User Role *</label>
-                                    <select class="form-control"
-                                        wire:model="role_id">
-                                        @forelse($roles as $role)
-                                        <option value="{{ $role->id }}">{{ $role->name }}</option>
-                                        @empty
-                                        <option value="">No roles were found</option>
-                                        @endforelse
-                                    </select>
-                                    @error('role_id')
-                                    <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
-
-
                         </div>
                         <div class="alert alert-info mt-3">
                             <i class="fas fa-info-circle mr-2"></i>

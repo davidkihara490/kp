@@ -78,7 +78,7 @@ public function rules()
         'new_password' => 'nullable|min:8',
         'confirm_password' => 'nullable|same:new_password',
         'selectedStation' => 'nullable|exists:station_partners,id',
-        'role_id' => 'required|exists:roles,id',
+        // 'role_id' => 'required|exists:roles,id',
     ];
 }
 
@@ -92,8 +92,8 @@ public function rules()
         'id_number.required' => 'ID number is required.',
         'id_number.unique' => 'This ID number is already registered.',
         'confirm_password.same' => 'Passwords do not match.',
-        'role_id.exists' => 'This role does not exist.',
-        'role_id.required' => 'Role is required.',
+        // 'role_id.exists' => 'This role does not exist.',
+        // 'role_id.required' => 'Role is required.',
     ];
 
     public function mount($id)
@@ -119,30 +119,7 @@ public function rules()
         $this->status = $this->assistant->status;
         $this->originalStatus = $this->assistant->status;
         $this->role_id = $this->assistant->user->roles->first()?->id;
-        // Update validation rules with actual ID
-        // $this->rules['phone_number'] = [
-        //     'required',
-        //     'string',
-        //     'min:10',
-        //     'max:15',
-        //     Rule::unique('parcel_handling_assistants', 'phone_number')->ignore($this->assistant->id),
-        //     Rule::unique('users', 'phone_number')->whereNull('deleted_at')->ignore($this->assistant->user_id),
-        // ];
 
-        // $this->rules['email'] = [
-        //     'required',
-        //     'email',
-        //     Rule::unique('parcel_handling_assistants', 'email')->ignore($this->assistant->id),
-        //     Rule::unique('users', 'email')->whereNull('deleted_at')->ignore($this->assistant->user_id),
-        // ];
-
-        // $this->rules['id_number'] = [
-        //     'required',
-        //     'string',
-        //     'min:5',
-        //     'max:20',
-        //     Rule::unique('parcel_handling_assistants', 'id_number')->ignore($this->assistant->id),
-        // ];
     }
 
     public function loadStations()
@@ -251,7 +228,7 @@ public function rules()
         try {
             DB::beginTransaction();
 
-            $this->role = Role::findOrFail($this->role_id);
+            // $this->role = Role::findOrFail($this->role_id);
 
 
             // Update assistant
@@ -261,7 +238,7 @@ public function rules()
                 'last_name' => $this->last_name,
                 'phone_number' => $this->phone_number,
                 'email' => $this->email,
-                'role' => $this->role->name,
+                // 'role' => $this->role?->name,
                 'id_number' => $this->id_number,
                 'status' => $this->status,
             ]);
@@ -280,7 +257,7 @@ public function rules()
                     'status' => $this->status,
                 ]);
 
-                $this->assistant->user->assignRole($this->role->name);
+                // $this->assistant->user->assignRole($this->role->name);
             } elseif ($this->create_user_account && $this->new_password) {
                 // Create new user account
                 $user = User::create([
@@ -294,7 +271,7 @@ public function rules()
                     'status' => $this->status,
                     'login_attempts' => 0,
                 ]);
-                $user->assignRole($this->role->name);
+                // $user->assignRole($this->role->name);
 
                 $this->assistant->update(['user_id' => $user->id]);
             }

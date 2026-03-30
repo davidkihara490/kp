@@ -60,7 +60,6 @@ class CreateParcelHandlingAssistant extends Component
             'status' => 'required|in:active,inactive,suspended,pending',
             'password' => 'required|min:8|nullable',
             'confirm_password' => 'required|same:password|nullable',
-            'role_id' => 'required|exists:roles,id',
         ];
     }
 
@@ -75,8 +74,6 @@ class CreateParcelHandlingAssistant extends Component
         'id_number.unique' => 'This ID number is already registered.',
         'password.required_if' => 'Password is required when creating a user account.',
         'confirm_password.same' => 'Passwords do not match.',
-        'role_id.exists' => 'This role does not exist.',
-        'role_id.required' => 'Role is required.',
     ];
 
     public function mount(SMSService $smsService)
@@ -120,11 +117,6 @@ class CreateParcelHandlingAssistant extends Component
                 'login_attempts' => 0,
                 'user_type' => 'pha',
             ]);
-
-            if ($this->role_id) {
-                $this->role = Role::findOrFail($this->role_id);
-                $user->assignRole($this->role->name);
-            }
 
             $assistant = ParcelHandlingAssistant::create([
                 'first_name' => $this->first_name,

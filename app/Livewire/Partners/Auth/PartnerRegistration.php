@@ -529,9 +529,9 @@ class PartnerRegistration extends Component
             }
 
 
-            $partnerAdmin = $this->createRole($owner->id, $this->company_name . '-admin');
-            Permission::all()->each(fn(Permission $permission): Permission => $permission->assignRole($partnerAdmin));
-            $owner->assignRole($partnerAdmin->name);
+            // $partnerAdmin = $this->createRole($owner->id, $this->company_name . '-admin');
+            // Permission::all()->each(fn(Permission $permission): Permission => $permission->assignRole($partnerAdmin));
+            // $owner->assignRole($partnerAdmin->name);
 
 
             SendWelcomeEmail::dispatch($owner,  true, $ownerPassword);

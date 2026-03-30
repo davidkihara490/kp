@@ -3,7 +3,6 @@
 namespace App\Livewire\Partners\Profile;
 
 use App\Models\Partner;
-use App\Models\PartnerOwner;
 use App\Models\PartnerTown;
 use App\Models\Town;
 use Illuminate\Support\Facades\Auth;
@@ -74,6 +73,7 @@ class EditProfile extends Component
     public $storage_facility_type;
     public $security_measures;
     public $insurance_coverage;
+    public $maximum_capacity_per_day; // Added for pickup partner
 
     // Common Operational Fields
     public $has_computer = false;
@@ -262,6 +262,7 @@ class EditProfile extends Component
             $this->storage_facility_type = $this->partner->storage_facility_type;
             $this->security_measures = $this->partner->security_measures;
             $this->insurance_coverage = $this->partner->insurance_coverage;
+            $this->maximum_capacity_per_day = $this->partner->maximum_capacity_per_day;
         }
 
         // Common Data
@@ -397,6 +398,7 @@ class EditProfile extends Component
                     'storage_facility_type' => $this->storage_facility_type,
                     'security_measures' => $this->security_measures,
                     'insurance_coverage' => $this->insurance_coverage,
+                    'maximum_capacity_per_day' => $this->maximum_capacity_per_day,
                 ]);
             }
 

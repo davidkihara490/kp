@@ -102,14 +102,14 @@ class EditDriver extends Component
             'notes' => 'nullable|string',
 
             'password' => $driverId ? 'nullable|string|min:8|confirmed' : 'required|string|min:8|confirmed',
-            'role_id' => 'required|exists:roles,id',
+            // 'role_id' => 'required|exists:roles,id',
 
         ];
     }
 
     public function mount($id)
     {
-        $this->roles = Role::where('user_id', Auth::guard('partner')->user()->id)->get();
+        // $this->roles = Role::where('user_id', Auth::guard('partner')->user()->id)->get();
         $this->driver = Driver::findOrFail($id);
         $this->first_name = $this->driver->first_name;
         $this->second_name = $this->driver->second_name;
@@ -157,10 +157,10 @@ class EditDriver extends Component
                 'status' => 'active',
             ]);
 
-            if ($this->role_id) {
-                $this->role = Role::findOrFail($this->role_id);
-                $user->assignRole($this->role->name);
-            }
+            // if ($this->role_id) {
+            //     $this->role = Role::findOrFail($this->role_id);
+            //     $user->assignRole($this->role->name);
+            // }
 
 
             // Create driver

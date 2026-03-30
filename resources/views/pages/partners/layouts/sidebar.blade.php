@@ -95,16 +95,16 @@
 
         <div class="nav-section">
             <div class="nav-section-title">Settings</div>
-            <!-- @if ( auth()->guard('partner')->user()->user_type == 'pickup-dropoff' || auth()->guard('partner')->user()->user_type == 'transport' || auth()->guard('partner')->user()->user_type == 'in-charge')
+            @if ( auth()->guard('partner')->user()->user_type == 'pickup-dropoff' || auth()->guard('partner')->user()->user_type == 'transport')
             <a href="{{ route('partners.profile.edit') }}" class="nav-link">
                 <i class="bi bi-person-circle"></i>
                 <span>Partner Profile</span>
             </a>
-            @endif -->
-            <a href="{{ route('partners.roles-and-permissions.index') }}" class="nav-link">
+            @endif
+            <!-- <a href="{{ route('partners.roles-and-permissions.index') }}" class="nav-link">
                 <i class="bi bi-lock"></i>
                 <span>Roles And Permissions</span>
-            </a>
+            </a> -->
             <!-- <a href="#" class="nav-link">
                 <i class="bi bi-shield-check"></i>
                 <span>Security</span>

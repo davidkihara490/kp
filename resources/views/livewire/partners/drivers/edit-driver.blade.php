@@ -465,19 +465,6 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="status" class="form-label fw-medium">Role *</label>
-                            <select class="form-select @error('role_id') is-invalid @enderror" 
-                                    id="status" wire:model="role_id">
-                                @foreach($roles as $role)
-                                    <option value="{{ $role->id }}">{{ $role->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('role_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
                             <label class="form-label fw-medium">Availability</label>
                             <div class="d-flex align-items-center h-100">
                                 <div class="form-check form-switch">

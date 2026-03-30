@@ -140,42 +140,11 @@
                 </div>
 
                 <div class="col-lg-6">
-                    <div class="form-card">
-                        <div class="form-card-header">
-                            <h5><i class="bi bi-person-gear me-2"></i>Role Assignment</h5>
-                        </div>
-                        <div class="form-card-body">
-                            <div class="mb-4">
-                                <label for="role" class="form-label">
-                                    <i class="bi bi-person-badge me-2"></i>
-                                    Select Role <span class="text-danger">*</span>
-                                </label>
-                                <select class="form-select"
-                                    id="role" wire:model="role_id">
-                                    <option value="">-- Choose a role --</option>
-
-                                    @forelse($roles as $role)
-                                    <option value="{{ $role->id}}">{{ $role->name }}</option>
-                                    @empty
-                                    <option value="">No roles were found
-                                    </option>
-                                    @endforelse
-                                </select>
-                                @error('role_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- Status Selection Card -->
                     <div class="form-card mt-4">
                         <div class="form-card-header">
                             <h5><i class="bi bi-activity me-2"></i>Account Status</h5>
                         </div>
                         <div class="form-card-body">
-                            <!-- Status Dropdown -->
                             <div class="mb-4">
                                 <label for="status" class="form-label">
                                     <i class="bi bi-activity me-2"></i>
@@ -206,7 +175,6 @@
                 </div>
             </div>
 
-            <!-- Form Actions -->
             <div class="form-actions mt-4">
                 <div class="d-flex justify-content-between">
                     <button type="button" class="btn btn-outline-secondary" wire:click="$dispatch('cancelCreate')">
@@ -236,7 +204,6 @@
     </div>
 
     <style>
-        /* Card Styling */
         .form-card {
             background: white;
             border-radius: 12px;

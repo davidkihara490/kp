@@ -471,18 +471,13 @@
                                 <div class="col-xl-3 col-lg-4 col-md-6">
                                     <div class="station-card">
                                         <div class="station-card-header">
-                                            <h5 class="mb-0">{{ $point->name }}</h5>
-                                            <span class="station-type-badge {{ $point->type }}">
-                                                @if($point->type == 'both')
-                                                <i class="bi bi-arrow-left-right"></i>
-                                                @elseif($point->type == 'pickup')
-                                                <i class="bi bi-arrow-up"></i>
-                                                @else
-                                                <i class="bi bi-arrow-down"></i>
-                                                @endif
-                                            </span>
+                                            <h5 class="mb-0">{{ $point->town->name }}</h5>
                                         </div>
                                         <div class="station-card-body">
+                                            <p class="mb-2">
+                                                <i class="bi bi-house text-primary me-2"></i>
+                                                <strong>{{ $point->name }}</strong>
+                                            </p>
                                             <p class="mb-2">
                                                 <i class="bi bi-geo-alt text-primary me-2"></i>
                                                 {{ $point->address }}
