@@ -78,122 +78,130 @@
                 <p class="lead">You can now send and receive your parcels from any town, thanks to our unmatched technology, data, and reliable network</p>
             </div>
 
-            <div class="compact-booking-engine animate-fade-up" style="animation-delay: 0.2s;">
-                <!-- Booking Tabs -->
-                <ul class="nav nav-tabs booking-tabs" id="bookingTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="town-tab" data-bs-toggle="tab" data-bs-target="#town" type="button" role="tab" aria-controls="town" aria-selected="true">
-                            <i class="bi bi-building me-2"></i> Town to Town
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="international-tab" data-bs-toggle="tab" data-bs-target="#international" type="button" role="tab" aria-controls="international" aria-selected="false">
-                            <i class="bi bi-globe me-2"></i> International
-                        </button>
-                    </li>
-                </ul>
+<div class="compact-booking-engine animate-fade-up" style="animation-delay: 0.2s;">
+    <!-- Booking Tabs -->
+    <ul class="nav nav-tabs booking-tabs" id="bookingTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="town-tab" data-bs-toggle="tab" data-bs-target="#town" type="button" role="tab" aria-controls="town" aria-selected="true">
+                <i class="bi bi-building me-2"></i> Town to Town
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="international-tab" data-bs-toggle="tab" data-bs-target="#international" type="button" role="tab" aria-controls="international" aria-selected="false">
+                <i class="bi bi-globe me-2"></i> Point-to-Point
+            </button>
+        </li>
+    </ul>
 
-                <!-- Tab Content -->
-                <!-- Town to Town Tab -->
-                <div class="tab-pane fade show active" id="town" role="tabpanel" aria-labelledby="town-tab">
-                    <div class="booking-header">
-                        <h6 class="text-muted mb-3">Get an instant quote for shipments between Kenyan towns</h6>
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <!-- Town to Town Tab -->
+        <div class="tab-pane fade show active" id="town" role="tabpanel" aria-labelledby="town-tab">
+            <div class="booking-header">
+                <h6 class="text-muted mb-3">Get an instant quote for shipments between Kenyan towns</h6>
+            </div>
+            <form id="townQuoteForm">
+                <div class="booking-form-grid">
+                    <!-- From Town with Search -->
+                    <div class="booking-field">
+                        <label><i class="bi bi-geo-alt-fill me-1 text-primary"></i> From Town</label>
+                        <div class="searchable-select-container">
+                            <div class="searchable-select" id="fromTownSelect">
+                                <div class="searchable-select-display" data-target="fromTown">
+                                    <span class="selected-text" style="color: black;">Select pickup town</span>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                                <div class="searchable-select-dropdown" id="fromTownDropdown">
+                                    <div class="search-box">
+                                        <i class="bi bi-search"></i>
+                                        <input type="text" class="search-input" placeholder="Search towns..." id="fromTownSearch">
+                                    </div>
+                                    <div class="options-list" id="fromTownOptions">
+                                        @foreach($towns as $town)
+                                        <div class="option-item" data-value="{{ $town->name }}">
+                                            <i class="bi bi-building me-2"></i>
+                                            <span class="town-name">{{ $town->name }}</span>
+                                            <small class="town-county text-muted">{{ $town->subCounty?->county?->name ?? 'Kenya' }}</small>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="fromTown" name="fromTown" required>
+                        </div>
                     </div>
 
-                    <form id="townQuoteForm">
-                        <div class="booking-form-grid">
-                            <!-- From Town with Search -->
-                            <div class="booking-field">
-                                <label><i class="bi bi-geo-alt-fill me-1 text-primary"></i> From Town</label>
-                                <div class="searchable-select-container">
-                                    <div class="searchable-select" id="fromTownSelect">
-                                        <div class="searchable-select-display" data-target="fromTown">
-                                            <span class="selected-text" style="color: black;">Select pickup town</span>
-                                            <i class="bi bi-chevron-down"></i>
-                                        </div>
-                                        <div class="searchable-select-dropdown" id="fromTownDropdown">
-                                            <div class="search-box">
-                                                <i class="bi bi-search"></i>
-                                                <input type="text" class="search-input" placeholder="Search towns..." id="fromTownSearch">
-                                            </div>
-                                            <div class="options-list" id="fromTownOptions">
-                                                @foreach($towns as $town)
-                                                <div class="option-item" data-value="{{ $town->name }}">
-                                                    <i class="bi bi-building me-2"></i>
-                                                    <span class="town-name">{{ $town->name }}</span>
-                                                    <small class="town-county text-muted">{{ $town->subCounty?->county?->name ?? 'Kenya' }}</small>
-                                                </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
+                    <!-- To Town with Search -->
+                    <div class="booking-field">
+                        <label><i class="bi bi-geo-alt-fill me-1 text-danger"></i> To Town</label>
+                        <div class="searchable-select-container">
+                            <div class="searchable-select" id="toTownSelect">
+                                <div class="searchable-select-display" data-target="toTown">
+                                    <span class="selected-text" style="color: black;">Select delivery town</span>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                                <div class="searchable-select-dropdown" id="toTownDropdown">
+                                    <div class="search-box">
+                                        <i class="bi bi-search"></i>
+                                        <input type="text" class="search-input" placeholder="Search towns..." id="toTownSearch">
                                     </div>
-                                    <input type="hidden" id="fromTown" name="fromTown" required>
-                                </div>
-                            </div>
-
-                            <!-- To Town with Search -->
-                            <div class="booking-field">
-                                <label><i class="bi bi-geo-alt-fill me-1 text-danger"></i> To Town</label>
-                                <div class="searchable-select-container">
-                                    <div class="searchable-select" id="toTownSelect">
-                                        <div class="searchable-select-display" data-target="toTown">
-                                            <span class="selected-text" style="color: black;">Select delivery town</span>
-                                            <i class="bi bi-chevron-down"></i>
+                                    <div class="options-list" id="toTownOptions">
+                                        @foreach($towns as $town)
+                                        <div class="option-item" data-value="{{ $town->name }}">
+                                            <i class="bi bi-building me-2"></i>
+                                            <span class="town-name">{{ $town->name }}</span>
+                                            <small class="town-county text-muted">{{ $town->subCounty?->county?->name ?? 'Kenya' }}</small>
                                         </div>
-                                        <div class="searchable-select-dropdown" id="toTownDropdown">
-                                            <div class="search-box">
-                                                <i class="bi bi-search"></i>
-                                                <input type="text" class="search-input" placeholder="Search towns..." id="toTownSearch">
-                                            </div>
-                                            <div class="options-list" id="toTownOptions">
-                                                @foreach($towns as $town)
-                                                <div class="option-item" data-value="{{ $town->name }}">
-                                                    <i class="bi bi-building me-2"></i>
-                                                    <span class="town-name">{{ $town->name }}</span>
-                                                    <small class="town-county text-muted">{{ $town->subCounty?->county?->name ?? 'Kenya' }}</small>
-                                                </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <input type="hidden" id="toTown" name="toTown" required>
-                                </div>
-                            </div>
-
-                            <!-- Weight -->
-                            <div class="booking-field">
-                                <label><i class="bi bi-weight me-1"></i> Weight (kg)</label>
-                                <div class="weight-input-group options-list">
-                                    <input type="number" class="form-control compact-select" id="weight" placeholder="0.0" min="0.1" step="0.1" required>
-                                    <span class="weight-unit">kg</span>
-                                </div>
-                            </div>
-
-                            <!-- Parcel Type -->
-                            <div class="booking-field">
-                                <label><i class="bi bi-box me-1"></i> Parcel Type</label>
-                                <div class="parcel-type-selector">
-                                    <select class="form-select compact-select" id="parcelType" required>
-                                        @foreach($itemCategories as $itemCategory)
-                                        <option value="{{ $itemCategory->id }}">{{ $itemCategory->name }}</option>
                                         @endforeach
-                                    </select>
+                                    </div>
                                 </div>
                             </div>
+                            <input type="hidden" id="toTown" name="toTown" required>
                         </div>
+                    </div>
 
-                        <div class="booking-action">
-                            <button type="submit" class="btn btn-primary quote-btn">
-                                <i class="bi bi-calculator me-2"></i> Get Quote
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary clear-btn" id="clearForm">
-                                <i class="bi bi-arrow-clockwise me-2"></i> Clear
-                            </button>
+                    <!-- Weight -->
+                    <div class="booking-field">
+                        <label><i class="bi bi-weight me-1"></i> Weight (kg)</label>
+                        <div class="weight-input-group options-list">
+                            <input type="number" class="form-control compact-select" id="weight" placeholder="0.0" min="0.1" step="0.1" required>
+                            <span class="weight-unit">kg</span>
                         </div>
-                    </form>
-                    <div id="quoteResult" class="compact-quote-result"></div>
+                    </div>
+
+                    <!-- Parcel Type -->
+                    <div class="booking-field">
+                        <label><i class="bi bi-box me-1"></i> Parcel Type</label>
+                        <div class="parcel-type-selector">
+                            <select class="form-select compact-select" id="parcelType" required>
+                                @foreach($itemCategories as $itemCategory)
+                                <option value="{{ $itemCategory->id }}">{{ $itemCategory->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="booking-action">
+                    <button type="submit" class="btn btn-primary quote-btn">
+                        <i class="bi bi-calculator me-2"></i> Get Quote
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary clear-btn" id="clearForm">
+                        <i class="bi bi-arrow-clockwise me-2"></i> Clear
+                    </button>
+                </div>
+            </form>
+            <div id="quoteResult" class="compact-quote-result"></div>
+        </div>
+
+        <!-- Point-to-Point Tab -->
+        <div class="tab-pane fade" id="international" role="tabpanel" aria-labelledby="international-tab">
+            <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
+                <h4 class="text-muted text-center">You will soon be able to book your parcels and packages from this internet booking Engine. Once you book, just relax while a courier is dispatched to drop off your parcels seamlessly.</h4>
             </div>
+        </div>
+    </div>
+</div>
         </div>
     </section>
 
