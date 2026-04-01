@@ -453,7 +453,7 @@
         }
 
         .business-solutions {
-            background: linear-gradient(to right, var(--primary-light), white);
+            background: white;
             border-radius: 20px;
             padding: 30px;
             border: 1px solid var(--border-color);
@@ -727,12 +727,14 @@
                         <div class="business-buttons d-flex gap-3 flex-wrap justify-content-lg-end">
                             <a href="{{ route('marketplace') }}" class="business-btn marketplace-btn">
                                 <span class="btn-icon"><i class="bi bi-shop"></i></span>
-                                <span class="btn-text"><small>Visit our</small><strong>Marketplace</strong></span>
+                                <span class="btn-text"><small>Visit our</small><br>
+                                <strong>Marketplace</strong></span>
                                 <span class="btn-arrow"><i class="bi bi-arrow-right"></i></span>
                             </a>
                             <a href="{{ route('partners.login') }}" class="business-btn partner-btn">
                                 <span class="btn-icon"><i class="bi bi-briefcase"></i></span>
-                                <span class="btn-text"><small>Partner Portal</small><strong>Login</strong></span>
+                                <span class="btn-text"><small>Partner Portal</small><br>
+                                <strong>Login</strong></span>
                                 <span class="btn-arrow"><i class="bi bi-box-arrow-in-right"></i></span>
                             </a>
                         </div>

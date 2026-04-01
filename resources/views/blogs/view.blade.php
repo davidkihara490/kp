@@ -971,8 +971,9 @@
         footer {
             background: var(--dark-bg);
             color: white;
-            padding: 50px 0 20px;
+            padding: 60px 0 20px;
             position: relative;
+            margin-top: 40px;
         }
 
         footer::before {
@@ -1010,13 +1011,14 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
             color: white;
             margin-right: 8px;
             transition: all 0.3s ease;
+            font-size: 1.1rem;
             text-decoration: none;
         }
 
@@ -1024,6 +1026,62 @@
             background: var(--primary-color);
             transform: translateY(-3px);
         }
+                /* Business Solutions Section */
+        .business-solutions {
+            background:  white;
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(0, 143, 64, 0.2);
+            margin-top: 30px;
+        }
+
+        .business-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .marketplace-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .partner-btn {
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .business-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 143, 64, 0.2);
+        }
+
+        .business-btn .btn-text small {
+            font-size: 0.7rem;
+            opacity: 0.9;
+        }
+
+        .business-btn .btn-text strong {
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .business-solutions {
+                padding: 20px;
+            }
+            
+            .business-buttons {
+                margin-top: 15px;
+                justify-content: flex-start !important;
+            }
+        }
+
+
 
         /* Animations */
         @keyframes fadeInUp {
@@ -1499,80 +1557,93 @@
             <div class="row">
                 <div class="col-lg-4 mb-4">
                     <h4 class="mb-3">
-                        <a class="navbar-brand d-flex align-items-center" href="/">
+                        <a class="navbar-brand d-flex align-items-center" href="/" style="color:white;">
                             <div class="logo-container me-2">
-                                <img src="{{ asset('logo.jpeg') }}" alt="Karibu Parcels" height="45" class="logo-img">
+                                <img src="{{ asset('logo.jpeg') }}" alt="Karibu Parcels" height="45" style="border-radius: 10px;" onerror="this.src='https://placehold.co/45x45/008f40/white?text=KP'">
                             </div>
                             <div class="brand-text">
-                                <span class="fw-bold fs-5">{{ config('app.name') }}</span>
-                                <small class="d-block text-muted" style="font-size: 0.75rem; line-height: 1;">Professional Courier Service</small>
+                                <span class="fw-bold fs-5">{{ config('app.name', 'Karibu Parcels') }}</span>
+                                <small class="d-block text-muted" style="font-size: 0.75rem;">Professional Courier Service</small>
                             </div>
                         </a>
                     </h4>
                     <p class="opacity-75">Your trusted partner for fast, reliable, and secure courier services across Kenya.</p>
                     <div class="social-icons">
-                        <a href="#"><i class="bi bi-facebook"></i></a>
-                        <a href="#"><i class="bi bi-twitter"></i></a>
-                        <a href="#"><i class="bi bi-instagram"></i></a>
-                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                        <a target="_blank" href="https://www.facebook.com/karibuparcels"><i class="bi bi-facebook"></i></a>
+                        <a target="_blank" href="https://www.instagram.com/karibuparcels/"><i class="bi bi-instagram"></i></a>
+                        <a target="_blank" href="https://www.tiktok.com/@karibuparcels"><i class="bi bi-tiktok"></i></a>
                     </div>
                 </div>
-
                 <div class="col-lg-2 col-md-6 mb-4">
                     <h5>Services</h5>
                     <ul class="footer-links">
-                        <li><a href="/#features">Express Delivery</a></li>
-                        <li><a href="/#features">Standard Delivery</a></li>
-                        <li><a href="/#features">Bulk Shipping</a></li>
-                        <li><a href="/#features">International</a></li>
+                        <li><a href="/#features">Town to Town Sending</a></li>
+                        <li><a href="/#features">Parcel Receiving</a></li>
+                        <li><a href="/#features">Forwarding Service</a></li>
                     </ul>
                 </div>
-
                 <div class="col-lg-2 col-md-6 mb-4">
                     <h5>Company</h5>
                     <ul class="footer-links">
-                        <li><a href="#">About Us</a></li>
-                        <li><a href="#">Careers</a></li>
-                        <li><a href="#">News</a></li>
-                        <li><a href="/#contact">Support</a></li>
+                        <li><a href="{{ route('blogs.index') }}">Blog</a></li>
+                        <li><a href="/#contact">Contact</a></li>
                     </ul>
                 </div>
-
                 <div class="col-lg-2 col-md-6 mb-4">
                     <h5>Resources</h5>
                     <ul class="footer-links">
-                        <li><a href="/#tracking">Track Package</a></li>
-                        <li><a href="/#stations">Find Station</a></li>
-                        <li><a href="{{ route('blogs.index') }}">Blog</a></li>
-                        <li><a href="/#faq">Help Center</a></li>
+                        <li><a href="/#faq">FAQs</a></li>
+                        <li><a href="{{ route('terms') }}">Terms & Conditions</a></li>
+                        <li><a href="{{ route('policy') }}">Privacy Policy</a></li>
                     </ul>
                 </div>
-
                 <div class="col-lg-2 col-md-6 mb-4">
                     <h5>Legal</h5>
                     <ul class="footer-links">
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Terms of Service</a></li>
-                        <li><a href="#">Cookie Policy</a></li>
-                        <li><a href="#">Shipping Policy</a></li>
+                        <li><a href="{{ route('terms') }}">Terms of Service</a></li>
+                        <li><a href="{{ route('policy') }}">Privacy Policy</a></li>
                     </ul>
                 </div>
             </div>
 
-            <hr class="mt-4 mb-4">
+            <div class="business-solutions mt-5 pt-4 border-top">
+                <div class="row align-items-center">
+                    <div class="col-lg-7">
+                        <div class="business-solutions-text">
+                            <span class="badge bg-primary mb-2">BUSINESS SOLUTIONS</span>
+                            <h4 class="mb-1">Grow Your Business With Karibu Parcels</h4>
+                            <p class="text-muted">Explore our marketplace and partner programs designed for businesses</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="business-buttons d-flex gap-3 flex-wrap justify-content-lg-end">
+                            <a href="{{ route('marketplace') }}" class="business-btn marketplace-btn">
+                                <span class="btn-icon"><i class="bi bi-shop"></i></span>
+                                <span class="btn-text"><small>Visit our</small><br>
+                                <strong>Marketplace</strong></span>
+                                <span class="btn-arrow"><i class="bi bi-arrow-right"></i></span>
+                            </a>
+                            <a href="{{ route('partners.login') }}" class="business-btn partner-btn">
+                                <span class="btn-icon"><i class="bi bi-briefcase"></i></span>
+                                <span class="btn-text"><small>Partner Portal</small><br>
+                                <strong>Login</strong></span>
+                                <span class="btn-arrow"><i class="bi bi-box-arrow-in-right"></i></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
+            <hr class="mt-4 mb-4">
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <p class="mb-0">&copy; {{ date('Y') }} Karibu Parcels. All rights reserved.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <p class="mb-0 small text-muted">
-                        <i class="bi bi-shield-check me-1"></i>
-                        Secure & Reliable |
-                        <i class="bi bi-truck ms-2 me-1"></i>
-                        40+ Counties |
-                        <i class="bi bi-clock ms-2 me-1"></i>
-                        24/7 Support
+                        <i class="bi bi-shield-check me-1"></i>Secure & Reliable |
+                        <i class="bi bi-truck ms-2 me-1"></i>40+ Counties |
+                        <i class="bi bi-clock ms-2 me-1"></i>24/7 Support
                     </p>
                 </div>
             </div>
