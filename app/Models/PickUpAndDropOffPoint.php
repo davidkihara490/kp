@@ -24,6 +24,11 @@ class PickUpAndDropOffPoint extends Model
         'contact_phone_number',
         'opening_hours',
         'closing_hours',
+        'operating_days',
+    ];
+
+    protected $casts = [
+        'operating_days' => 'array',
     ];
 
     public function partner()
@@ -35,4 +40,3 @@ class PickUpAndDropOffPoint extends Model
         return $this->belongsTo(Town::class);
     }
 }
-

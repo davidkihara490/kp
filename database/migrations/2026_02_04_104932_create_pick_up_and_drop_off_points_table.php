@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('contact_email')->nullable();
             $table->string('contact_phone_number')->nullable();
             $table->time('opening_hours')->nullable();
-            $table->string('operating_days')->nullable();
+            $table->json('operating_days')->nullable();
             $table->time('closing_hours')->nullable();
             $table->timestamps();
             $table->softDeletes();

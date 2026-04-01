@@ -138,7 +138,6 @@ class CreateParcelHandlingAssistant extends Component
                 trim($this->first_name . ' ' . $this->second_name . ' ' . $this->last_name)
             );
 
-
             DB::commit();
 
             return redirect()->route('partners.pha.index')

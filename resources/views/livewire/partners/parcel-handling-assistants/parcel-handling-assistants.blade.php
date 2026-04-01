@@ -254,7 +254,6 @@
                                     @endif
                                 </div>
                             </th>
-                            <th>Role</th>
                             <th wire:click="sortBy('status')" style="cursor: pointer;">
                                 <div class="d-flex align-items-center">
                                     <span>Status</span>
@@ -322,14 +321,6 @@
                                 </div>
                             </td>
                             <td>
-                                <div class="station-assignments">
-                                    <span class="badge bg-primary mb-1">
-                                        <i class="bi bi-shop me-1"></i>
-                                        {{ $assistant->user->getRoleNames()->first()  ?? 'No role assigned'}}
-                                    </span>
-                                </div>
-                            </td>
-                            <td>
                                 @php
                                 $statusBadge = $this->getStatusBadge($assistant->status);
                                 @endphp
@@ -352,27 +343,6 @@
                                         class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
                                     <a href="{{ route('partners.pha.view', $assistant->id) }}"
                                         class="btn btn-sm btn-outline-warning"><i class="bi bi-eye"></i></a>
-
-
-                                    <!-- Status Actions -->
-                                    @if ($assistant->status === 'active')
-                                    <button class="btn btn-sm btn-outline-danger"
-                                        wire:click="suspendAssistant({{ $assistant->id }})" title="Suspend">
-                                        <i class="bi bi-ban"></i>
-                                    </button>
-                                    @elseif($assistant->status === 'suspended')
-                                    <button class="btn btn-sm btn-outline-success"
-                                        wire:click="activateAssistant({{ $assistant->id }})"
-                                        title="Activate">
-                                        <i class="bi bi-check-circle"></i>
-                                    </button>
-                                    @elseif($assistant->status === 'inactive')
-                                    <button class="btn btn-sm btn-outline-success"
-                                        wire:click="toggleStatus({{ $assistant->id }})" title="Activate">
-                                        <i class="bi bi-toggle-on"></i>
-                                    </button>
-                                    @endif
-
                                     <!-- Delete Action -->
                                     <button class="btn btn-sm btn-outline-dark"
                                         wire:click="confirmDelete({{ $assistant->id }})" title="Delete">

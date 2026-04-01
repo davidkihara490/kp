@@ -116,17 +116,7 @@
                     <div class="col-lg-8">
                         <!-- Stats Overview -->
                         <div class="row mb-4">
-                            <div class="col-md-3">
-                                <div class="stat-card">
-                                    <div class="stat-icon">
-                                        <i class="bi bi-building"></i>
-                                    </div>
-                                    <div class="stat-content">
-                                        <div class="stat-value">{{ $stationAssigned->pickUpAndDropOffPoint->name }}</div>
-                                        <div class="stat-label">Point Assigned</div>
-                                    </div>
-                                </div>
-                            </div>
+
                             <div class="col-md-3">
                                 <div class="stat-card">
                                     <div class="stat-icon">
@@ -220,17 +210,7 @@
                                         <h5><i class="bi bi-shield-lock me-2"></i>Account Information</h5>
                                     </div>
                                     <div class="info-card-body">
-                                        <div class="info-item">
-                                            <div class="info-label">
-                                                <i class="bi bi-person-gear"></i>
-                                                Role
-                                            </div>
-                                            <div class="info-value">
-                                                <span class="badge {{ $this->getRoleBadgeClass() }}">
-                                                    {{ ucfirst($assistant->role) }}
-                                                </span>
-                                            </div>
-                                        </div>
+                                       
                                         <div class="info-item">
                                             <div class="info-label">
                                                 <i class="bi bi-activity"></i>
