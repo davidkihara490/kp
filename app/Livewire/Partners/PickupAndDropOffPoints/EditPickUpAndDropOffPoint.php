@@ -22,41 +22,71 @@ class EditPickUpAndDropOffPoint extends Component
     public $contact_email;
     public $contact_phone_number;
     public $is_24_hours = false;
-    public $opening_hours = '08:00';
-    public $closing_hours = '17:00';
-    public $operating_days = [];
+    public $operating_hours = [];
     public $capacity;
     public $notes;
 
     // For loading related data
     public $towns = [];
-    protected $rules = [
-        'name' => 'required|string|max:255',
-        
-        'status' => 'required|in:active,inactive,maintenance',
-        'address' => 'required|string|max:500',
-        'town_id' => 'required|exists:towns,id',
-        
-        'contact_person' => 'required|string|max:255',
-        'contact_email' => 'required|email|max:255',
-        'contact_phone_number' => 'required|string|max:20',
-        'is_24_hours' => 'boolean',
-        'opening_hours' => 'required_if:is_24_hours,false|date_format:H:i',
-        'closing_hours' => 'required_if:is_24_hours,false|date_format:H:i|after:opening_hours',
-        // 'operating_days' => 'required|array|min:1',
-        // 'operating_days.*' => 'in:Mon,Tue,Wed,Thu,Fri,Sat,Sun',
-        'capacity' => 'nullable|integer|min:1',
-        'notes' => 'nullable|string|max:1000',
-    ];
+
+    protected function rules()
+    {
+        $rules = [
+            'name' => 'required|string|max:255',
+            'status' => 'required|in:active,inactive,maintenance',
+            'address' => 'required|string|max:500',
+            'town_id' => 'required|exists:towns,id',
+            'contact_person' => 'required|string|max:255',
+            'contact_email' => 'required|email|max:255',
+            'contact_phone_number' => 'required|string|max:20',
+            'is_24_hours' => 'boolean',
+            'capacity' => 'nullable|integer|min:1',
+            'notes' => 'nullable|string|max:1000',
+        ];
+
+        // Add validation rules for operating hours when not 24/7
+        if (!$this->is_24_hours) {
+            $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            foreach ($days as $day) {
+                $rules["operating_hours.{$day}.opening"] = [
+                    'nullable',
+                    'date_format:H:i',
+                    function ($attribute, $value, $fail) use ($day) {
+                        if (!$this->operating_hours[$day]['closed'] && empty($value)) {
+                            $fail("Opening time for {$day} is required when the day is not closed.");
+                        }
+                    },
+                ];
+                
+                $rules["operating_hours.{$day}.closing"] = [
+                    'nullable',
+                    'date_format:H:i',
+                    function ($attribute, $value, $fail) use ($day) {
+                        if (!$this->operating_hours[$day]['closed'] && empty($value)) {
+                            $fail("Closing time for {$day} is required when the day is not closed.");
+                        }
+                        if (!$this->operating_hours[$day]['closed'] && 
+                            !empty($this->operating_hours[$day]['opening']) && 
+                            !empty($value) && 
+                            $this->operating_hours[$day]['opening'] >= $value) {
+                            $fail("Closing time for {$day} must be after opening time.");
+                        }
+                    },
+                ];
+                
+                $rules["operating_hours.{$day}.closed"] = 'boolean';
+            }
+        }
+
+        return $rules;
+    }
 
     protected $messages = [
         'town_id.required' => 'Please select a town.',
         'town_id.exists' => 'The selected town does not exist.',
-        'closing_hours.after' => 'Closing time must be after opening time.',
         'contact_email.email' => 'Please enter a valid email address.',
         'contact_phone_number.required' => 'Phone number is required.',
         'contact_person.required' => 'Contact person name is required.',
-        // 'operating_days.required' => 'Please select at least one operating day.',
     ];
 
     public function mount($id)
@@ -76,19 +106,27 @@ class EditPickUpAndDropOffPoint extends Component
         $this->status = $this->point->status;
         $this->address = $this->point->address;
         $this->town_id = $this->point->town_id;
-       
         $this->contact_person = $this->point->contact_person;
         $this->contact_email = $this->point->contact_email;
         $this->contact_phone_number = $this->point->contact_phone_number;
         $this->is_24_hours = $this->point->is_24_hours;
-        $this->opening_hours = $this->point->opening_hours ? substr($this->point->opening_hours, 0, 5) : '08:00';
-        $this->closing_hours = $this->point->closing_hours ? substr($this->point->closing_hours, 0, 5) : '17:00';
-        $this->operating_days = $this->point->operating_days ? explode(',', $this->point->operating_days) : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
         $this->capacity = $this->point->capacity;
         $this->notes = $this->point->notes;
 
-        // Update validation rule with actual ID
-        // $this->rules['code'] = 'required|string|max:50|unique:pick_up_and_drop_off_points,code,' . $this->point->id . ',id';
+        // Load operating hours
+        if ($this->point->operating_times) {
+            $this->operating_hours = $this->point->operating_times;
+        } else {
+            // Initialize with default values if operating_times doesn't exist
+            $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            foreach ($days as $day) {
+                $this->operating_hours[$day] = [
+                    'opening' => $this->point->opening_hours ? substr($this->point->opening_hours, 0, 5) : '09:00',
+                    'closing' => $this->point->closing_hours ? substr($this->point->closing_hours, 0, 5) : '17:00',
+                    'closed' => false,
+                ];
+            }
+        }
     }
 
     public function loadTowns()
@@ -96,34 +134,83 @@ class EditPickUpAndDropOffPoint extends Component
         $this->towns = Town::orderBy('name')->get();
     }
 
-    public function toggleDay($day)
-    {
-        if (in_array($day, $this->operating_days)) {
-            $this->operating_days = array_diff($this->operating_days, [$day]);
-        } else {
-            $this->operating_days[] = $day;
-            $this->operating_days = array_unique($this->operating_days);
-        }
-    }
-
     public function updated($propertyName)
     {
         $this->validateOnly($propertyName);
+    }
 
-        // Auto-validate closing hours when opening hours changes
-        if ($propertyName === 'opening_hours' && $this->closing_hours) {
-            $this->validateOnly('closing_hours');
+    public function toggleDayClosed($day)
+    {
+        if (isset($this->operating_hours[$day])) {
+            $this->operating_hours[$day]['closed'] = !$this->operating_hours[$day]['closed'];
+            
+            // Clear times if day is closed
+            if ($this->operating_hours[$day]['closed']) {
+                $this->operating_hours[$day]['opening'] = null;
+                $this->operating_hours[$day]['closing'] = null;
+            }
         }
     }
 
     public function submit()
     {
-
-    // dd($this->all());
-        // $this->validate();
+        $this->validate();
 
         try {
             DB::beginTransaction();
+
+            // Prepare operating days array
+            $operatingDaysArray = [];
+            $dayMapping = [
+                'Monday' => 'Mon',
+                'Tuesday' => 'Tue',
+                'Wednesday' => 'Wed',
+                'Thursday' => 'Thu',
+                'Friday' => 'Fri',
+                'Saturday' => 'Sat',
+                'Sunday' => 'Sun',
+            ];
+
+            if ($this->is_24_hours) {
+                // If 24/7, all days are operating
+                $operatingDaysArray = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                
+                // Set all days as open with null times
+                foreach ($this->operating_hours as $day => $schedule) {
+                    $this->operating_hours[$day] = [
+                        'opening' => null,
+                        'closing' => null,
+                        'closed' => false,
+                    ];
+                }
+            } else {
+                // Build operating days from non-closed days
+                foreach ($this->operating_hours as $day => $schedule) {
+                    if (!$schedule['closed']) {
+                        $operatingDaysArray[] = $dayMapping[$day];
+                    }
+                    
+                    // Format times with seconds
+                    if (!$schedule['closed'] && !empty($schedule['opening'])) {
+                        $this->operating_hours[$day]['opening'] = $schedule['opening'] . ':00';
+                    }
+                    if (!$schedule['closed'] && !empty($schedule['closing'])) {
+                        $this->operating_hours[$day]['closing'] = $schedule['closing'] . ':00';
+                    }
+                }
+                
+                // Sort days in correct order
+                $dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                $operatingDaysArray = array_values(array_intersect($dayOrder, $operatingDaysArray));
+            }
+
+            // Get default opening/closing for legacy fields (use Monday's times)
+            $defaultOpening = null;
+            $defaultClosing = null;
+            if (!$this->is_24_hours && isset($this->operating_hours['Monday']) && !$this->operating_hours['Monday']['closed']) {
+                $defaultOpening = $this->operating_hours['Monday']['opening'];
+                $defaultClosing = $this->operating_hours['Monday']['closing'];
+            }
 
             $this->point->update([
                 'name' => $this->name,
@@ -133,10 +220,7 @@ class EditPickUpAndDropOffPoint extends Component
                 'contact_person' => $this->contact_person,
                 'contact_email' => $this->contact_email,
                 'contact_phone_number' => $this->contact_phone_number,
-                'is_24_hours' => $this->is_24_hours,
-                'opening_hours' => $this->is_24_hours ? null : $this->opening_hours . ':00',
-                'closing_hours' => $this->is_24_hours ? null : $this->closing_hours . ':00',
-                'operating_days' => implode(',', $this->operating_days),
+                'operating_days' => json_encode($this->operating_hours),
                 'capacity' => $this->capacity,
                 'notes' => $this->notes,
             ]);
@@ -147,8 +231,8 @@ class EditPickUpAndDropOffPoint extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
-            dd($e->getMessage());
             session()->flash('error', 'Failed to update point: ' . $e->getMessage());
+            return null;
         }
     }
 
@@ -160,12 +244,16 @@ class EditPickUpAndDropOffPoint extends Component
     public function deletePoint()
     {
         try {
+            DB::beginTransaction();
             $this->point->delete();
+            DB::commit();
+            
             session()->flash('success', 'Point deleted successfully!');
-            $this->dispatch('pointDeleted', $this->point_id);
-            // return redirect()->route('points.index');
+            return redirect()->route('partners.pd.index')->with('success', 'Point deleted successfully!');
         } catch (\Exception $e) {
+            DB::rollBack();
             session()->flash('error', 'Failed to delete point: ' . $e->getMessage());
+            return null;
         }
     }
 

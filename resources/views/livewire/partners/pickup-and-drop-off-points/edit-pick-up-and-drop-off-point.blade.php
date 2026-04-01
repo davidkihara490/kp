@@ -177,23 +177,37 @@
                                     @enderror
                                 </div>
 
-                                <!-- City/Town -->
+                                <!-- City/Town with Search -->
                                 <div class="mb-3">
-                                    <label for="town_id" class="form-label">
+                                    <label for="town_search" class="form-label">
                                         <i class="bi bi-building me-2"></i>
                                         Town/City <span class="text-danger">*</span>
                                     </label>
-                                    <select class="form-select @error('town_id') is-invalid @enderror"
-                                        id="town_id" wire:model="town_id">
+                                    <input type="text" 
+                                           id="town_search" 
+                                           class="form-control mb-2" 
+                                           placeholder="Search town by name..."
+                                           autocomplete="off"
+                                           value="{{ $towns->firstWhere('id', $town_id)->name ?? '' }}">
+                                    <select class="form-select @error('town_id') is-invalid @enderror" 
+                                            id="town_id" 
+                                            wire:model="town_id"
+                                            style="display: none;">
                                         <option value="">Select Town/City</option>
                                         @foreach($towns as $town)
-                                        <option value="{{ $town->id }}" @selected($town->id == $town_id)>
-                                            {{ $town->name }}
-                                        </option>
+                                        <option value="{{ $town->id }}">{{ $town->name }}</option>
                                         @endforeach
                                     </select>
+                                    <div id="town_dropdown_container" style="position: relative;">
+                                        <div id="town_dropdown" class="town-dropdown">
+                                            <div class="town-dropdown-item" data-value="">Select Town/City</div>
+                                            @foreach($towns as $town)
+                                            <div class="town-dropdown-item" data-value="{{ $town->id }}">{{ $town->name }}</div>
+                                            @endforeach
+                                        </div>
+                                    </div>
                                     @error('town_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -270,60 +284,73 @@
                                     </div>
                                 </div>
 
-                                <!-- Opening Hours -->
-                                <div class="row @if($is_24_hours) d-none @endif">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="opening_hours" class="form-label">
-                                                Opening Time
-                                            </label>
-                                            <input type="time" class="form-control @error('opening_hours') is-invalid @enderror"
-                                                id="opening_hours" wire:model="opening_hours"
-                                                @if($is_24_hours) disabled @endif>
-                                            @error('opening_hours')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
+                                <!-- Daily Operating Hours Table -->
+                                <div id="daily-hours-container" @if($is_24_hours) style="display: none;" @endif>
+                                    <div class="daily-hours-table">
+                                        <div class="table-header">
+                                            <div class="day-col">Day</div>
+                                            <div class="time-col">Opening Time</div>
+                                            <div class="time-col">Closing Time</div>
+                                            <div class="status-col">Closed</div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="closing_hours" class="form-label">
-                                                Closing Time
-                                            </label>
-                                            <input type="time" class="form-control @error('closing_hours') is-invalid @enderror"
-                                                id="closing_hours" wire:model="closing_hours"
-                                                @if($is_24_hours) disabled @endif>
-                                            @error('closing_hours')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
+                                        
+                                        @php
+                                            $daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                                        @endphp
+                                        
+                                        @foreach ($daysOfWeek as $day)
+                                        <div class="table-row">
+                                            <div class="day-col">
+                                                <strong>{{ $day }}</strong>
+                                            </div>
+                                            <div class="time-col">
+                                                <input type="time" 
+                                                    class="form-control form-control-sm @error('operating_hours.' . $day . '.opening') is-invalid @enderror"
+                                                    wire:model="operating_hours.{{ $day }}.opening"
+                                                    placeholder="--:--"
+                                                    @if(isset($operating_hours[$day]['closed']) && $operating_hours[$day]['closed']) disabled @endif>
+                                            </div>
+                                            <div class="time-col">
+                                                <input type="time" 
+                                                    class="form-control form-control-sm @error('operating_hours.' . $day . '.closing') is-invalid @enderror"
+                                                    wire:model="operating_hours.{{ $day }}.closing"
+                                                    placeholder="--:--"
+                                                    @if(isset($operating_hours[$day]['closed']) && $operating_hours[$day]['closed']) disabled @endif>
+                                            </div>
+                                            <div class="status-col">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                        id="closed_{{ $day }}" 
+                                                        wire:model="operating_hours.{{ $day }}.closed"
+                                                        wire:change="toggleDayClosed('{{ $day }}')"
+                                                        value="1">
+                                                    <label class="form-check-label small" for="closed_{{ $day }}">
+                                                        Closed
+                                                    </label>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    @error('closing_hours')
-                                    @if($error->has('closing_hours.after'))
-                                    <div class="text-danger small mt-1">Closing time must be after opening time</div>
-                                    @endif
-                                    @enderror
-                                </div>
-
-                                <!-- Days of Operation -->
-                                <div class="mb-3">
-                                    <label class="form-label">
-                                        <i class="bi bi-calendar-week me-2"></i>
-                                        Days of Operation
-                                    </label>
-                                    <div class="days-grid">
-                                        @foreach(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as $day)
-                                        <div class="day-checkbox @if(in_array($day, $operating_days)) active @endif"
-                                            wire:click="toggleDay('{{ $day }}')">
-                                            <input type="checkbox" class="form-check-input"
-                                                wire:model="operating_days" value="{{ $day }}">
-                                            <label>{{ $day }}</label>
-                                        </div>
+                                        @error('operating_hours.' . $day . '.opening')
+                                        <div class="text-danger small mt-1 mb-2">{{ $message }}</div>
+                                        @enderror
+                                        @error('operating_hours.' . $day . '.closing')
+                                        <div class="text-danger small mt-1 mb-2">{{ $message }}</div>
+                                        @enderror
                                         @endforeach
                                     </div>
-                                    @error('operating_days')
-                                    <div class="text-danger small mt-1">{{ $message }}</div>
-                                    @enderror
+                                    
+                                    <div class="mt-3 text-muted small">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Uncheck "Closed" and set opening/closing times for operating days.
+                                    </div>
+                                </div>
+                                
+                                <!-- 24/7 Message -->
+                                <div id="twentyfour-seven-message" @if(!$is_24_hours) style="display: none;" @endif>
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-infinity me-2"></i>
+                                        This point operates 24 hours a day, 7 days a week.
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -490,95 +517,14 @@
                 box-shadow: 0 0 0 0.25rem rgba(0, 143, 64, 0.25);
             }
 
+            .form-control-sm {
+                padding: 6px 10px;
+                font-size: 0.875rem;
+            }
+
             .input-group-text {
                 background-color: #f8f9fa;
                 border-color: var(--border-color);
-            }
-
-            /* Type Selection Cards */
-            .card-type {
-                border: 2px solid #dee2e6;
-                border-radius: 10px;
-                padding: 15px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                height: 100%;
-            }
-
-            .card-type.active {
-                border-color: var(--primary-color);
-                background-color: rgba(0, 143, 64, 0.05);
-            }
-
-            .card-type:hover:not(.active) {
-                border-color: #adb5bd;
-                background-color: #f8f9fa;
-            }
-
-            .card-type .form-check-input {
-                display: none;
-            }
-
-            .card-type .form-check-label {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                cursor: pointer;
-                margin: 0;
-                width: 100%;
-            }
-
-            .type-icon {
-                width: 50px;
-                height: 50px;
-                border-radius: 10px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1.5rem;
-                margin-bottom: 10px;
-            }
-
-            .card-type[wire\\:click*="pickup"] .type-icon {
-                background-color: rgba(23, 162, 184, 0.1);
-                color: #17a2b8;
-            }
-
-            .card-type[wire\\:click*="dropoff"] .type-icon {
-                background-color: rgba(255, 193, 7, 0.1);
-                color: #ffc107;
-            }
-
-            .card-type[wire\\:click*="both"] .type-icon {
-                background-color: rgba(0, 143, 64, 0.1);
-                color: var(--primary-color);
-            }
-
-            .card-type.active[wire\\:click*="pickup"] {
-                border-color: #17a2b8;
-                background-color: rgba(23, 162, 184, 0.05);
-            }
-
-            .card-type.active[wire\\:click*="dropoff"] {
-                border-color: #ffc107;
-                background-color: rgba(255, 193, 7, 0.05);
-            }
-
-            .card-type.active[wire\\:click*="both"] {
-                border-color: var(--primary-color);
-                background-color: rgba(0, 143, 64, 0.05);
-            }
-
-            .type-title {
-                font-weight: 600;
-                font-size: 0.95rem;
-                margin-bottom: 3px;
-            }
-
-            .type-text small {
-                color: var(--text-light);
-                font-size: 0.8rem;
             }
 
             /* Status Badges */
@@ -627,40 +573,106 @@
                 opacity: 0.8;
             }
 
-            /* Days Grid */
-            .days-grid {
+            /* Daily Operating Hours Table */
+            .daily-hours-table {
+                border: 1px solid var(--border-color);
+                border-radius: 10px;
+                overflow: hidden;
+            }
+
+            .table-header {
                 display: grid;
-                grid-template-columns: repeat(7, 1fr);
+                grid-template-columns: 2fr 1.5fr 1.5fr 1fr;
+                background: #f8f9fa;
+                border-bottom: 1px solid var(--border-color);
+                font-weight: 600;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                color: var(--text-light);
+            }
+
+            .table-row {
+                display: grid;
+                grid-template-columns: 2fr 1.5fr 1.5fr 1fr;
+                border-bottom: 1px solid var(--border-color);
+                align-items: center;
+            }
+
+            .table-row:last-child {
+                border-bottom: none;
+            }
+
+            .day-col, .time-col, .status-col {
+                padding: 12px 15px;
+            }
+
+            .day-col {
+                font-weight: 500;
+                background-color: #fff;
+                border-right: 1px solid var(--border-color);
+            }
+
+            .time-col {
+                border-right: 1px solid var(--border-color);
+            }
+
+            .time-col:last-child {
+                border-right: none;
+            }
+
+            .status-col {
+                text-align: center;
+            }
+
+            .status-col .form-check {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0;
                 gap: 8px;
             }
 
-            .day-checkbox {
-                border: 1px solid var(--border-color);
-                border-radius: 8px;
-                padding: 8px 5px;
-                text-align: center;
-                cursor: pointer;
-                transition: all 0.2s ease;
-            }
-
-            .day-checkbox.active {
-                background-color: var(--primary-color);
-                color: white;
-                border-color: var(--primary-color);
-            }
-
-            .day-checkbox:hover:not(.active) {
-                background-color: #f8f9fa;
-            }
-
-            .day-checkbox input {
-                display: none;
-            }
-
-            .day-checkbox label {
+            .status-col .form-check-input {
                 margin: 0;
                 cursor: pointer;
-                font-weight: 500;
+            }
+
+            .status-col .form-check-label {
+                cursor: pointer;
+                margin: 0;
+            }
+
+            /* Town Dropdown Styles */
+            .town-dropdown {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                max-height: 250px;
+                overflow-y: auto;
+                background: white;
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                z-index: 1000;
+                display: none;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            .town-dropdown.show {
+                display: block;
+            }
+            .town-dropdown-item {
+                padding: 10px 15px;
+                cursor: pointer;
+                transition: background 0.2s;
+                font-size: 0.95rem;
+            }
+            .town-dropdown-item:hover {
+                background-color: #f8f9fa;
+            }
+            .town-dropdown-item.selected {
+                background-color: rgba(0, 143, 64, 0.1);
+                font-weight: 600;
             }
 
             /* Form Actions */
@@ -687,6 +699,12 @@
                 border-left: 4px solid #dc3545;
             }
 
+            .alert-info {
+                background-color: rgba(23, 162, 184, 0.1);
+                border-left: 4px solid #17a2b8;
+                color: #0c5460;
+            }
+
             /* Loading State */
             .spinner-border {
                 width: 1rem;
@@ -695,16 +713,12 @@
 
             /* Responsive Design */
             @media (max-width: 992px) {
-                .days-grid {
-                    grid-template-columns: repeat(4, 1fr);
+                .table-header, .table-row {
+                    grid-template-columns: 1.5fr 1fr 1fr 0.8fr;
                 }
-
-                .quick-stats .row {
-                    gap: 15px;
-                }
-
-                .quick-stats .col-md-3 {
-                    flex: 0 0 calc(50% - 7.5px);
+                
+                .day-col, .time-col, .status-col {
+                    padding: 10px 12px;
                 }
             }
 
@@ -718,10 +732,6 @@
                     padding: 15px;
                 }
 
-                .card-type {
-                    padding: 10px;
-                }
-
                 .status-badges {
                     flex-direction: column;
                     align-items: stretch;
@@ -732,6 +742,15 @@
                     justify-content: center;
                 }
 
+                .table-header, .table-row {
+                    grid-template-columns: 1.2fr 1fr 1fr 0.8fr;
+                    font-size: 0.8rem;
+                }
+                
+                .day-col, .time-col, .status-col {
+                    padding: 8px 10px;
+                }
+                
                 .form-actions .d-flex {
                     flex-direction: column;
                     gap: 10px;
@@ -746,15 +765,29 @@
                 .form-actions .btn {
                     flex: 1;
                 }
-
-                .quick-stats .col-md-3 {
-                    flex: 0 0 100%;
-                }
             }
 
             @media (max-width: 576px) {
-                .days-grid {
-                    grid-template-columns: repeat(3, 1fr);
+                .table-header, .table-row {
+                    grid-template-columns: 1fr 0.9fr 0.9fr 0.7fr;
+                }
+                
+                .day-col, .time-col, .status-col {
+                    padding: 8px;
+                    font-size: 0.75rem;
+                }
+                
+                .time-col input {
+                    width: 100%;
+                    min-width: 90px;
+                }
+                
+                .status-col .form-check-label {
+                    display: none;
+                }
+                
+                .status-col .form-check {
+                    justify-content: center;
                 }
             }
         </style>
@@ -767,35 +800,142 @@
                     nameField.focus();
                 }
 
-                // Validate time when 24/7 is toggled
-                const is24HoursToggle = document.getElementById('is24Hours');
-                if (is24HoursToggle) {
-                    is24HoursToggle.addEventListener('change', function() {
-                        const openingTime = document.getElementById('opening_hours');
-                        const closingTime = document.getElementById('closing_hours');
+                // ========== SEARCHABLE TOWN DROPDOWN ==========
+                const townSearchInput = document.getElementById('town_search');
+                const hiddenSelect = document.getElementById('town_id');
+                const townDropdown = document.getElementById('town_dropdown');
+                const dropdownContainer = document.getElementById('town_dropdown_container');
+                
+                if (townSearchInput && hiddenSelect && townDropdown) {
+                    const dropdownItems = townDropdown.querySelectorAll('.town-dropdown-item');
 
-                        if (this.checked) {
-                            openingTime.disabled = true;
-                            closingTime.disabled = true;
-                        } else {
-                            openingTime.disabled = false;
-                            closingTime.disabled = false;
-                            openingTime.focus();
+                    function setTownSelection(value, text) {
+                        if (hiddenSelect) {
+                            hiddenSelect.value = value;
+                            const event = new Event('change', { bubbles: true });
+                            hiddenSelect.dispatchEvent(event);
+                        }
+                        if (townSearchInput) {
+                            townSearchInput.value = text === 'Select Town/City' ? '' : text;
+                        }
+                        dropdownItems.forEach(item => {
+                            if (item.getAttribute('data-value') === value) {
+                                item.classList.add('selected');
+                            } else {
+                                item.classList.remove('selected');
+                            }
+                        });
+                        townDropdown.classList.remove('show');
+                    }
+
+                    function filterTowns(searchTerm) {
+                        const term = searchTerm.toLowerCase().trim();
+                        let hasVisible = false;
+                        dropdownItems.forEach(item => {
+                            const townName = item.textContent.toLowerCase();
+                            const isPlaceholder = item.getAttribute('data-value') === '';
+                            if (isPlaceholder) {
+                                item.style.display = term === '' ? 'block' : 'none';
+                            } else {
+                                if (term === '' || townName.includes(term)) {
+                                    item.style.display = 'block';
+                                    hasVisible = true;
+                                } else {
+                                    item.style.display = 'none';
+                                }
+                            }
+                        });
+                        const existingNoResult = townDropdown.querySelector('.no-result');
+                        if (existingNoResult) existingNoResult.remove();
+                        
+                        if (!hasVisible && term !== '') {
+                            const noResultItem = document.createElement('div');
+                            noResultItem.className = 'town-dropdown-item no-result';
+                            noResultItem.textContent = 'No towns found';
+                            noResultItem.style.cursor = 'default';
+                            noResultItem.style.color = '#6c757d';
+                            townDropdown.appendChild(noResultItem);
+                        }
+                    }
+
+                    townSearchInput.addEventListener('focus', () => {
+                        filterTowns(townSearchInput.value);
+                        townDropdown.classList.add('show');
+                    });
+
+                    townSearchInput.addEventListener('input', (e) => {
+                        filterTowns(e.target.value);
+                        if (!townDropdown.classList.contains('show')) {
+                            townDropdown.classList.add('show');
                         }
                     });
+
+                    document.addEventListener('click', function(event) {
+                        if (dropdownContainer && townSearchInput && 
+                            !dropdownContainer.contains(event.target) && 
+                            event.target !== townSearchInput) {
+                            townDropdown.classList.remove('show');
+                        }
+                    });
+
+                    dropdownItems.forEach(item => {
+                        item.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const value = item.getAttribute('data-value');
+                            const text = item.textContent;
+                            setTownSelection(value, text);
+                        });
+                    });
+
+                    function syncTownFromHiddenSelect() {
+                        const selectedOption = hiddenSelect.options[hiddenSelect.selectedIndex];
+                        if (selectedOption && selectedOption.value) {
+                            setTownSelection(selectedOption.value, selectedOption.text);
+                        }
+                    }
+                    syncTownFromHiddenSelect();
+                    hiddenSelect.addEventListener('change', syncTownFromHiddenSelect);
                 }
-            });
 
-            // Livewire listeners
-            Livewire.on('pointUpdated', (pointId) => {
-                // Refresh parent component or show success message
-                console.log('Point updated:', pointId);
-            });
+                // ========== OPERATING HOURS TOGGLE ==========
+                const is24HoursCheckbox = document.getElementById('is24Hours');
+                const dailyHoursContainer = document.getElementById('daily-hours-container');
+                const twentyFourSevenMessage = document.getElementById('twentyfour-seven-message');
 
-            Livewire.on('pointDeleted', (pointId) => {
-                // Redirect or refresh parent component
-                console.log('Point deleted:', pointId);
-                window.location.href = '{{ route("partners.pd.index") }}';
+                function toggleOperatingDetails() {
+                    if (is24HoursCheckbox && dailyHoursContainer && twentyFourSevenMessage) {
+                        if (is24HoursCheckbox.checked) {
+                            dailyHoursContainer.style.display = 'none';
+                            twentyFourSevenMessage.style.display = 'block';
+                        } else {
+                            dailyHoursContainer.style.display = 'block';
+                            twentyFourSevenMessage.style.display = 'none';
+                        }
+                    }
+                }
+
+                toggleOperatingDetails();
+
+                if (is24HoursCheckbox) {
+                    is24HoursCheckbox.addEventListener('change', toggleOperatingDetails);
+                    
+                    if (typeof Livewire !== 'undefined') {
+                        Livewire.hook('message.processed', () => {
+                            toggleOperatingDetails();
+                        });
+                    }
+                }
+
+                // Enable/disable time inputs when closed checkbox is toggled
+                document.querySelectorAll('.table-row input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const row = this.closest('.table-row');
+                        const timeInputs = row.querySelectorAll('input[type="time"]');
+                        timeInputs.forEach(input => {
+                            input.disabled = this.checked;
+                        });
+                    });
+                });
             });
         </script>
     </div>
