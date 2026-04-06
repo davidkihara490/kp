@@ -95,7 +95,7 @@
                 </li>
                 @endcan
 
-                @if($admin->can('users.view'))
+                @if($admin->can('user.view'))
                 <li class="nav-item">
                     <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
                         <i class="nav-icon far fa-calendar-alt"></i>
