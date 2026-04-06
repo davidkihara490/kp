@@ -42,6 +42,7 @@
                                 {{ $user->user_type == 'admin' ? '' : 'onclick=return false;' }}>
                                 Edit
                             </a>
+                            @endif
                             @if(Auth::guard('admin')->user()->can('user.update'))
                             <button class="btn btn-sm btn-danger"
                                 wire:click="confirm({{ $user->id }})" {{ $user->user_type == 'admin' ? '' : 'disabled' }}>Delete</button>
