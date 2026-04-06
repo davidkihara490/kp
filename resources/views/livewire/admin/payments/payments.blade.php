@@ -7,6 +7,7 @@
                     Payments Management
                 </h3>
 
+                <!-- @if(Auth::guard('admin')->user()->can('payment.view')) -->
                 <div class="d-flex gap-2">
                     <button class="btn btn-outline-primary btn-sm" wire:click="export('csv')">
                         <i class="fas fa-download mr-1"></i> Export CSV
@@ -20,6 +21,7 @@
                         <i class="fas fa-undo mr-1"></i> Reset Filters
                     </button>
                 </div>
+                @endif
             </div>
         </div>
 
@@ -351,17 +353,21 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group" role="group">
+                                    @if(Auth::guard('admin')->user()->can('payment.update'))
                                     <button class="btn btn-sm btn-info"
                                         wire:click="viewPayment({{ $payment->id }})"
                                         title="View">
                                         <i class="fas fa-eye"></i>
                                     </button>
+                                    @endif
 
+                                    @if(Auth::guard('admin')->user()->can('payment.update'))
                                     <button class="btn btn-sm btn-danger"
                                         wire:click="confirmDelete({{ $payment->id }})"
                                         title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

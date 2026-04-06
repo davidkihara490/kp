@@ -246,19 +246,21 @@
                                 <td>
                                     <div class="btn-group btn-group-sm">
 
+                                        @if(Auth::guard('admin')->user()->can('parcel-handling-assistant.view'))
                                         <a href="{{ route('admin.pha.view', $assistant->id) }}"
                                             class="btn btn-warning" title="Edit">
                                             <i class="fas fa-eye"></i>
                                         </a>
+                                        @endif
+
+                                        @if(Auth::guard('admin')->user()->can('parcel-handling-assistant.update'))
                                         <a href="{{ route('admin.pha.edit', $assistant->id) }}"
                                             class="btn btn-warning" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <button class="btn btn-secondary"
-                                            wire:click="showAssignStation({{ $assistant->id }})"
-                                            title="Assign Station">
-                                            <i class="fas fa-building"></i>
-                                        </button>
+                                        @endif
+
+                                        @if(Auth::guard('admin')->user()->can('parcel-handling-assistant.update'))
                                         @if ($assistant->status === 'active')
                                         <button class="btn btn-danger"
                                             wire:click="suspendAssistant({{ $assistant->id }})"
@@ -277,10 +279,13 @@
                                             <i class="fas fa-toggle-on"></i>
                                         </button>
                                         @endif
+                                        @endif
+                                        @if(Auth::guard('admin')->user()->can('parcel-handling-assistant.delete'))
                                         <button class="btn btn-danger"
                                             wire:click="confirmDelete({{ $assistant->id }})" title="Delete">
                                             <i class="fas fa-trash"></i>
                                         </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

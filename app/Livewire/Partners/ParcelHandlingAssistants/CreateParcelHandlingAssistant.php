@@ -9,6 +9,7 @@ use App\Services\SMSService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Spatie\Permission\Models\Role;
@@ -27,8 +28,7 @@ class CreateParcelHandlingAssistant extends Component
     public $role_id;
     public $roles = [];
     public $role;
-    protected SMSService $smsService;
-
+    protected ?SMSService $smsService = null;
 
     protected function rules()
     {
@@ -80,6 +80,17 @@ class CreateParcelHandlingAssistant extends Component
     {
         $this->smsService = $smsService;
 
+
+        $this->smsService?->sendParcelHandlingAssistantWelcomeSMS(
+            '0706506361',
+            'Testing SMS'
+        );
+
+
+        dd(400000);
+
+
+
         // Generate a random password
         $this->password = $this->generateRandomPassword();
         $this->confirm_password = $this->password;
@@ -124,21 +135,35 @@ class CreateParcelHandlingAssistant extends Component
                 'last_name' => $this->last_name,
                 'phone_number' => $this->phone_number,
                 'email' => $this->email,
-                'role' => $this->role->name,
                 'id_number' => $this->id_number,
                 'status' => $this->status,
                 'user_id' => $user->id,
                 'partner_id' => $partner = Auth::guard('partner')->user()->partner->id,
             ]);
 
-            SendWelcomeEmail::dispatch($user, true, $this->password);
-
-            $this->smsService->sendParcelHandlingAssistantWelcomeSMS(
-                $this->phone_number,
-                trim($this->first_name . ' ' . $this->second_name . ' ' . $this->last_name)
-            );
 
             DB::commit();
+
+            try {
+                SendWelcomeEmail::dispatch($user, true, $this->password);
+            } catch (\Throwable $th) {
+                Log::error('Failed to dispatch welcome email job for user ID: ' . $user->id, [
+                    'error' => $th->getMessage(),
+                    'stack' => $th->getTraceAsString(),
+                ]);
+            }
+
+            try {
+                $this->smsService?->sendParcelHandlingAssistantWelcomeSMS(
+                    $this->phone_number,
+                    trim($this->first_name . ' ' . $this->second_name . ' ' . $this->last_name)
+                );
+            } catch (\Throwable $th) {
+                Log::error('Failed to dispatch welcome SMS for user ID: ' . $user->id, [
+                    'error' => $th->getMessage(),
+                    'stack' => $th->getTraceAsString(),
+                ]);
+            }
 
             return redirect()->route('partners.pha.index')
                 ->with('success', 'Assistant created successfully.');

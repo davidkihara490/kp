@@ -7,23 +7,11 @@
                     Parcels Management
                 </h3>
 
-                <div class="d-flex gap-2">
+                <!-- <div class="d-flex gap-2">
                     <a href="{{ route('admin.parcels.create') }}" class="btn btn-success btn-sm">
                         <i class="fas fa-plus mr-1"></i> Add New Parcel
                     </a>
-
-                    <button class="btn btn-outline-primary btn-sm" wire:click="export('csv')">
-                        <i class="fas fa-download mr-1"></i> Export CSV
-                    </button>
-
-                    <button class="btn btn-outline-secondary btn-sm" wire:click="export('pdf')">
-                        <i class="fas fa-file-pdf mr-1"></i> Export PDF
-                    </button>
-
-                    <button class="btn btn-outline-info btn-sm" wire:click="resetFilters">
-                        <i class="fas fa-undo mr-1"></i> Reset Filters
-                    </button>
-                </div>
+                </div> -->
             </div>
         </div>
 
@@ -446,17 +434,24 @@
                             <td class="text-center">
                                 <div class="btn-group" role="group">
 
+                                    @if(Auth::guard('admin')->user()->can('parcel.update'))
                                     <a href="{{ route('admin.parcels.view', $parcel->id) }}"
                                         class="btn btn-sm btn-info"
                                         title="View">
                                         <i class="fas fa-eye"></i>
                                     </a>
 
+                                    @endif
+
+                                    @if(Auth::guard('admin')->user()->can('parcel.delete'))
+
                                     <button class="btn btn-sm btn-danger"
                                         wire:click="confirmDelete({{ $parcel->id }})"
                                         title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </button>
+
+                                    @endif
                                 </div>
                             </td>
                         </tr>

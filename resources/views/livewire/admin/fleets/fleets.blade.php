@@ -175,19 +175,25 @@
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
+                                    @if(Auth::guard('admin')->user()->can('fleet.update'))
                                     <a href="{{ route('admin.fleets.view', $fleet->id) }}"
                                         class="btn btn-info" title="View">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    @endif
+                                    @if(Auth::guard('admin')->user()->can('fleet.update'))
                                     <a href="{{ route('admin.fleets.edit', $fleet->id) }}"
                                         class="btn btn-warning" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    @endif
+                                    @if(Auth::guard('admin')->user()->can('fleet.update'))
                                     <button class="btn btn-danger"
                                         wire:click="confirmDelete({{ $fleet->id }})"
                                         title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

@@ -5,9 +5,13 @@
                 <h3 class="card-title font-weight-bold d-inline">
                     <i class="fas fa-newspaper mr-2"></i>Blog Posts
                 </h3>
+                @if(Auth::guard('admin')->user()->can('pickup-and-dropoff-point.update'))
+
                 <a href="{{ route('admin.blog-posts.create') }}" class="btn btn-success btn-sm float-right">
                     <i class="fas fa-plus mr-2"></i>New Post
                 </a>
+
+                @endif
             </div>
 
             <div class="card-body">
@@ -288,10 +292,16 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
+                                        @if(Auth::guard('admin')->user()->can('pickup-and-dropoff-point.update'))
+
                                         <a href="{{ route('admin.blog-posts.view', $post->id) }}" class="btn btn-info"
                                             title="View">
                                             <i class="fas fa-eye"></i>
                                         </a>
+                                        @endif
+
+
+
                                         @if ($post->trashed())
                                         <button class="btn btn-success"
                                             wire:click="restore({{ $post->id }})" title="Restore">

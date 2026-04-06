@@ -157,19 +157,25 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
+                                        @if(Auth::guard('admin')->user()->can('driver.update'))
                                         <a href="{{ route('admin.drivers.view', $driver->id) }}" 
                                            class="btn btn-info" title="View">
                                             <i class="fas fa-eye"></i>
                                         </a>
+                                        @endif
+                                        @if(Auth::guard('admin')->user()->can('driver.update'))
                                         <a href="{{ route('admin.drivers.edit', $driver->id) }}" 
                                            class="btn btn-warning" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        @endif
+                                        @if(Auth::guard('admin')->user()->can('driver.update'))
                                         <button class="btn btn-danger" 
                                                 wire:click="confirmDelete({{ $driver->id }})" 
                                                 title="Delete">
                                             <i class="fas fa-trash"></i>
                                         </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

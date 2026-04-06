@@ -199,21 +199,28 @@
 
                                 <td class="text-center">
                                     <div class="btn-group" role="group">
+
+                                        @if(Auth::guard('admin')->user()->can('partner.view'))
                                         <a href="{{ route('admin.partners.view', $partner->id) }}"
                                             class="btn btn-sm btn-info" title="View">
                                             <i class="fas fa-eye"></i>
                                         </a>
+                                        @endif
 
+                                        @if(Auth::guard('admin')->user()->can('partner.update'))
                                         <a href="{{ route('admin.partners.edit', $partner->id) }}"
                                             class="btn btn-sm btn-primary" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
 
+                                        @endif
+                                        @if(Auth::guard('admin')->user()->can('partner.delete'))
                                         <button class="btn btn-sm btn-danger"
                                             wire:click="confirmDelete({{ $partner->id }})"
                                             title="Delete">
                                             <i class="fas fa-trash"></i>
                                         </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

@@ -8,20 +8,20 @@
         </div>
 
 
-            <div class="row m-2">
-                <div class="col-md-4">
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">
-                                <i class="fas fa-search"></i>
-                            </span>
-                        </div>
-                        <input type="text" class="form-control"
-                            wire:model.live.debounce.300ms="search"
-                            placeholder="Search...">
+        <div class="row m-2">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
                     </div>
+                    <input type="text" class="form-control"
+                        wire:model.live.debounce.300ms="search"
+                        placeholder="Search...">
                 </div>
             </div>
+        </div>
 
         <div class="card-body">
 
@@ -70,19 +70,24 @@
                             @endif
                         </td>
                         <td>
+                            @if(Auth::guard('admin')->user()->can('pickup-and-dropoff-point.update'))
                             <a href="{{ route('admin.points.view', $station->id) }}" class="btn btn-sm btn-primary"
                                 title="{{ __('View') }}">
                                 <i class="fas fa-eye"></i>
                             </a>
+                            @endif
+                            @if(Auth::guard('admin')->user()->can('pickup-and-dropoff-point.update'))
                             <a href="{{ route('admin.points.edit', $station->id) }}"
                                 class="btn btn-sm btn-info" title="{{ __('Edit') }}">
                                 <i class="fas fa-edit"></i>
                             </a>
-
+                            @endif
+                            @if(Auth::guard('admin')->user()->can('pickup-and-dropoff-point.update'))
                             <button class="btn btn-sm btn-danger" wire:click="confirm({{ $station->id }})"
                                 title="{{ __('Delete') }}">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
+                            @endif
                         </td>
                     </tr>
                     @empty

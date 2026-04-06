@@ -2,9 +2,13 @@
     <div class="card">
         <div class="card-header">
             <h3 class="card-title font-weight-bold d-inline">
-                Roles And Permissions
+                Users
             </h3>
-            <a href="{{ route('admin.roles-and-permissions.create') }}" class="btn btn-success btn-sm float-right">New </a>
+            @if(Auth::guard('admin')->user()->can('user.update'))
+
+            <a href="{{ route('admin.users.create') }}" class="btn btn-success btn-sm float-right">New </a>
+
+            @endif
         </div>
 
         <div class="card-body">
@@ -14,29 +18,34 @@
                     <tr>
                         <th>#</th>
                         <th>Name </th>
-                        <th>Permisions</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>User Type</th>
+                        <th>Role</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
 
-                    @foreach ($roles as $role)
+                    @foreach ($users as $user)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $role->name }}</td>
-                        <td>{{ $role->permissions->count() }}</td>
+                        <td>{{ $user->getFullName() }}</td>
+                        <td>{{ $user->email }}</td>
+                        <td>{{ $user->phone_number }}</td>
+                        <td>{{ $user->user_type }}</td>
+                        <td>{{ $user->getRoleNames()->first() ? ucfirst($user->getRoleNames()->first()) : '--' }}</td>
                         <td>
-                            @if(Auth::guard('admin')->user()->can('roles.update'))
-                            <a href="{{ route('admin.roles-and-permissions.view', $role->id) }}" class="btn btn-sm btn-success">View</a>
-                            @endif
-                            @if( $role->name != "super-admin")
-                            @if(Auth::guard('admin')->user()->can('roles.update'))
-                            <a href="{{ route('admin.roles-and-permissions.edit', $role->id) }}" class="btn btn-sm btn-info">Edit</a>
-                            @endif
-                            @if(Auth::guard('admin')->user()->can('roles.update'))
+                            @if(Auth::guard('admin')->user()->can('user.update'))
+                            <a href="{{ $user->user_type == 'admin'  ? route('admin.users.edit', $user->id)  : '#' }}"
+                                class="btn btn-sm btn-info {{ $user->user_type == 'admin' ? '' : 'disabled' }}"
+                                {{ $user->user_type == 'admin' ? '' : 'onclick=return false;' }}>
+                                Edit
+                            </a>
+                            @if(Auth::guard('admin')->user()->can('user.update'))
                             <button class="btn btn-sm btn-danger"
-                                wire:click="confirm({{ $role->id }})">Delete</button>
-                            @endif
+                                wire:click="confirm({{ $user->id }})" {{ $user->user_type == 'admin' ? '' : 'disabled' }}>Delete</button>
+
                             @endif
                         </td>
                     </tr>
@@ -46,7 +55,9 @@
                     <tr>
                         <th>#</th>
                         <th>Name </th>
-                        <th>Permisions</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Role</th>
                         <th>Actions</th>
                     </tr>
                 </tfoot>
@@ -56,7 +67,6 @@
                 style="background-color: rgba(0,0,0,0.5);">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
-
 
                         <div class="modal-header">
                             <h5 class="modal-title">Delete Record</h5>
@@ -84,7 +94,7 @@
         </div>
 
         <div class="card-footer">
-            {{ $roles->links() }}
+            {{ $users->links() }}
         </div>
     </div>
 </div>

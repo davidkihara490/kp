@@ -24,6 +24,20 @@ class RolesAndPermissionSeeder extends Seeder
         $this->createCRUDPermissions('parcel-handling-assistant');
         $this->createCRUDPermissions('pickup-and-dropoff-point');
 
+        $this->createCRUDPermissions('partner');
+        $this->createCRUDPermissions('user');
+        $this->createCRUDPermissions('payment');
+        $this->createCRUDPermissions('blog-posts');
+        $this->createCRUDPermissions('blog-categories');
+        $this->createCRUDPermissions('blog-tags');
+        $this->createCRUDPermissions('items');
+        $this->createCRUDPermissions('weight-ranges');
+        $this->createCRUDPermissions('pricing');
+        $this->createCRUDPermissions('payment-structure');
+        $this->createCRUDPermissions('towns');
+        $this->createCRUDPermissions('zones');
+        $this->createCRUDPermissions('faqs');
+
         // =========================================================
         // Finally give the super admin all the above permissions
         // =========================================================
@@ -31,8 +45,7 @@ class RolesAndPermissionSeeder extends Seeder
         $superAdmin = $this->createRole('super-admin');
         Permission::all()->each(fn(Permission $permission): Permission => $permission->assignRole($superAdmin));
 
-        $partnerAdmin = $this->createRole('parter-admin');
-        Permission::all()->each(fn(Permission $permission): Permission => $permission->assignRole($partnerAdmin));
+        $partnerAdmin = $this->createRole('partner-admin');
     }
 
     public function createRole(string $name): Role

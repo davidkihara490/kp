@@ -7,8 +7,11 @@ use Illuminate\Support\Facades\Log;
 
 class SMSService
 {
-    protected string $balanceApiUrl;
+    // -------------------------
+    // API configuration
+    // -------------------------
     protected string $apiUrl;
+    protected string $balanceApiUrl;
     protected string $apiKey;
     protected string $senderName;
     protected string $accessKey;
@@ -26,164 +29,146 @@ class SMSService
         $this->adminPhoneNumber = config('services.onfonmedia.admin_phone');
     }
 
-    public function checkBalance(): float
-    {
-        $url = $this->balanceApiUrl;
+    // -------------------------
+    // Public methods
+    // -------------------------
 
-        $queryParams = [
-            'ApiKey' => $this->apiKey,
-            'ClientId' => $this->clientId,
-        ];
-
-        $response = Http::withHeaders([
-            'AccessKey' => $this->accessKey,
-            'Content-Type' => 'application/json',
-        ])->get($url, $queryParams);
-
-        if ($response->successful()) {
-            $data = $response->json();
-            return isset($data['Data'][0]['Credits'])
-                ? floatval($data['Data'][0]['Credits'])
-                : 0;
-        }
-
-        return 0;
-    }
-
+    /**
+     * Send SMS to a single recipient
+     */
     public function sendMessage(string $phoneNumber, string $message)
     {
-        $balance = $this->checkBalance();
-
-        if ($balance < 10) {
-            $this->sendAdminAlert("SMS balance is low ({$balance}). Please top up.");
+        // Ensure there is enough balance before sending
+        if (!$this->hasSufficientBalance()) {
+            $this->sendAdminAlert("SMS balance is low. Please top up.");
+            return null;
         }
 
         return $this->sendBulkSMS([
-            [
-                'phone' => $phoneNumber,
-                'message' => $message,
-            ],
+            ['phone' => $phoneNumber, 'message' => $message]
         ]);
     }
 
-    protected function sendAdminAlert(string $alertMessage)
+    /**
+     * Send welcome SMS to a parcel handling assistant
+     */
+    public function sendParcelHandlingAssistantWelcomeSMS(string $phoneNumber, string $name)
     {
-        $adminPhoneNumber = $this->adminPhoneNumber; // set in .env
-        $this->sendBulkSMS(
-            [
-                [
-                    'phone' => $adminPhoneNumber,
-                    'message' => $alertMessage,
-                ],
-            ]
+        return $this->sendMessage(
+            $phoneNumber,
+            "Hi {$name}! You have been registered as a parcel handling assistant at Karibu Parcels. Check your email for further instructions."
         );
     }
 
+    /**
+     * Send welcome SMS to a driver
+     */
+    public function sendDriverWelcomeSMS(string $phoneNumber, string $driverName)
+    {
+        return $this->sendMessage(
+            $phoneNumber,
+            "Hi {$driverName}! You have been successfully registered as a driver at Karibu Parcels. Check the link on your email for further instructions."
+        );
+    }
+
+    /**
+     * Send driver assignment SMS
+     */
+    public function sendDriverAssignmentSMS(string $phoneNumber, string $driverName, string $code)
+    {
+        return $this->sendMessage(
+            $phoneNumber,
+            "Hi {$driverName}! You have been assigned to deliver a parcel. Parcel code is {$code}. Use this code at the pick up point."
+        );
+    }
+
+    // -------------------------
+    // Bulk SMS & admin alerts
+    // -------------------------
+
+    /**
+     * Send multiple SMS messages in bulk
+     */
     public function sendBulkSMS(array $recipients)
     {
+        if (!$this->hasSufficientBalance()) {
+            return $this->sendAdminAlert("SMS balance is low. Please top up.");
+        }
+
         $payload = [
             "SenderId" => $this->senderName,
-            "MessageParameters" => array_map(function ($item) {
-                return [
-                    "Number" => $item['phone'],
-                    "Text" => $item['message'],
-                ];
-            }, $recipients),
+            "MessageParameters" => array_map(fn($item) => [
+                "Number" => $item['phone'],
+                "Text" => $item['message'],
+            ], $recipients),
             "ApiKey" => $this->apiKey,
             "ClientId" => $this->clientId,
         ];
 
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'AccessKey' => $this->accessKey,
-        ])->post($this->apiUrl, $payload);
+        $response = Http::withHeaders($this->getHeaders())->post($this->apiUrl, $payload);
 
         if ($response->successful()) {
             return $response->json();
         }
 
-        Log::info("ERROR:", $response->json());
+        Log::error("Failed to send SMS", ['payload' => $payload, 'response' => $response->json()]);
         return null;
     }
 
-    public function sendDriverWelcomeSMS(string $phoneNumber, string $driverName)
+    /**
+     * Notify admin in case of low balance or other alerts
+     */
+    protected function sendAdminAlert(string $alertMessage)
     {
         return $this->sendBulkSMS([
-            [
-                'phone' => $phoneNumber,
-                'message' => "Hi {$driverName}! You have been successfully registered as a driver at Karibu Parcels. Check the link on your email for further instructions.",
-            ],
+            ['phone' => $this->adminPhoneNumber, 'message' => $alertMessage]
         ]);
     }
 
-    public function sendDriverAssignmentSMS(string $phoneNumber, string $driverName, string $code)
+    // -------------------------
+    // Balance checking
+    // -------------------------
+
+    /**
+     * Check current SMS balance
+     */
+    public function checkBalance(): float
     {
-        return $this->sendBulkSMS([
-            [
-                'phone' => $phoneNumber,
-                'message' => "Hi {$driverName}! You have been assigned to deliver a parcel. Parcel code is {$code}. Use this code at the pick up point",
-            ],
-        ]);
+        $response = Http::withHeaders($this->getHeaders())
+            ->get($this->balanceApiUrl, [
+                'ApiKey' => $this->apiKey,
+                'ClientId' => $this->clientId,
+            ]);
+
+        if ($response->successful()) {
+            $data = $response->json();
+            return isset($data['Data'][0]['Credits']) ? floatval($data['Data'][0]['Credits']) : 0;
+        }
+
+        Log::error("Failed to check SMS balance", ['response' => $response->json()]);
+        return 0;
     }
 
-    public function sendParcelHandlingAssistantWelcomeSMS(string $phoneNumber, string $name)
+    /**
+     * Ensure balance is above minimum threshold
+     */
+    protected function hasSufficientBalance(float $min = 10.0): bool
     {
-        return $this->sendBulkSMS([
-            [
-                'phone' => $phoneNumber,
-                'message' => "Hi {$name}! You have been registered as a parcel handling assistant at Karibu Parcels. Check your email for further instructions.",
-            ],
-        ]);
+        return $this->checkBalance() >= $min;
     }
 
-    // /* ================== PUBLIC METHODS ================== */
+    // -------------------------
+    // Helper methods
+    // -------------------------
 
-    // public function notifyRecipientParcelDropOff(string $phoneNumber)
-    // {
-    //     return $this->send(
-    //         $phoneNumber,
-    //         'KARIBU PARCELS: We have received your parcel. We will notify you when to pick it.'
-    //     );
-    // }
-
-
-    // public function notifySenderParcelReceived(string $phoneNumber)
-    // {
-    //     return $this->send(
-    //         $phoneNumber,
-    //         'KARIBU PARCELS: Your parcel has been received and is ready for shipping.'
-    //     );
-    // }
-
-    // public function notifyCompanyNewParcel(string $phoneNumber)
-    // {
-    //     return $this->send(
-    //         $phoneNumber,
-    //         'KARIBU PARCELS: Dear Admin, a new parcel has been processed and is waiting to be shipped.'
-    //     );
-    // }
-
-    // public function notifySenderOnShipping(string $phoneNumber)
-    // {
-    //     return $this->send(
-    //         $phoneNumber,
-    //         'KARIBU PARCELS: Your parcel has been shipped to your selected location.'
-    //     );
-    // }
-
-    // public function notifyRecipientParcelArrived(string $phoneNumber, string $parcelId)
-    // {
-    //     return $this->send(
-    //         $phoneNumber,
-    //         "KARIBU PARCELS: Your parcel with ID {$parcelId} has arrived and is ready for picking."
-    //     );
-    // }
-
-    // public function notifyAgentOnShipping(string $phoneNumber)
-    // {
-    //     return $this->send(
-    //         $phoneNumber,
-    //         'KARIBU PARCELS: A parcel is being shipped to your pick-up location. Please wait to pick it up.'
-    //     );
-    // }
+    /**
+     * Common HTTP headers for API requests
+     */
+    protected function getHeaders(): array
+    {
+        return [
+            'Content-Type' => 'application/json',
+            'AccessKey' => $this->accessKey,
+        ];
+    }
 }
