@@ -200,13 +200,11 @@
                             </div>
                         </div>
 
-                        <!-- Operating Hours Card -->
                         <div class="form-card mt-4">
                             <div class="form-card-header">
                                 <h5><i class="bi bi-clock me-2"></i>Operating Hours</h5>
                             </div>
                             <div class="form-card-body">
-                                <!-- 24/7 Toggle -->
                                 <div class="mb-3">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="is24Hours"
@@ -218,7 +216,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Daily Operating Hours Table - Shown when 24/7 is NOT selected -->
                                 <div id="daily-hours-container" @if ($is_24_hours) style="display: none;" @endif>
                                     <div class="daily-hours-table">
                                         <div class="table-header">
@@ -278,7 +275,6 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Simplified view when 24/7 is selected -->
                                 <div id="twentyfour-seven-message" @if (!$is_24_hours) style="display: none;" @endif>
                                     <div class="alert alert-info">
                                         <i class="bi bi-infinity me-2"></i>
