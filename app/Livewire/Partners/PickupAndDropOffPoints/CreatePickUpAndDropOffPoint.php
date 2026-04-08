@@ -52,7 +52,6 @@ class CreatePickUpAndDropOffPoint extends Component
             'notes' => 'nullable|string|max:1000',
         ];
 
-        // Add validation rules for operating hours when not 24/7
         if (!$this->is_24_hours) {
             $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
             foreach ($days as $day) {
@@ -153,6 +152,7 @@ class CreatePickUpAndDropOffPoint extends Component
 
     public function submit()
     {
+
         $this->validate();
 
         try {
