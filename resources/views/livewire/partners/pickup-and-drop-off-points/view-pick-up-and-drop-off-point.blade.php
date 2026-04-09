@@ -8,27 +8,27 @@
                             <i class="bi {{ $this->getTypeIcon() }}"></i>
                         </div>
                         <div>
-                            <h3 class="section-title mb-1">{{ $point->name }}</h3>
+                            <h3 class="section-title mb-1">{{ $pickUpAndDropOffPoint->name }}</h3>
                             <div class="d-flex align-items-center gap-2 flex-wrap">
                                 <span class="badge {{ $this->getTypeBadgeClass() }}">
                                     <i class="bi {{ $this->getTypeIcon() }} me-1"></i>
-                                    {{ ucfirst($point->type) }} Point
+                                    {{ ucfirst($pickUpAndDropOffPoint->type) }} Point
                                 </span>
                                 <span class="status-badge {{ $this->getStatusBadgeClass() }}">
                                     <i
-                                        class="bi {{ $point->status === 'active' ? 'bi-check-circle' : ($point->status === 'maintenance' ? 'bi-tools' : 'bi-pause-circle') }} me-1"></i>
-                                    {{ ucfirst($point->status) }}
+                                        class="bi {{ $pickUpAndDropOffPoint->status === 'active' ? 'bi-check-circle' : ($pickUpAndDropOffPoint->status === 'maintenance' ? 'bi-tools' : 'bi-pause-circle') }} me-1"></i>
+                                    {{ ucfirst($pickUpAndDropOffPoint->status) }}
                                 </span>
                                 <span class="badge bg-light text-dark">
                                     <i class="bi bi-upc-scan me-1"></i>
-                                    {{ $point->code }}
+                                    {{ $pickUpAndDropOffPoint->code }}
                                 </span>
                             </div>
                         </div>
                     </div>
                     <p class="section-subtitle mt-2">
                         <i class="bi bi-geo-alt me-1"></i>
-                        {{ $point->address }}, {{ $town->name ?? 'Unknown' }}
+                        {{ $pickUpAndDropOffPoint->address }}, {{ $town->name ?? 'Unknown' }}
                     </p>
                 </div>
                 <div class="header-actions">
@@ -37,9 +37,9 @@
                         Back
                     </button>
 
-                    <a href="{{ route('partners.pd.edit', $point->id) }}"
+                    <a href="{{ route('partners.pd.edit', $pickUpAndDropOffPoint->id) }}"
                         class="btn btn-outline-primary">Edit</a>
-                    @if ($point->status === 'active')
+                    @if ($pickUpAndDropOffPoint->status === 'active')
                     <button class="btn btn-outline-warning" wire:click="confirmDeactivate">
                         <i class="bi bi-pause-circle me-2"></i>
                         Deactivate
@@ -80,12 +80,23 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="bi bi-calendar-week"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-value">{{ $totalParcels }}</div>
+                                    <div class="stat-label">Total Parcels</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Information Cards -->
                     <div class="row">
                         <!-- Contact Information -->
-                        <div class="col-md-6 mb-4">
+                        <div class="col-md-4 mb-4">
                             <div class="info-card">
                                 <div class="info-card-header">
                                     <h5><i class="bi bi-person-lines-fill me-2"></i>Contact Information</h5>
@@ -96,7 +107,7 @@
                                             <i class="bi bi-person"></i>
                                             Contact Person
                                         </div>
-                                        <div class="info-value">{{ $point->contact_person }}</div>
+                                        <div class="info-value">{{ $pickUpAndDropOffPoint->contact_person }}</div>
                                     </div>
                                     <div class="info-item">
                                         <div class="info-label">
@@ -105,7 +116,7 @@
                                         </div>
                                         <div class="info-value">
                                             <a
-                                                href="mailto:{{ $point->contact_email }}">{{ $point->contact_email }}</a>
+                                                href="mailto:{{ $pickUpAndDropOffPoint->contact_email }}">{{ $pickUpAndDropOffPoint->contact_email }}</a>
                                         </div>
                                     </div>
                                     <div class="info-item">
@@ -114,7 +125,7 @@
                                             Phone
                                         </div>
                                         <div class="info-value">
-                                            <a href="tel:{{ $point->contact_phone }}">{{ $point->contact_phone }}</a>
+                                            <a href="tel:{{ $pickUpAndDropOffPoint->contact_phone_}}">{{ $pickUpAndDropOffPoint->contact_phone_number }}</a>
                                         </div>
                                     </div>
                                 </div>
@@ -122,7 +133,7 @@
                         </div>
 
                         <!-- Location Information -->
-                        <div class="col-md-6 mb-4">
+                        <div class="col-md-4 mb-4">
                             <div class="info-card">
                                 <div class="info-card-header">
                                     <h5><i class="bi bi-geo me-2"></i>Location Details</h5>
@@ -133,7 +144,7 @@
                                             <i class="bi bi-house-door"></i>
                                             Address
                                         </div>
-                                        <div class="info-value">{{ $point->address }}</div>
+                                        <div class="info-value">{{ $pickUpAndDropOffPoint->address }}</div>
                                     </div>
                                     <div class="info-item">
                                         <div class="info-label">
@@ -142,112 +153,47 @@
                                         </div>
                                         <div class="info-value">{{ $town->name ?? 'Not specified' }}</div>
                                     </div>
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="bi bi-shop"></i>
-                                            Associated Station
-                                        </div>
-                                        <div class="info-value">
-                                            @if ($station)
-                                            <a href="#"
-                                                wire:click="$dispatch('viewStation', {{ $station->id }})">
-                                                {{ $station->name }}
-                                            </a>
-                                            @else
-                                            <span class="text-muted">None</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    @if ($point->latitude && $point->longitude)
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="bi bi-globe"></i>
-                                            Coordinates
-                                        </div>
-                                        <div class="info-value">
-                                            {{ $point->latitude }}, {{ $point->longitude }}
-                                        </div>
-                                    </div>
-                                    @endif
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Operating Hours -->
-                        <div class="col-md-6 mb-4">
+                        <!-- Aditional Information -->
+                        <div class="col-md-4 mb-4">
                             <div class="info-card">
                                 <div class="info-card-header">
-                                    <h5><i class="bi bi-clock me-2"></i>Operating Hours</h5>
+                                    <h5><i class="bi bi-card-text me-2"></i>Additional Information</h5>
                                 </div>
                                 <div class="info-card-body">
                                     <div class="info-item">
                                         <div class="info-label">
-                                            <i class="bi bi-calendar-week"></i>
-                                            Operating Days
+                                            <i class="bi bi-box-seam"></i>
+                                            Storage Capacity
                                         </div>
-                                        @php
-                                        $operatingDays = json_decode($point->operating_days, true);
-                                        @endphp
-
-                                        <table class="table table-sm">
-                                            <tbody>
-                                                @foreach($operatingDays as $day => $hours)
-                                                <tr>
-                                                    <td width="100"><strong>{{ $day }}</strong></td>
-                                                    <td>
-                                                        @if($hours['closed'])
-                                                        <span class="badge bg-secondary">Closed</span>
-                                                        @else
-                                                        {{ date('h:i A', strtotime($hours['opening'])) }} -
-                                                        {{ date('h:i A', strtotime($hours['closing'])) }}
-                                                        @endif
-                                                    </td>
-                                                </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
+                                        <div class="info-value">
+                                            {{ $pickUpAndDropOffPoint->capacity ? $pickUpAndDropOffPoint->capacity . ' parcels' : 'Not specified' }}
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Additional Information -->
-                    <div class="col-md-6 mb-4">
-                        <div class="info-card">
-                            <div class="info-card-header">
-                                <h5><i class="bi bi-card-text me-2"></i>Additional Information</h5>
-                            </div>
-                            <div class="info-card-body">
-                                <div class="info-item">
-                                    <div class="info-label">
-                                        <i class="bi bi-box-seam"></i>
-                                        Storage Capacity
+                                    <div class="info-item">
+                                        <div class="info-label">
+                                            <i class="bi bi-calendar"></i>
+                                            Created
+                                        </div>
+                                        <div class="info-value">
+                                            {{ $pickUpAndDropOffPoint->created_at->format('M d, Y') }}
+                                            <small
+                                                class="text-muted d-block">({{ $pickUpAndDropOffPoint->created_at->diffForHumans() }})</small>
+                                        </div>
                                     </div>
-                                    <div class="info-value">
-                                        {{ $point->capacity ? $point->capacity . ' parcels' : 'Not specified' }}
-                                    </div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">
-                                        <i class="bi bi-calendar"></i>
-                                        Created
-                                    </div>
-                                    <div class="info-value">
-                                        {{ $point->created_at->format('M d, Y') }}
-                                        <small
-                                            class="text-muted d-block">({{ $point->created_at->diffForHumans() }})</small>
-                                    </div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">
-                                        <i class="bi bi-clock-history"></i>
-                                        Last Updated
-                                    </div>
-                                    <div class="info-value">
-                                        {{ $point->updated_at->format('M d, Y') }}
-                                        <small
-                                            class="text-muted d-block">({{ $point->updated_at->diffForHumans() }})</small>
+                                    <div class="info-item">
+                                        <div class="info-label">
+                                            <i class="bi bi-clock-history"></i>
+                                            Last Updated
+                                        </div>
+                                        <div class="info-value">
+                                            {{ $pickUpAndDropOffPoint->updated_at->format('M d, Y') }}
+                                            <small
+                                                class="text-muted d-block">({{ $pickUpAndDropOffPoint->updated_at->diffForHumans() }})</small>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -256,14 +202,14 @@
                 </div>
 
                 <!-- Notes Section -->
-                @if ($point->notes)
+                @if ($pickUpAndDropOffPoint->notes)
                 <div class="info-card mb-4">
                     <div class="info-card-header">
                         <h5><i class="bi bi-sticky me-2"></i>Notes</h5>
                     </div>
                     <div class="info-card-body">
                         <div class="notes-content">
-                            {{ $point->notes }}
+                            {{ $pickUpAndDropOffPoint->notes }}
                         </div>
                     </div>
                 </div>
@@ -288,7 +234,7 @@
                         <i class="bi bi-exclamation-triangle text-warning display-4"></i>
                         <h4 class="mt-3">Deactivate Point?</h4>
                         <p class="text-muted">
-                            Are you sure you want to deactivate <strong>{{ $point->name }}</strong>?
+                            Are you sure you want to deactivate <strong>{{ $pickUpAndDropOffPoint->name }}</strong>?
                             This point will no longer be available for parcel operations.
                         </p>
                         <div class="alert alert-warning mt-3">

@@ -52,41 +52,41 @@ class CreatePickUpAndDropOffPoint extends Component
             'notes' => 'nullable|string|max:1000',
         ];
 
-        if (!$this->is_24_hours) {
-            $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-            foreach ($days as $day) {
-                // Only validate if the day is not marked as closed
-                $rules["operating_hours.{$day}.opening"] = [
-                    'nullable',
-                    'date_format:H:i',
-                    function ($attribute, $value, $fail) use ($day) {
-                        if (!$this->operating_hours[$day]['closed'] && empty($value)) {
-                            $fail("Opening time for {$day} is required when the day is not closed.");
-                        }
-                    },
-                ];
+        // if (!$this->is_24_hours) {
+        //     $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        //     foreach ($days as $day) {
+        //         // Only validate if the day is not marked as closed
+        //         $rules["operating_hours.{$day}.opening"] = [
+        //             'nullable',
+        //             'date_format:H:i',
+        //             function ($attribute, $value, $fail) use ($day) {
+        //                 if (!$this->operating_hours[$day]['closed'] && empty($value)) {
+        //                     $fail("Opening time for {$day} is required when the day is not closed.");
+        //                 }
+        //             },
+        //         ];
 
-                $rules["operating_hours.{$day}.closing"] = [
-                    'nullable',
-                    'date_format:H:i',
-                    function ($attribute, $value, $fail) use ($day) {
-                        if (!$this->operating_hours[$day]['closed'] && empty($value)) {
-                            $fail("Closing time for {$day} is required when the day is not closed.");
-                        }
-                        if (
-                            !$this->operating_hours[$day]['closed'] &&
-                            !empty($this->operating_hours[$day]['opening']) &&
-                            !empty($value) &&
-                            $this->operating_hours[$day]['opening'] >= $value
-                        ) {
-                            $fail("Closing time for {$day} must be after opening time.");
-                        }
-                    },
-                ];
+        //         $rules["operating_hours.{$day}.closing"] = [
+        //             'nullable',
+        //             'date_format:H:i',
+        //             function ($attribute, $value, $fail) use ($day) {
+        //                 if (!$this->operating_hours[$day]['closed'] && empty($value)) {
+        //                     $fail("Closing time for {$day} is required when the day is not closed.");
+        //                 }
+        //                 if (
+        //                     !$this->operating_hours[$day]['closed'] &&
+        //                     !empty($this->operating_hours[$day]['opening']) &&
+        //                     !empty($value) &&
+        //                     $this->operating_hours[$day]['opening'] >= $value
+        //                 ) {
+        //                     $fail("Closing time for {$day} must be after opening time.");
+        //                 }
+        //             },
+        //         ];
 
-                $rules["operating_hours.{$day}.closed"] = 'boolean';
-            }
-        }
+        //         $rules["operating_hours.{$day}.closed"] = 'boolean';
+        //     }
+        // }
 
         return $rules;
     }
@@ -119,36 +119,36 @@ class CreatePickUpAndDropOffPoint extends Component
         $this->code = str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
     }
 
-    public function updated($propertyName)
-    {
-        // Validate only the changed property
-        $this->validateOnly($propertyName);
+    // public function updated($propertyName)
+    // {
+    //     // Validate only the changed property
+    //     $this->validateOnly($propertyName);
 
-        // When 24/7 mode is toggled, validate the operating hours structure
-        if ($propertyName === 'is_24_hours') {
-            $this->validateOperatingHours();
-        }
-    }
+    //     // When 24/7 mode is toggled, validate the operating hours structure
+    //     if ($propertyName === 'is_24_hours') {
+    //         $this->validateOperatingHours();
+    //     }
+    // }
 
-    /**
-     * Validate that all operating hours are properly set when not in 24/7 mode
-     */
-    protected function validateOperatingHours()
-    {
-        if (!$this->is_24_hours) {
-            $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-            foreach ($days as $day) {
-                if (!$this->operating_hours[$day]['closed']) {
-                    if (empty($this->operating_hours[$day]['opening'])) {
-                        $this->operating_hours[$day]['opening'] = '09:00';
-                    }
-                    if (empty($this->operating_hours[$day]['closing'])) {
-                        $this->operating_hours[$day]['closing'] = '17:00';
-                    }
-                }
-            }
-        }
-    }
+    // /**
+    //  * Validate that all operating hours are properly set when not in 24/7 mode
+    //  */
+    // protected function validateOperatingHours()
+    // {
+    //     if (!$this->is_24_hours) {
+    //         $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    //         foreach ($days as $day) {
+    //             if (!$this->operating_hours[$day]['closed']) {
+    //                 if (empty($this->operating_hours[$day]['opening'])) {
+    //                     $this->operating_hours[$day]['opening'] = '09:00';
+    //                 }
+    //                 if (empty($this->operating_hours[$day]['closing'])) {
+    //                     $this->operating_hours[$day]['closing'] = '17:00';
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     public function submit()
     {
@@ -212,7 +212,7 @@ class CreatePickUpAndDropOffPoint extends Component
                 'contact_person' => $this->contact_person,
                 'contact_email' => $this->contact_email,
                 'contact_phone_number' => $this->contact_phone_number,
-                'operating_days' => json_encode($operatingTimesArray),
+                // 'operating_days' => json_encode($operatingTimesArray),
                 'capacity' => $this->capacity,
                 'notes' => $this->notes,
             ]);
