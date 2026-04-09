@@ -628,7 +628,8 @@
                                 </div>
                                 @endif -->
                                 <div class="hours-badge">
-                                    <i class="bi bi-clock"></i> {{ $point->opening_hours }} - {{ $point->closing_hours }}
+                                    <i class="bi bi-clock"></i>
+                                    {{ \Carbon\Carbon::today()->setTime(8, 0)->format('h:i A')   }} - {{ \Carbon\Carbon::today()->setTime(17, 0)->format('h:i A') }}
                                 </div>
                             </div>
                         </div>

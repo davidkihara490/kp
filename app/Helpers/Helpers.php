@@ -67,3 +67,29 @@ if (!function_exists('current_user_type')) {
 
 
 }
+
+
+if (! function_exists('formatKenyaNumber')) {
+    /**
+     * Convert a Kenyan phone number to international format (254xxxxxxx)
+     *
+     * @param string $number
+     * @return string|null
+     */
+    function formatKenyaNumber(string $number): ?string
+    {
+        // Remove spaces, dashes, and any non-digit characters
+        $number = preg_replace('/\D/', '', $number);
+
+        if (strlen($number) == 10 && str_starts_with($number, '0')) {
+            // Convert 07xxxxxxxx to 2547xxxxxxxx
+            return '254' . substr($number, 1);
+        } elseif (strlen($number) == 12 && str_starts_with($number, '254')) {
+            // Already in international format
+            return $number;
+        } else {
+            // Invalid number
+            return null;
+        }
+    }
+}

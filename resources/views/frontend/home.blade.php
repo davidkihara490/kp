@@ -502,7 +502,7 @@
                                             @endif -->
                                             <p class="mb-0">
                                                 <i class="bi bi-clock text-primary me-2"></i>
-                                                {{ $point->opening_hours }} - {{ $point->closing_hours }}
+                                                {{ \Carbon\Carbon::today()->setTime(8, 0)->format('h:i A')   }} - {{ \Carbon\Carbon::today()->setTime(17, 0)->format('h:i A') }}
                                             </p>
                                         </div>
                                     </div>

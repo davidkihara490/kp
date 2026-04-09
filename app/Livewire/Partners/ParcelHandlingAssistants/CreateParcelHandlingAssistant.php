@@ -79,18 +79,6 @@ class CreateParcelHandlingAssistant extends Component
     public function mount(SMSService $smsService)
     {
         $this->smsService = $smsService;
-
-
-        $this->smsService?->sendParcelHandlingAssistantWelcomeSMS(
-            '0706506361',
-            'Testing SMS'
-        );
-
-
-        dd(400000);
-
-
-
         // Generate a random password
         $this->password = $this->generateRandomPassword();
         $this->confirm_password = $this->password;
@@ -155,8 +143,8 @@ class CreateParcelHandlingAssistant extends Component
 
             try {
                 $this->smsService?->sendParcelHandlingAssistantWelcomeSMS(
-                    $this->phone_number,
-                    trim($this->first_name . ' ' . $this->second_name . ' ' . $this->last_name)
+                    formatKenyaNumber($this->phone_number),
+                    trim($this->first_name . ' ' . $this->last_name)
                 );
             } catch (\Throwable $th) {
                 Log::error('Failed to dispatch welcome SMS for user ID: ' . $user->id, [

@@ -37,46 +37,59 @@ class ParcelHandlingAssistants extends Component
     ];
 
     public function render()
-    {
+{
+    $partner = Auth::guard('partner')->user()->partner;
 
-        $partner = Auth::guard('partner')->user()->partner;
-        $query = ParcelHandlingAssistant::where('partner_id', $partner->id)
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('first_name', 'like', '%' . $this->search . '%')
-                        ->orWhere('last_name', 'like', '%' . $this->search . '%')
-                        ->orWhere('email', 'like', '%' . $this->search . '%')
-                        ->orWhere('phone_number', 'like', '%' . $this->search . '%')
-                        ->orWhere('id_number', 'like', '%' . $this->search . '%')
-                        ->orWhereHas('user', function ($q) {
-                            $q->where('first_name', 'like', '%' . $this->search . '%')
-                                ->orWhere('last_name', 'like', '%' . $this->search . '%');
-                        });
-                });
-            })
-            ->when($this->statusFilter, function ($query) {
-                $query->where('status', $this->statusFilter);
+    // Base query with filters
+    $query = ParcelHandlingAssistant::where('partner_id', $partner->id)
+        ->when($this->search, function ($query) {
+            $query->where(function ($q) {
+                $q->where('first_name', 'like', '%' . $this->search . '%')
+                  ->orWhere('last_name', 'like', '%' . $this->search . '%')
+                  ->orWhere('email', 'like', '%' . $this->search . '%')
+                  ->orWhere('phone_number', 'like', '%' . $this->search . '%')
+                  ->orWhere('id_number', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('user', function ($q) {
+                      $q->where('first_name', 'like', '%' . $this->search . '%')
+                        ->orWhere('last_name', 'like', '%' . $this->search . '%');
+                  });
             });
-           
-        $assistants = $query->orderBy($this->sortField, $this->sortDirection)->paginate(15);
+        });
 
-        return view('livewire.partners.parcel-handling-assistants.parcel-handling-assistants', [
-            'assistants' => $assistants,
-            'stations' => PickUpAndDropOffPoint::all(),
-            'statuses' => [
-                '' => 'All Status',
-                'active' => 'Active',
-                'inactive' => 'Inactive',
-                'suspended' => 'Suspended',
-                'pending' => 'Pending'
-            ],
-            'totalAssistants' => ParcelHandlingAssistant::count(),
-            'activeAssistants' => ParcelHandlingAssistant::where('status', 'active')->count(),
-            'inactiveAssistants' => ParcelHandlingAssistant::where('status', 'inactive')->count(),
-            'suspendedAssistants' => ParcelHandlingAssistant::where('status', 'suspended')->count(),
-            'pendingAssistants' => ParcelHandlingAssistant::where('status', 'pending')->count(),
-        ]);
-    }
+    // Paginated assistants for the table
+    $assistants = (clone $query)
+        ->when($this->statusFilter, function ($query) {
+            $query->where('status', $this->statusFilter);
+        })
+        ->orderBy($this->sortField, $this->sortDirection)
+        ->paginate(15);
+
+    // Counts based on the same base query (without status filter)
+    $totalAssistants = (clone $query)->count();
+    $activeAssistants = (clone $query)->where('status', 'active')->count();
+    $inactiveAssistants = (clone $query)->where('status', 'inactive')->count();
+    $suspendedAssistants = (clone $query)->where('status', 'inactive')->count();
+    $pendingAssistants = (clone $query)->where('status', 'pending')->count();
+
+    return view('livewire.partners.parcel-handling-assistants.parcel-handling-assistants', [
+        'assistants' => $assistants,
+        'stations' => PickUpAndDropOffPoint::all(),
+        'statuses' => [
+            '' => 'All Status',
+            'active' => 'Active',
+            'inactive' => 'Inactive',
+            'suspended' => 'Suspended',
+            'pending' => 'Pending'
+        ],
+        'totalAssistants' => $totalAssistants,
+        'activeAssistants' => $activeAssistants,
+        'inactiveAssistants' => $inactiveAssistants,
+        'suspendedAssistants' => $suspendedAssistants,
+        'pendingAssistants' => $pendingAssistants,
+    ]);
+}
+
+
 
     public function sortBy($field)
     {
