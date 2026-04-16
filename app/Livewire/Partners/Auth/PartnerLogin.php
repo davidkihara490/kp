@@ -100,7 +100,7 @@ class PartnerLogin extends Component
 
         if ($this->isPhoneNumber($identifier)) {
             return [
-                'phone' => $this->normalizePhoneNumber($identifier),
+                'phone_number' => $this->normalizePhoneNumber($identifier),
                 'password' => $this->password,
             ];
         }

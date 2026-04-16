@@ -39,4 +39,22 @@ class PickUpAndDropOffPoint extends Model
     {
         return $this->belongsTo(Town::class);
     }
+    public function senderParcels()
+    {
+        return $this->hasMany(Parcel::class, 'sender_pick_up_drop_off_point_id');
+    }
+    public function deliveryParcels()
+    {
+        return $this->hasMany(Parcel::class, 'delivery_pick_up_drop_off_point_id');
+    }
+    public function getAllParcelsAttribute()
+    {
+        return $this->senderParcels->merge($this->deliveryParcels);
+    }
+
+    public function parcels()
+    {
+        return $this->hasMany(Parcel::class, 'sender_pick_up_drop_off_point_id')
+            ->orWhere('delivery_pick_up_drop_off_point_id', $this->id);
+    }
 }
