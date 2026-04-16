@@ -15,7 +15,7 @@ class Dashboard extends Component
             ->orWhere('current_status', Parcel::STATUS_ASSIGNED)
             ->orWhere('current_status', Parcel::STATUS_WAREHOUSE)
             ->count();
-        $revenueGenerated = 245000;
+        $revenueGenerated = 0;
         $parcelsInTransit = Parcel::where('current_status', Parcel::STATUS_IN_TRANSIT)->count();
 
 
