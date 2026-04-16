@@ -13,8 +13,6 @@ class PricingSeeder extends Seeder
 {
     public function run(): void
     {
-
-
         $categories = [
             ["item" => "Documents/Envelopes 0 - 1 kg", "min_weight" => 0, "max_weight" => 1, "source_zone" => "Zone A - Nairobi Region", "destination_zone" => "Zone A - Nairobi Region", "cost" => 350],
             ["item" => "Documents/Envelopes 0 - 1 kg", "min_weight" => 0, "max_weight" => 1, "source_zone" => "Zone A - Nairobi Region", "destination_zone" => "Zone B - Coastal Region", "cost" => 400],
@@ -433,35 +431,45 @@ class PricingSeeder extends Seeder
             }
 
             //Get Item Id
-            $itemId = Item::where('name', $item)->first()->value('id');
+            $item = Item::where('name', $item)->first();
+            $itemId = $item->id;
 
             // 2. Get zone IDs (trim to avoid spacing issues)
-            $sourceZone = $row['source_zone'];
-            $destinationZone = $row['destination_zone'];
+            $sourceZone = Zone::where('name', $row['source_zone'])->first();
+            $destinationZone = Zone::where('name', $row['destination_zone'])->first();
 
-            $sourceZoneId = Zone::where('name', $sourceZone)->first()->value('id');
-            $destinationZoneId = Zone::where('name', $destinationZone)->first()->value('id');
+            $sourceZoneId = $sourceZone->id;
+            $destinationZoneId = $destinationZone->id;
 
 
             if (!$sourceZoneId || !$destinationZoneId) {
                 continue; // or log missing zones
             }
 
-
             // 3. Create or fetch pricing (avoid duplicates)
-            $pricing = Pricing::firstOrCreate([
-                'item_id' => $itemId,
-                'min_weight' => $row['min_weight'],
-                'max_weight' => $row['max_weight'],
-            ]);
+
+            $pricing = Pricing::updateOrCreate(
+                [ // search
+                    'item_id' => $itemId,
+                    'min_weight' => $row['min_weight'],
+                    'max_weight' => $row['max_weight'],
+                ],
+                [ // values to update/create
+                    'item_id' => $itemId, // optional but safe
+                ]
+            );
 
             // 4. Insert pricing_items
-            PricingItem::create([
-                'pricing_id' => $pricing->id,
-                'source_zone_id' => $sourceZoneId,
-                'destination_zone_id' => $destinationZoneId,
-                'cost' => $row['cost'],
-            ]);
+            PricingItem::updateOrCreate(
+                [
+                    'pricing_id' => $pricing->id,
+                    'source_zone_id' => $sourceZoneId,
+                    'destination_zone_id' => $destinationZoneId,
+                ],
+                [
+                    'cost' => $row['cost'],
+                ]
+            );
         }
     }
 }
