@@ -175,7 +175,6 @@ class Parcels extends Component
             })
             ->orderBy($this->sortField, $this->sortDirection);
     }
-
     public function sortBy($field)
     {
         if ($this->sortField === $field) {
@@ -222,7 +221,6 @@ class Parcels extends Component
             session()->flash('success', "Parcel {$parcelId} deleted successfully.");
         }
     }
-
     public function openBulkActionModal($action)
     {
         if (count($this->selectedParcels) === 0) {

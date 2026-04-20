@@ -53,6 +53,14 @@ class SMSService
         );
     }
 
+    public function sendRecipientParcelCreatedSMS(string $phoneNumber, string $recipientName, string $parcelId)
+    {
+        return $this->sendMessage(
+            $phoneNumber,
+            "Hi {$recipientName}! We have received your parcel. You will be notified when the parcel arrives at the pick-up point. You can also track on karibuparcels.com with code {$parcelId}."
+        );
+    }
+
     public function sendDriverAssignmentSMS(string $phoneNumber, string $driverName, string $code)
     {
         return $this->sendMessage(

@@ -5,9 +5,6 @@ namespace App\Livewire\Partners\Parcels;
 use App\Livewire\Admin\Settings\Pricing\Pricings;
 use App\Mail\NewParcel;
 use App\Models\Parcel;
-use App\Models\Driver;
-use App\Models\TransportPartner;
-use App\Models\PickUpDropOffPartner;
 use App\Models\County;
 use App\Models\SubCounty;
 use App\Models\Town;
@@ -24,8 +21,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
-use Livewire\WithEvents;
-use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class CreateParcel extends Component
 {
@@ -183,18 +178,11 @@ class CreateParcel extends Component
         ];
     }
 
-    public function mount(SMSService $smsService)
+    public function mount()
     {
-
-        $this->smsService = $smsService;
-
-        // $this->smsService->sendBulkSMS(
-
-        // );
 
         $modelClass = current_user_type();
         $user = $modelClass ? $modelClass::find(Auth::guard('partner')->user()->id) : null;
-
 
         $this->parcel_number = Parcel::generateParcelNumber();
         $this->loadOptions();
@@ -208,20 +196,9 @@ class CreateParcel extends Component
             $this->calculatePriceByTypeAndWeight();
         }
 
-
-
         $pha = Auth::guard('partner')->user()->parcelHandlingAssistant;
 
         $loggedInUser = Auth::guard('partner')->user();
-
-        // dd($loggedInUser);
-        // if($loggedInUser->i_am_assistant){
-
-        // }
-
-        // $this->sender_pick_up_drop_off_point_id = $pha->assignment()?->pick_up_and_drop_off_point_id ?? '';
-
-        // $this->sender_town_id = $pha->assignment()?->pickUpAndDropOffPoint?->town?->id ?? '';
     }
 
     public function loadOptions()
@@ -552,7 +529,7 @@ class CreateParcel extends Component
         }
     }
 
-    public function saveParcel()
+    public function saveParcel(SMSService $smsService)
     {
         try {
             // Validate all steps
@@ -599,7 +576,7 @@ class CreateParcel extends Component
 
             // Create parcel
             $parcelData = [
-                'parcel_number' => $this->parcel_number,
+                'parcel_id' => $this->parcel_number,
                 'customer_id' => $this->customer_id,
                 'sender_id' => $this->sender_id,
                 'receiver_id' => $this->receiver_id,
@@ -662,16 +639,10 @@ class CreateParcel extends Component
                 // System fields
                 'created_by' => Auth::guard('partner')->user()->id,
 
-
-
                 'transporter_id' => NULL,
                 'transporter_type' => NULL,
                 'creator_id' => Auth::guard('partner')->user()->id,
                 'creator_type' => current_user_type(),
-
-
-
-
             ];
 
             $parcel = Parcel::create($parcelData);
@@ -694,40 +665,44 @@ class CreateParcel extends Component
             DB::commit();
 
             try {
-                Log::info('Created Parcel. Sending notification to admin and recipient');
-                //Send Email to admin
-                $admins = User::where('user_type', 'superadmin')->get();
+                Log::info('Created Parcel. Sending notification to admin');
 
+                $admins = User::permission([
+                    'parcel.view',
+                    'parcel.update',
+                    'parcel.delete'
+                ])->get();
                 foreach ($admins as $admin) {
                     Mail::to($admin->email)->send(new NewParcel($parcel));
                 }
-
-                //Send SMS to recipient
-                $phone = $this->receiver_phone;
-
-                dispatch(function () use ($phone) {
-                    app(SMSService::class)
-                        ->notifyRecipientParcelDropOff($phone);
-                });
-
-                Log::info('Success sending notification to admin and recipient');
-            } catch (\Exception $e) {
-
-                Log::info('Created Parcel. Sending notification to admin and recipient');
-                Log::info('Error send notification: ' . $e->getMessage());
-                Log::info('Error sending notification to admin and recipient');
+            } catch (\Throwable $th) {
+                Log::error('Failed to send email to admins after parcel is created: ', [
+                    'error' => $th->getMessage(),
+                    'stack' => $th->getTraceAsString(),
+                ]);
             }
 
-
+            try {
+                Log::info('Sending SMS to Parcel Recipient Start');
+                $smsService->sendRecipientParcelCreatedSMS(
+                    formatKenyaNumber($parcel->receiver_phone),
+                    $parcel->receiver_name,
+                    $parcel->parcel_id,
+                );
+                Log::info('Sending SMS to Parcel Recipient End');
+            } catch (\Throwable $th) {
+                Log::error('Failed to send SMS to receipient: ', [
+                    'error' => $th->getMessage(),
+                    'stack' => $th->getTraceAsString(),
+                ]);
+            }
 
             return redirect()->route('partners.parcels.view', $parcel->id);
         } catch (\Illuminate\Validation\ValidationException $e) {
             dd($e->getMessage());
-
             DB::rollBack();
             throw $e;
         } catch (\Exception $e) {
-
             dd($e->getMessage());
             DB::rollBack();
             Log::error('Parcel creation error: ' . $e->getMessage());

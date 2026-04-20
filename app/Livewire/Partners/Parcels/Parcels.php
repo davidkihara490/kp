@@ -69,6 +69,8 @@ class Parcels extends Component
     public $estimatedDeliveryDate;
     public $assignmentNotes = '';
 
+    public $pointsCount = 0;
+
     protected $listeners = [
         'refreshParcels' => '$refresh',
         'driverAssigned' => '$refresh',
@@ -99,6 +101,8 @@ class Parcels extends Component
         $this->estimatedDeliveryDate = now()->addDay()->format('Y-m-d');
         $this->loggedDriver = Auth::guard('partner')->user()->driver;
         $this->loggedUser = Auth::guard('partner')->user();
+
+        $this->pointsCount = $this->partner->pickUpAndDropOffPoints()->count();
     }
 
     public function showAssignDriver($parcelId)

@@ -155,7 +155,6 @@ class CreateDriver extends Component
 
             DB::commit();
 
-
             try {
                 SendWelcomeEmail::dispatch($user, true, $this->password);
             } catch (\Throwable $th) {

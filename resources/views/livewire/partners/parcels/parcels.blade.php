@@ -12,7 +12,7 @@
                         <p class="page-subtitle mb-0">Manage and track all parcels in one place</p>
                     </div>
 
-                    @if($partnerType == "pickup-dropoff" || $loggedUser->i_am_responsible && $loggedUser->i_am_assistant )
+                    @if($partnerType == "pickup-dropoff" && $pointsCount > 0 )
                     <div class="header-actions">
                         <a href="{{ route('partners.parcels.create') }}" class="btn btn-primary btn-modern">
                             <i class="bi bi-plus-circle me-2"></i>
@@ -634,11 +634,11 @@
                                         </div>
                                         <div class="driver-select-radio">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="radio" 
-                                                       name="driverRadio" 
-                                                       value="{{ $driver->id }}"
-                                                       {{ $selectedDriverId == $driver->id ? 'checked' : '' }}
-                                                       wire:click="selectDriver({{ $driver->id }})">
+                                                <input class="form-check-input" type="radio"
+                                                    name="driverRadio"
+                                                    value="{{ $driver->id }}"
+                                                    {{ $selectedDriverId == $driver->id ? 'checked' : '' }}
+                                                    wire:click="selectDriver({{ $driver->id }})">
                                             </div>
                                         </div>
                                     </div>
@@ -665,9 +665,9 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="form-check mb-3">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   wire:model="notifyDriver" 
-                                                   id="notifyDriver">
+                                            <input class="form-check-input" type="checkbox"
+                                                wire:model="notifyDriver"
+                                                id="notifyDriver">
                                             <label class="form-check-label" for="notifyDriver">
                                                 <i class="bi bi-bell me-1"></i>
                                                 Send notification to driver
@@ -679,9 +679,9 @@
                                                 <i class="bi bi-calendar me-1"></i>
                                                 Estimated Delivery Date
                                             </label>
-                                            <input type="date" class="form-control" 
-                                                   wire:model="estimatedDeliveryDate"
-                                                   min="{{ now()->format('Y-m-d') }}">
+                                            <input type="date" class="form-control"
+                                                wire:model="estimatedDeliveryDate"
+                                                min="{{ now()->format('Y-m-d') }}">
                                         </div>
 
                                         <div class="mb-3">
@@ -702,10 +702,10 @@
                                 <i class="bi bi-x me-2"></i>
                                 Cancel
                             </button>
-                            <button type="button" class="btn btn-primary" 
-                                    wire:click="assignDriver" 
-                                    wire:loading.attr="disabled"
-                                    {{ !$selectedDriverId ? 'disabled' : '' }}>
+                            <button type="button" class="btn btn-primary"
+                                wire:click="assignDriver"
+                                wire:loading.attr="disabled"
+                                {{ !$selectedDriverId ? 'disabled' : '' }}>
                                 <span wire:loading.remove wire:target="assignDriver">
                                     <i class="bi bi-check-circle me-2"></i>
                                     Assign Driver
@@ -1540,7 +1540,7 @@
             const modalElement = document.getElementById('assignDriverModal');
             if (modalElement && !assignDriverModal) {
                 assignDriverModal = new bootstrap.Modal(modalElement);
-                
+
                 // Handle modal hidden event
                 modalElement.addEventListener('hidden.bs.modal', () => {
                     Livewire.dispatch('modalClosed');
@@ -1573,12 +1573,12 @@
             initModal();
         });
     });
-</script><script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Bootstrap available:', typeof bootstrap !== 'undefined');
-    if (typeof bootstrap === 'undefined') {
-        console.error('Bootstrap JS not loaded!');
-    }
-});
 </script>
-
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Bootstrap available:', typeof bootstrap !== 'undefined');
+        if (typeof bootstrap === 'undefined') {
+            console.error('Bootstrap JS not loaded!');
+        }
+    });
+</script>
