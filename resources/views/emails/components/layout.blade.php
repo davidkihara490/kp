@@ -496,7 +496,7 @@
             <p class="footer-text">
                 <strong>Karibu Parcels</strong><br>
                 Nairobi, Kenya | +254 700 130 759<br>
-                <a href="mailto:admin@karibuparcels.com">admin@karibuparcels.com</a>
+                <a href="mailto:support@karibuparcels.com">support@karibuparcels.com</a>
             </p>
 
             <!-- Copyright -->
