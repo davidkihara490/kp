@@ -42,7 +42,7 @@ class SMSService
     {
         return $this->sendMessage(
             $phoneNumber,
-            "Hi {$name}! You have been registered as a parcel handling assistant at Karibu Parcels. Check your email for further instructions."
+            "Hi {$name}! You have been registered as a parcel handling assistant at Karibu Parcels. Check the link on youe email for further instructions."
         );
     }
     public function sendDriverWelcomeSMS(string $phoneNumber, string $driverName)

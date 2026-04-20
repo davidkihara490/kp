@@ -6,9 +6,11 @@ use App\Jobs\SendWelcomeEmail;
 use App\Models\Driver;
 use App\Models\DriverEmployment;
 use App\Models\User;
+use App\Services\SMSService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Spatie\Permission\Models\Role;
 
@@ -100,7 +102,7 @@ class CreateDriver extends Component
         $this->password_confirmation = $this->password;
     }
 
-    public function submit()
+    public function submit(SMSService $smsService)
     {
         $this->validate();
 
@@ -122,11 +124,6 @@ class CreateDriver extends Component
                 'privacy_policy' => true,
                 'status' => 'active',
             ]);
-
-            // if ($this->role_id) {
-            //     $this->role = Role::findOrFail($this->role_id);
-            //     $user->assignRole($this->role->name);
-            // }
 
             // Create driver
             $driver = Driver::create([
@@ -156,12 +153,32 @@ class CreateDriver extends Component
 
             // TODO::Handle documents
 
-            // TODO::send driver the welcome email
-            // TODO::send driver the welcome SMS
-
-            SendWelcomeEmail::dispatch($user, true, $this->password);
-
             DB::commit();
+
+
+            try {
+                SendWelcomeEmail::dispatch($user, true, $this->password);
+            } catch (\Throwable $th) {
+                Log::error('Failed to dispatch welcome email job for user ID: ' . $user->id, [
+                    'error' => $th->getMessage(),
+                    'stack' => $th->getTraceAsString(),
+                ]);
+            }
+
+            try {
+                Log::info('Sending SMS to Driver Start');
+                $smsService->sendDriverWelcomeSMS(
+                    formatKenyaNumber($this->phone_number),
+                    trim($this->first_name . ' ' . $this->last_name)
+                );
+                Log::info('Sending SMS to Driver End');
+            } catch (\Throwable $th) {
+                Log::error('Failed to dispatch welcome SMS for user ID: ' . $user->id, [
+                    'error' => $th->getMessage(),
+                    'stack' => $th->getTraceAsString(),
+                ]);
+            }
+
 
             return redirect()->route('partners.drivers.view', $driver->id)->with('success', 'Driver created successfully!');
         } catch (\Exception $e) {
