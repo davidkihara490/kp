@@ -28,8 +28,6 @@ class CreateParcelHandlingAssistant extends Component
     public $role_id;
     public $roles = [];
     public $role;
-    protected ?SMSService $smsService = null;
-
     protected function rules()
     {
         return [
@@ -76,9 +74,8 @@ class CreateParcelHandlingAssistant extends Component
         'confirm_password.same' => 'Passwords do not match.',
     ];
 
-    public function mount(SMSService $smsService)
+    public function mount()
     {
-        $this->smsService = $smsService;
         // Generate a random password
         $this->password = $this->generateRandomPassword();
         $this->confirm_password = $this->password;
@@ -97,9 +94,9 @@ class CreateParcelHandlingAssistant extends Component
         $this->confirm_password = $this->password;
     }
 
-    public function save()
+    public function save(SMSService $smsService)
     {
-        $validated = $this->validate();
+        $this->validate();
 
         try {
             DB::beginTransaction();
@@ -129,7 +126,6 @@ class CreateParcelHandlingAssistant extends Component
                 'partner_id' => $partner = Auth::guard('partner')->user()->partner->id,
             ]);
 
-
             DB::commit();
 
             try {
@@ -142,10 +138,12 @@ class CreateParcelHandlingAssistant extends Component
             }
 
             try {
-                $this->smsService?->sendParcelHandlingAssistantWelcomeSMS(
+                Log::info('Sending SMS to PHA Start');
+                $smsService->sendParcelHandlingAssistantWelcomeSMS(
                     formatKenyaNumber($this->phone_number),
                     trim($this->first_name . ' ' . $this->last_name)
                 );
+                Log::info('Sending SMS to PHA End');
             } catch (\Throwable $th) {
                 Log::error('Failed to dispatch welcome SMS for user ID: ' . $user->id, [
                     'error' => $th->getMessage(),

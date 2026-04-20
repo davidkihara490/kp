@@ -95,7 +95,7 @@
                                     <div class="mb-3">
                                         <label for="phone_number" class="form-label">
                                             <i class="bi bi-telephone me-2"></i>
-                                            Phone Number <span class="text-danger">*</span>
+                                            Phone Number <span class="text-danger">*</span> <i>Use +254</i>
                                         </label>
                                         <input type="tel" class="form-control @error('phone_number') is-invalid @enderror"
                                             id="phone_number" wire:model="phone_number"
