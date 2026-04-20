@@ -147,7 +147,7 @@
     <h3 style="color: #28a745;">Need Help?</h3>
     <p style="font-size: 14px;">
         <i class="bi bi-headset"></i> Contact our support team:<br>
-        📞 +254 700 000 000 | 📧 support@karibuparcels.com
+        📞 +254 700 130 759 | 📧 support@karibuparcels.com
     </p>
     <p style="font-size: 13px; color: #999;">
         We're available Mon-Sat, 8:00 AM - 8:00 PM

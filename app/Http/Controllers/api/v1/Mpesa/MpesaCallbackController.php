@@ -27,9 +27,8 @@ class MpesaCallbackController extends Controller
 
         // Check if stkCallback exists
         if (
-            !isset($callbackData['callback']) ||
-            !isset($callbackData['callback']['Body']) ||
-            !isset($callbackData['callback']['Body']['stkCallback'])
+            !isset($callbackData['Body']) ||
+            !isset($callbackData['Body']['stkCallback'])
         ) {
             Log::error('Invalid callback structure', ['payload' => $callbackData]);
             return response()->json([

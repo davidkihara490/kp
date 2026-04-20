@@ -277,9 +277,8 @@ class MpesaService
         try {
             // Validate nested keys safely
             if (
-                !isset($callbackData['callback']) ||
-                !isset($callbackData['callback']['Body']) ||
-                !isset($callbackData['callback']['Body']['stkCallback'])
+                !isset($callbackData['Body']) ||
+                !isset($callbackData['Body']['stkCallback'])
             ) {
                 Log::error('Invalid callback structure - missing stkCallback', ['payload' => $callbackData]);
                 DB::rollBack();
@@ -287,7 +286,7 @@ class MpesaService
             }
 
             // Step 1: Extract the stkCallback safely
-            $stkCallback = $callbackData['callback']['Body']['stkCallback'];
+            $stkCallback = $callbackData['Body']['stkCallback'];
 
             // Step 2: Find the transaction
             $checkoutRequestId = $stkCallback['CheckoutRequestID'] ?? null;
