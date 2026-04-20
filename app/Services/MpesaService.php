@@ -288,7 +288,7 @@ class MpesaService
 
             // Step 1: Extract the stkCallback safely
             $stkCallback = $callbackData['callback']['Body']['stkCallback'];
-            
+
             // Step 2: Find the transaction
             $checkoutRequestId = $stkCallback['CheckoutRequestID'] ?? null;
 
@@ -305,6 +305,13 @@ class MpesaService
                 DB::rollBack();
                 return false;
             }
+
+            Log::info("--------------------------------------------------------------------------------");
+            Log::info("CallBack Data and Transaction", [
+                'transaction' => $transaction,
+                'callbackData' => $stkCallback,
+            ]);
+            Log::info("--------------------------------------------------------------------------------");
 
             // Step 3: Extract callback details
             $resultCode = $stkCallback['ResultCode'] ?? null;

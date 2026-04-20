@@ -63,9 +63,7 @@ class ViewParcel extends Component
     public $confirm_terms = false;
     public $pickup_code = '';
     public $pickupVerificationError = '';
-
     protected $mpesaService;
-
     public function boot(MpesaService $mpesaService)
     {
         $this->mpesaService = $mpesaService;
