@@ -12,7 +12,7 @@
                         </div>
                         <div>
                             <h3 class="section-title mb-1">
-                                Parcel #{{ $parcel->parcel_number }}
+                                Parcel #{{ $parcel->parcel_id }}
                                 <small class="text-muted fs-6">({{ ucfirst($parcel->parcel_type) }})</small>
                             </h3>
                             <p class="section-subtitle mb-2">

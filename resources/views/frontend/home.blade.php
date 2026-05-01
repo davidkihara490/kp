@@ -78,130 +78,130 @@
                 <p class="lead">You can now send and receive your parcels from any town, thanks to our unmatched technology, data, and reliable network</p>
             </div>
 
-<div class="compact-booking-engine animate-fade-up" style="animation-delay: 0.2s;">
-    <!-- Booking Tabs -->
-    <ul class="nav nav-tabs booking-tabs" id="bookingTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="town-tab" data-bs-toggle="tab" data-bs-target="#town" type="button" role="tab" aria-controls="town" aria-selected="true">
-                <i class="bi bi-building me-2"></i> Town to Town
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="international-tab" data-bs-toggle="tab" data-bs-target="#international" type="button" role="tab" aria-controls="international" aria-selected="false">
-                <i class="bi bi-globe me-2"></i> Point-to-Point
-            </button>
-        </li>
-    </ul>
+            <div class="compact-booking-engine animate-fade-up" style="animation-delay: 0.2s;">
+                <!-- Booking Tabs -->
+                <ul class="nav nav-tabs booking-tabs" id="bookingTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="town-tab" data-bs-toggle="tab" data-bs-target="#town" type="button" role="tab" aria-controls="town" aria-selected="true">
+                            <i class="bi bi-building me-2"></i> Town to Town
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="international-tab" data-bs-toggle="tab" data-bs-target="#international" type="button" role="tab" aria-controls="international" aria-selected="false">
+                            <i class="bi bi-globe me-2"></i> Point-to-Point
+                        </button>
+                    </li>
+                </ul>
 
-    <!-- Tab Content -->
-    <div class="tab-content">
-        <!-- Town to Town Tab -->
-        <div class="tab-pane fade show active" id="town" role="tabpanel" aria-labelledby="town-tab">
-            <div class="booking-header">
-                <h6 class="text-muted mb-3">Get an instant quote for shipments between Kenyan towns</h6>
-            </div>
-            <form id="townQuoteForm">
-                <div class="booking-form-grid">
-                    <!-- From Town with Search -->
-                    <div class="booking-field">
-                        <label><i class="bi bi-geo-alt-fill me-1 text-primary"></i> From Town</label>
-                        <div class="searchable-select-container">
-                            <div class="searchable-select" id="fromTownSelect">
-                                <div class="searchable-select-display" data-target="fromTown">
-                                    <span class="selected-text" style="color: black;">Select pickup town</span>
-                                    <i class="bi bi-chevron-down"></i>
-                                </div>
-                                <div class="searchable-select-dropdown" id="fromTownDropdown">
-                                    <div class="search-box">
-                                        <i class="bi bi-search"></i>
-                                        <input type="text" class="search-input" placeholder="Search towns..." id="fromTownSearch">
-                                    </div>
-                                    <div class="options-list" id="fromTownOptions">
-                                        @foreach($towns as $town)
-                                        <div class="option-item" data-value="{{ $town->name }}">
-                                            <i class="bi bi-building me-2"></i>
-                                            <span class="town-name">{{ $town->name }}</span>
-                                            <small class="town-county text-muted">{{ $town->subCounty?->county?->name ?? 'Kenya' }}</small>
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <!-- Town to Town Tab -->
+                    <div class="tab-pane fade show active" id="town" role="tabpanel" aria-labelledby="town-tab">
+                        <div class="booking-header">
+                            <h6 class="text-muted mb-3">Get an instant quote for shipments between Kenyan towns</h6>
+                        </div>
+                        <form id="townQuoteForm">
+                            <div class="booking-form-grid">
+                                <!-- From Town with Search -->
+                                <div class="booking-field">
+                                    <label><i class="bi bi-geo-alt-fill me-1 text-primary"></i> From Town</label>
+                                    <div class="searchable-select-container">
+                                        <div class="searchable-select" id="fromTownSelect">
+                                            <div class="searchable-select-display" data-target="fromTown">
+                                                <span class="selected-text" style="color: black;">Select pickup town</span>
+                                                <i class="bi bi-chevron-down"></i>
+                                            </div>
+                                            <div class="searchable-select-dropdown" id="fromTownDropdown">
+                                                <div class="search-box">
+                                                    <i class="bi bi-search"></i>
+                                                    <input type="text" class="search-input" placeholder="Search towns..." id="fromTownSearch">
+                                                </div>
+                                                <div class="options-list" id="fromTownOptions">
+                                                    @foreach($towns as $town)
+                                                    <div class="option-item" data-value="{{ $town->id }}">
+                                                        <i class="bi bi-building me-2"></i>
+                                                        <span class="town-name">{{ $town->name }}</span>
+                                                        <small class="town-county text-muted">{{ $town->subCounty?->county?->name ?? 'Kenya' }}</small>
+                                                    </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
                                         </div>
-                                        @endforeach
+                                        <input type="hidden" id="fromTown" name="fromTown" required>
+                                    </div>
+                                </div>
+
+                                <!-- To Town with Search -->
+                                <div class="booking-field">
+                                    <label><i class="bi bi-geo-alt-fill me-1 text-danger"></i> To Town</label>
+                                    <div class="searchable-select-container">
+                                        <div class="searchable-select" id="toTownSelect">
+                                            <div class="searchable-select-display" data-target="toTown">
+                                                <span class="selected-text" style="color: black;">Select delivery town</span>
+                                                <i class="bi bi-chevron-down"></i>
+                                            </div>
+                                            <div class="searchable-select-dropdown" id="toTownDropdown">
+                                                <div class="search-box">
+                                                    <i class="bi bi-search"></i>
+                                                    <input type="text" class="search-input" placeholder="Search towns..." id="toTownSearch">
+                                                </div>
+                                                <div class="options-list" id="toTownOptions">
+                                                    @foreach($towns as $town)
+                                                    <div class="option-item" data-value="{{ $town->id }}">
+                                                        <i class="bi bi-building me-2"></i>
+                                                        <span class="town-name">{{ $town->name }}</span>
+                                                        <small class="town-county text-muted">{{ $town->subCounty?->county?->name ?? 'Kenya' }}</small>
+                                                    </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="toTown" name="toTown" required>
+                                    </div>
+                                </div>
+
+                                <!-- Weight -->
+                                <div class="booking-field">
+                                    <label><i class="bi bi-weight me-1"></i> Weight (kg)</label>
+                                    <div class="weight-input-group options-list">
+                                        <input type="number" class="form-control compact-select" id="weight" placeholder="0.0" min="0.1" step="0.1" required>
+                                        <span class="weight-unit">kg</span>
+                                    </div>
+                                </div>
+
+                                <!-- Parcel Type -->
+                                <div class="booking-field">
+                                    <label><i class="bi bi-box me-1"></i> Parcel Type</label>
+                                    <div class="parcel-type-selector">
+                                        <select class="form-select compact-select" id="parcelType" required>
+                                            @foreach($itemCategories as $itemCategory)
+                                            <option value="{{ $itemCategory->id }}">{{ $itemCategory->name }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
                             </div>
-                            <input type="hidden" id="fromTown" name="fromTown" required>
-                        </div>
-                    </div>
 
-                    <!-- To Town with Search -->
-                    <div class="booking-field">
-                        <label><i class="bi bi-geo-alt-fill me-1 text-danger"></i> To Town</label>
-                        <div class="searchable-select-container">
-                            <div class="searchable-select" id="toTownSelect">
-                                <div class="searchable-select-display" data-target="toTown">
-                                    <span class="selected-text" style="color: black;">Select delivery town</span>
-                                    <i class="bi bi-chevron-down"></i>
-                                </div>
-                                <div class="searchable-select-dropdown" id="toTownDropdown">
-                                    <div class="search-box">
-                                        <i class="bi bi-search"></i>
-                                        <input type="text" class="search-input" placeholder="Search towns..." id="toTownSearch">
-                                    </div>
-                                    <div class="options-list" id="toTownOptions">
-                                        @foreach($towns as $town)
-                                        <div class="option-item" data-value="{{ $town->name }}">
-                                            <i class="bi bi-building me-2"></i>
-                                            <span class="town-name">{{ $town->name }}</span>
-                                            <small class="town-county text-muted">{{ $town->subCounty?->county?->name ?? 'Kenya' }}</small>
-                                        </div>
-                                        @endforeach
-                                    </div>
-                                </div>
+                            <div class="booking-action">
+                                <button type="submit" class="btn btn-primary quote-btn">
+                                    <i class="bi bi-calculator me-2"></i> Get Quote
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary clear-btn" id="clearForm">
+                                    <i class="bi bi-arrow-clockwise me-2"></i> Clear
+                                </button>
                             </div>
-                            <input type="hidden" id="toTown" name="toTown" required>
-                        </div>
+                        </form>
+                        <div id="quoteResult" class="compact-quote-result"></div>
                     </div>
 
-                    <!-- Weight -->
-                    <div class="booking-field">
-                        <label><i class="bi bi-weight me-1"></i> Weight (kg)</label>
-                        <div class="weight-input-group options-list">
-                            <input type="number" class="form-control compact-select" id="weight" placeholder="0.0" min="0.1" step="0.1" required>
-                            <span class="weight-unit">kg</span>
-                        </div>
-                    </div>
-
-                    <!-- Parcel Type -->
-                    <div class="booking-field">
-                        <label><i class="bi bi-box me-1"></i> Parcel Type</label>
-                        <div class="parcel-type-selector">
-                            <select class="form-select compact-select" id="parcelType" required>
-                                @foreach($itemCategories as $itemCategory)
-                                <option value="{{ $itemCategory->id }}">{{ $itemCategory->name }}</option>
-                                @endforeach
-                            </select>
+                    <!-- Point-to-Point Tab -->
+                    <div class="tab-pane fade" id="international" role="tabpanel" aria-labelledby="international-tab">
+                        <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
+                            <h4 class="text-muted text-center">You will soon be able to book your parcels and packages from this internet booking Engine. Once you book, just relax while a courier is dispatched to drop off your parcels seamlessly.</h4>
                         </div>
                     </div>
                 </div>
-
-                <div class="booking-action">
-                    <button type="submit" class="btn btn-primary quote-btn">
-                        <i class="bi bi-calculator me-2"></i> Get Quote
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary clear-btn" id="clearForm">
-                        <i class="bi bi-arrow-clockwise me-2"></i> Clear
-                    </button>
-                </div>
-            </form>
-            <div id="quoteResult" class="compact-quote-result"></div>
-        </div>
-
-        <!-- Point-to-Point Tab -->
-        <div class="tab-pane fade" id="international" role="tabpanel" aria-labelledby="international-tab">
-            <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
-                <h4 class="text-muted text-center">You will soon be able to book your parcels and packages from this internet booking Engine. Once you book, just relax while a courier is dispatched to drop off your parcels seamlessly.</h4>
             </div>
-        </div>
-    </div>
-</div>
         </div>
     </section>
 
@@ -867,19 +867,10 @@
 
     <script>
         $(document).ready(function() {
-            // Town to town quote calculation
             initTownQuoteForm();
-
-            // Initialize tracking with phone + ID
             initTracking();
-
-            // Initialize FAQ
             initFAQ();
-
-            // Initialize contact form
             initContactForm();
-
-            // Smooth scroll
             $('a[href^="#"]').on('click', function(e) {
                 e.preventDefault();
 
@@ -903,41 +894,18 @@
                         return;
                     }
 
-                    // Show loading state
                     const submitBtn = $(this).find('button[type="submit"]');
                     const originalText = submitBtn.html();
                     submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Calculating...');
 
-                    // Get form data
                     const formData = {
                         from_town_id: $('#fromTown').val(),
                         to_town_id: $('#toTown').val(),
                         weight: $('#weight').val(),
-                        item_description: $('#itemDescription').val(),
+                        item_category: $('#parcelType').val(),
                         _token: $('meta[name="csrf-token"]').attr('content')
                     };
 
-                    // For demo purposes, simulate a response
-                    setTimeout(function() {
-                        const mockResponse = {
-                            quote_id: 'Q' + Math.floor(Math.random() * 10000),
-                            weight: $('#weight').val(),
-                            item_description: $('#itemDescription').val() || 'Parcel',
-                            base_price: 300,
-                            weight_charge: $('#weight').val() <= 1 ? 0 : ($('#weight').val() <= 5 ? 200 : ($('#weight').val() <= 10 ? 500 : 1000 + (Math.ceil($('#weight').val() - 10) * 50))),
-                            distance_charge: 500,
-                            tax_rate: 16,
-                            tax: 128,
-                            additional_charges: 0,
-                            total: Math.round((300 + ($('#weight').val() <= 1 ? 0 : ($('#weight').val() <= 5 ? 200 : ($('#weight').val() <= 10 ? 500 : 1000 + (Math.ceil($('#weight').val() - 10) * 50)))) + 500) * 1.16),
-                            estimated_delivery: '2-3 business days'
-                        };
-                        displayTownQuoteResult(mockResponse);
-                        submitBtn.prop('disabled', false).html(originalText);
-                    }, 1000);
-
-                    // Uncomment for actual AJAX
-                    /*
                     $.ajax({
                         url: '/api/calculate-quote',
                         method: 'POST',
@@ -958,7 +926,6 @@
                             submitBtn.prop('disabled', false).html(originalText);
                         }
                     });
-                    */
                 });
 
                 // Clear form
@@ -972,6 +939,7 @@
                 const fromTown = $('#fromTown').val();
                 const toTown = $('#toTown').val();
                 const weight = $('#weight').val();
+                const parcelType = $('#parcelType').val();
 
                 if (!fromTown) {
                     showAlert('Please select from town', 'warning');
@@ -982,6 +950,12 @@
                 if (!toTown) {
                     showAlert('Please select to town', 'warning');
                     $('#toTown').focus();
+                    return false;
+                }
+
+                if (!parcelType) {
+                    showAlert('Please select a parcel category', 'warning');
+                    $('#parcelType').focus();
                     return false;
                 }
 
@@ -1029,15 +1003,15 @@
                         
                         <div class="quote-body">
                             <div class="quote-route">
-                                <div class="route-point">
-                                    <i class="bi bi-geo-alt-fill text-primary"></i>
+                                <div class="route-point text-primary">
+                                    <i class="bi bi-geo-alt-fill"></i>
                                     <span>${fromTownText}</span>
                                 </div>
                                 <div class="route-arrow">
                                     <i class="bi bi-arrow-right"></i>
                                 </div>
-                                <div class="route-point">
-                                    <i class="bi bi-geo-alt-fill text-danger"></i>
+                                <div class="route-point text-danger">
+                                    <i class="bi bi-geo-alt-fill"></i>
                                     <span>${toTownText}</span>
                                 </div>
                             </div>
@@ -1048,28 +1022,12 @@
                                     <span class="detail-value">${quoteData.weight} kg</span>
                                 </div>
                                 <div class="detail-item">
-                                    <span class="detail-label">Est. Delivery</span>
-                                    <span class="detail-value">${quoteData.estimated_delivery}</span>
+                                    <span class="detail-label">Parcel Type</span>
+                                    <span class="detail-value">${quoteData.item_category}</span>
                                 </div>
                             </div>
                             
                             <div class="price-breakdown">
-                                <div class="breakdown-item">
-                                    <span>Base Delivery</span>
-                                    <span>KES ${quoteData.base_price}</span>
-                                </div>
-                                <div class="breakdown-item">
-                                    <span>Weight Charge</span>
-                                    <span>KES ${quoteData.weight_charge}</span>
-                                </div>
-                                <div class="breakdown-item">
-                                    <span>Distance Charge</span>
-                                    <span>KES ${quoteData.distance_charge}</span>
-                                </div>
-                                <div class="breakdown-item">
-                                    <span>VAT (${quoteData.tax_rate}%)</span>
-                                    <span>KES ${quoteData.tax}</span>
-                                </div>
                                 <div class="breakdown-item total">
                                     <span>Total Amount</span>
                                     <span class="total-amount">KES ${quoteData.total}</span>

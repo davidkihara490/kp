@@ -7,10 +7,13 @@ use App\Models\County;
 use App\Models\FAQ;
 use App\Models\Item;
 use App\Models\PickUpAndDropOffPoint;
+use App\Models\Pricing;
+use App\Models\PricingItem;
 use App\Models\PrivacyPolicy;
 use App\Models\SubCounty;
 use App\Models\TermsAndCondition;
 use App\Models\Town;
+use App\Models\ZoneCounty;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 
@@ -45,40 +48,40 @@ class HomeController extends Controller
             'from_town_id' => 'required|exists:towns,id',
             'to_town_id' => 'required|exists:towns,id|different:from_town_id',
             'weight' => 'required|numeric|min:0.1',
+            'item_category' => 'required|integer'
         ]);
 
-        // return response()->json($request->all());
-
         try {
-            // Get towns
-            $fromTown = Town::findOrFail($request->from_town_id);
-            $toTown = Town::findOrFail($request->to_town_id);
+        $item = Item::where('id', $request->item_category)->first();
 
-            // Calculate quote using your business logic
-            $quote = $this->pricingService->calculateQuote(
-                $fromTown,
-                $toTown,
-                $request->weight,
-                $request->item_description
-            );
+        $fromTown = Town::findOrFail($request->from_town_id);
+        $toTown = Town::findOrFail($request->to_town_id);
 
-            return response()->json([
-                'success' => true,
-                'quote_id' => uniqid(), // Generate or get from DB
-                'from_town' => $fromTown->name,
-                'to_town' => $toTown->name,
-                'weight' => $request->weight,
-                'item_description' => $request->item_description,
-                'base_price' => $quote['base_price'],
-                'weight_charge' => $quote['weight_charge'],
-                'distance_charge' => $quote['distance_charge'],
-                'tax_rate' => 16,
-                'tax' => $quote['tax'],
-                'additional_charges' => $quote['additional_charges'] ?? 0,
-                'total' => $quote['total'],
-                'estimated_delivery' => $quote['estimated_delivery'],
-                'breakdown' => $quote['breakdown'] ?? []
-            ]);
+        $fromZone = ZoneCounty::where('county_id', $fromTown->subCounty->county->id)->first();
+        $fromZoneId = $fromZone->zone_id;
+
+        $toZone = ZoneCounty::where('county_id', $toTown->subCounty->county->id)->first();
+        $toZoneId = $toZone->zone_id;
+
+        $pricing = Pricing::where('item_id', $item->id)
+            ->where('min_weight', '<=', $request->weight)
+            ->where('max_weight', '>=', $request->weight)
+            ->first();
+
+        $quote = PricingItem::where('pricing_id', $pricing->id)
+            ->where('source_zone_id', $fromZoneId)
+            ->where('destination_zone_id', $toZoneId)
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'quote_id' => uniqid(), // Generate or get from DB
+            'from_town' => $fromTown->name,
+            'to_town' => $toTown->name,
+            'weight' => $request->weight,
+            'item_category' => $item->name,
+            'total' => $quote->cost,
+        ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
