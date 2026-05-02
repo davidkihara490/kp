@@ -18,6 +18,8 @@ class PickUpAndDropOffPoint extends Model
         'building',
         'room_number',
         'address',
+        'latitude',
+        'longitude',
         'status',
         'contact_person',
         'contact_email',

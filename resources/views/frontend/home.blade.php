@@ -101,7 +101,7 @@
                             <h6 class="text-muted mb-3">Get an instant quote for shipments between Kenyan towns</h6>
                         </div>
                         <form id="townQuoteForm">
-                            <div class="booking-form-grid">
+                            <div class="booking-form-row">
                                 <!-- From Town with Search -->
                                 <div class="booking-field">
                                     <label><i class="bi bi-geo-alt-fill me-1 text-primary"></i> From Town</label>
@@ -159,16 +159,6 @@
                                         <input type="hidden" id="toTown" name="toTown" required>
                                     </div>
                                 </div>
-
-                                <!-- Weight -->
-                                <div class="booking-field">
-                                    <label><i class="bi bi-weight me-1"></i> Weight (kg)</label>
-                                    <div class="weight-input-group options-list">
-                                        <input type="number" class="form-control compact-select" id="weight" placeholder="0.0" min="0.1" step="0.1" required>
-                                        <span class="weight-unit">kg</span>
-                                    </div>
-                                </div>
-
                                 <!-- Parcel Type -->
                                 <div class="booking-field">
                                     <label><i class="bi bi-box me-1"></i> Parcel Type</label>
@@ -180,16 +170,18 @@
                                         </select>
                                     </div>
                                 </div>
+
+                                <div class="booking-action">
+                                    <button type="submit" class="btn btn-primary quote-btn">
+                                        <i class="bi bi-calculator me-2"></i> Get Quote
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary clear-btn" id="clearForm">
+                                        <i class="bi bi-arrow-clockwise me-2"></i> Clear
+                                    </button>
+                                </div>
                             </div>
 
-                            <div class="booking-action">
-                                <button type="submit" class="btn btn-primary quote-btn">
-                                    <i class="bi bi-calculator me-2"></i> Get Quote
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary clear-btn" id="clearForm">
-                                    <i class="bi bi-arrow-clockwise me-2"></i> Clear
-                                </button>
-                            </div>
+
                         </form>
                         <div id="quoteResult" class="compact-quote-result"></div>
                     </div>
@@ -901,7 +893,7 @@
                     const formData = {
                         from_town_id: $('#fromTown').val(),
                         to_town_id: $('#toTown').val(),
-                        weight: $('#weight').val(),
+                        // weight: $('#weight').val(),
                         item_category: $('#parcelType').val(),
                         _token: $('meta[name="csrf-token"]').attr('content')
                     };
@@ -938,7 +930,7 @@
             function validateTownForm() {
                 const fromTown = $('#fromTown').val();
                 const toTown = $('#toTown').val();
-                const weight = $('#weight').val();
+                // const weight = $('#weight').val();
                 const parcelType = $('#parcelType').val();
 
                 if (!fromTown) {
@@ -959,11 +951,11 @@
                     return false;
                 }
 
-                if (!weight || weight <= 0) {
-                    showAlert('Please enter a valid weight', 'warning');
-                    $('#weight').focus();
-                    return false;
-                }
+                // if (!weight || weight <= 0) {
+                //     showAlert('Please enter a valid weight', 'warning');
+                //     $('#weight').focus();
+                //     return false;
+                // }
 
                 if (fromTown === toTown) {
                     showAlert('Pickup and delivery towns cannot be the same', 'warning');
@@ -1017,10 +1009,7 @@
                             </div>
                             
                             <div class="quote-details">
-                                <div class="detail-item">
-                                    <span class="detail-label">Weight</span>
-                                    <span class="detail-value">${quoteData.weight} kg</span>
-                                </div>
+
                                 <div class="detail-item">
                                     <span class="detail-label">Parcel Type</span>
                                     <span class="detail-value">${quoteData.item_category}</span>
@@ -1625,13 +1614,6 @@
             background: transparent;
         }
 
-        .booking-form-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
         .booking-field label {
             display: flex;
             align-items: center;
@@ -1663,10 +1645,24 @@
             outline: none;
         }
 
+        .booking-form-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            flex-wrap: nowrap;
+            margin-bottom: 0;
+        }
+
+        .booking-form-row .booking-field {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+
         .booking-action {
             display: flex;
-            gap: 10px;
-            justify-content: flex-end;
+            gap: 8px;
+            flex-shrink: 0;
+            align-items: flex-end;
         }
 
         .quote-btn {
@@ -3321,9 +3317,6 @@
                 font-size: 2.2rem;
             }
 
-            .booking-form-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
 
             .stats-section {
                 margin-top: -20px;
@@ -3349,6 +3342,23 @@
                 font-size: 1.8rem;
             }
 
+            .booking-form-row {
+                flex-wrap: wrap;
+            }
+
+            .booking-form-row .booking-field {
+                flex: 1 1 180px;
+            }
+
+            .booking-action {
+                width: 100%;
+            }
+
+            .quote-btn,
+            .clear-btn {
+                flex: 1;
+            }
+
             .hero-content .lead {
                 font-size: 1rem;
             }
@@ -3357,9 +3367,6 @@
                 padding: 20px;
             }
 
-            .booking-form-grid {
-                grid-template-columns: 1fr;
-            }
 
             .booking-action {
                 flex-direction: column;
@@ -3407,6 +3414,36 @@
 
             .whatsapp-tooltip {
                 display: none;
+            }
+
+            @media (max-width: 992px) {
+                .booking-form-row {
+                    flex-wrap: wrap;
+                }
+
+                .booking-field {
+                    flex: 1 1 200px;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .hero-content h1 {
+                    font-size: 2rem;
+                }
+
+                .booking-form-row {
+                    flex-direction: column;
+                }
+
+                .booking-action {
+                    justify-content: stretch;
+                }
+
+                .quote-btn,
+                .clear-btn {
+                    width: 100%;
+                    text-align: center;
+                }
             }
         }
     </style>

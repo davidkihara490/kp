@@ -28,6 +28,8 @@ class EditPickUpAndDropOffPoint extends Component
 
     // For loading related data
     public $towns = [];
+        public $latitude;
+    public $longitude;
 
     protected function rules()
     {
@@ -42,6 +44,8 @@ class EditPickUpAndDropOffPoint extends Component
             // 'is_24_hours' => 'boolean',
             'capacity' => 'nullable|integer|min:1',
             'notes' => 'nullable|string|max:1000',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
         ];
 
         // if (!$this->is_24_hours) {
@@ -216,7 +220,10 @@ class EditPickUpAndDropOffPoint extends Component
                 // 'operating_days' => json_encode($this->operating_hours),
                 'capacity' => $this->capacity,
                 'notes' => $this->notes,
+                                'latitude' => $this->latitude,
+                'longitude' => $this->longitude,
             ]);
+
 
             DB::commit();
 

@@ -47,7 +47,7 @@ class HomeController extends Controller
         $request->validate([
             'from_town_id' => 'required|exists:towns,id',
             'to_town_id' => 'required|exists:towns,id|different:from_town_id',
-            'weight' => 'required|numeric|min:0.1',
+            // 'weight' => 'required|numeric|min:0.1',
             'item_category' => 'required|integer'
         ]);
 
@@ -64,8 +64,8 @@ class HomeController extends Controller
         $toZoneId = $toZone->zone_id;
 
         $pricing = Pricing::where('item_id', $item->id)
-            ->where('min_weight', '<=', $request->weight)
-            ->where('max_weight', '>=', $request->weight)
+            // ->where('min_weight', '<=', $request->weight)
+            // ->where('max_weight', '>=', $request->weight)
             ->first();
 
         $quote = PricingItem::where('pricing_id', $pricing->id)
@@ -78,7 +78,7 @@ class HomeController extends Controller
             'quote_id' => uniqid(), // Generate or get from DB
             'from_town' => $fromTown->name,
             'to_town' => $toTown->name,
-            'weight' => $request->weight,
+            // 'weight' => $request->weight,
             'item_category' => $item->name,
             'total' => $quote->cost,
         ]);

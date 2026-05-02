@@ -101,15 +101,11 @@
                 <span>Partner Profile</span>
             </a>
             @endif
-            <!-- <a href="{{ route('partners.roles-and-permissions.index') }}" class="nav-link">
-                <i class="bi bi-lock"></i>
-                <span>Roles And Permissions</span>
-            </a> -->
-            <!-- <a href="#" class="nav-link">
+            <a href="{{ route('partners.password-change') }}" class="nav-link">
                 <i class="bi bi-shield-check"></i>
                 <span>Security</span>
             </a>
-            <a href="#" class="nav-link">
+            <!-- <a href="#" class="nav-link">
                 <i class="bi bi-headset"></i>
                 <span>Support</span>
             </a> -->

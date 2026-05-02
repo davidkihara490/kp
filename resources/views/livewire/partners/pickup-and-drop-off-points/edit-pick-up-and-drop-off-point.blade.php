@@ -183,16 +183,16 @@
                                         <i class="bi bi-building me-2"></i>
                                         Town/City <span class="text-danger">*</span>
                                     </label>
-                                    <input type="text" 
-                                           id="town_search" 
-                                           class="form-control mb-2" 
-                                           placeholder="Search town by name..."
-                                           autocomplete="off"
-                                           value="{{ $towns->firstWhere('id', $town_id)->name ?? '' }}">
-                                    <select class="form-select @error('town_id') is-invalid @enderror" 
-                                            id="town_id" 
-                                            wire:model="town_id"
-                                            style="display: none;">
+                                    <input type="text"
+                                        id="town_search"
+                                        class="form-control mb-2"
+                                        placeholder="Search town by name..."
+                                        autocomplete="off"
+                                        value="{{ $towns->firstWhere('id', $town_id)->name ?? '' }}">
+                                    <select class="form-select @error('town_id') is-invalid @enderror"
+                                        id="town_id"
+                                        wire:model="town_id"
+                                        style="display: none;">
                                         <option value="">Select Town/City</option>
                                         @foreach($towns as $town)
                                         <option value="{{ $town->id }}">{{ $town->name }}</option>
@@ -208,6 +208,34 @@
                                     </div>
                                     @error('town_id')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="longitude" class="form-label">
+                                        <i class="bi bi-globe me-2"></i>
+                                        Longitude <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" step="any"
+                                        class="form-control @error('longitude') is-invalid @enderror"
+                                        id="longitude" wire:model="longitude"
+                                        placeholder="Longitude">
+                                    @error('longitude')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="latitude" class="form-label">
+                                        <i class="bi bi-globe me-2"></i>
+                                        Latitude <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" step="any"
+                                        class="form-control @error('latitude') is-invalid @enderror"
+                                        id="latitude" wire:model="latitude"
+                                        placeholder="Enter email address">
+                                    @error('latitude')
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -514,7 +542,9 @@
                 border-bottom: none;
             }
 
-            .day-col, .time-col, .status-col {
+            .day-col,
+            .time-col,
+            .status-col {
                 padding: 12px 15px;
             }
 
@@ -567,20 +597,24 @@
                 border-radius: 8px;
                 z-index: 1000;
                 display: none;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             }
+
             .town-dropdown.show {
                 display: block;
             }
+
             .town-dropdown-item {
                 padding: 10px 15px;
                 cursor: pointer;
                 transition: background 0.2s;
                 font-size: 0.95rem;
             }
+
             .town-dropdown-item:hover {
                 background-color: #f8f9fa;
             }
+
             .town-dropdown-item.selected {
                 background-color: rgba(0, 143, 64, 0.1);
                 font-weight: 600;
@@ -624,11 +658,15 @@
 
             /* Responsive Design */
             @media (max-width: 992px) {
-                .table-header, .table-row {
+
+                .table-header,
+                .table-row {
                     grid-template-columns: 1.5fr 1fr 1fr 0.8fr;
                 }
-                
-                .day-col, .time-col, .status-col {
+
+                .day-col,
+                .time-col,
+                .status-col {
                     padding: 10px 12px;
                 }
             }
@@ -653,15 +691,18 @@
                     justify-content: center;
                 }
 
-                .table-header, .table-row {
+                .table-header,
+                .table-row {
                     grid-template-columns: 1.2fr 1fr 1fr 0.8fr;
                     font-size: 0.8rem;
                 }
-                
-                .day-col, .time-col, .status-col {
+
+                .day-col,
+                .time-col,
+                .status-col {
                     padding: 8px 10px;
                 }
-                
+
                 .form-actions .d-flex {
                     flex-direction: column;
                     gap: 10px;
@@ -679,24 +720,28 @@
             }
 
             @media (max-width: 576px) {
-                .table-header, .table-row {
+
+                .table-header,
+                .table-row {
                     grid-template-columns: 1fr 0.9fr 0.9fr 0.7fr;
                 }
-                
-                .day-col, .time-col, .status-col {
+
+                .day-col,
+                .time-col,
+                .status-col {
                     padding: 8px;
                     font-size: 0.75rem;
                 }
-                
+
                 .time-col input {
                     width: 100%;
                     min-width: 90px;
                 }
-                
+
                 .status-col .form-check-label {
                     display: none;
                 }
-                
+
                 .status-col .form-check {
                     justify-content: center;
                 }
@@ -705,6 +750,24 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
+
+                getLocation();
+
+                function getLocation() {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            function(position) {
+                                @this.set('latitude', position.coords.latitude);
+                                @this.set('longitude', position.coords.longitude);
+                            },
+                            function(error) {
+                                console.log(error.message);
+                            }
+                        );
+                    }
+                }
+
+
                 // Focus on name field on load
                 const nameField = document.getElementById('name');
                 if (nameField) {
@@ -716,14 +779,16 @@
                 const hiddenSelect = document.getElementById('town_id');
                 const townDropdown = document.getElementById('town_dropdown');
                 const dropdownContainer = document.getElementById('town_dropdown_container');
-                
+
                 if (townSearchInput && hiddenSelect && townDropdown) {
                     const dropdownItems = townDropdown.querySelectorAll('.town-dropdown-item');
 
                     function setTownSelection(value, text) {
                         if (hiddenSelect) {
                             hiddenSelect.value = value;
-                            const event = new Event('change', { bubbles: true });
+                            const event = new Event('change', {
+                                bubbles: true
+                            });
                             hiddenSelect.dispatchEvent(event);
                         }
                         if (townSearchInput) {
@@ -758,7 +823,7 @@
                         });
                         const existingNoResult = townDropdown.querySelector('.no-result');
                         if (existingNoResult) existingNoResult.remove();
-                        
+
                         if (!hasVisible && term !== '') {
                             const noResultItem = document.createElement('div');
                             noResultItem.className = 'town-dropdown-item no-result';
@@ -782,8 +847,8 @@
                     });
 
                     document.addEventListener('click', function(event) {
-                        if (dropdownContainer && townSearchInput && 
-                            !dropdownContainer.contains(event.target) && 
+                        if (dropdownContainer && townSearchInput &&
+                            !dropdownContainer.contains(event.target) &&
                             event.target !== townSearchInput) {
                             townDropdown.classList.remove('show');
                         }
@@ -829,7 +894,7 @@
 
                 if (is24HoursCheckbox) {
                     is24HoursCheckbox.addEventListener('change', toggleOperatingDetails);
-                    
+
                     if (typeof Livewire !== 'undefined') {
                         Livewire.hook('message.processed', () => {
                             toggleOperatingDetails();
