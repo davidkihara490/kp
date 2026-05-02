@@ -3307,6 +3307,10 @@
             }
         }
 
+
+
+
+
         @media (max-width: 992px) {
             .hero-section {
                 padding: 120px 0 50px;
@@ -3317,6 +3321,27 @@
                 font-size: 2.2rem;
             }
 
+            .booking-form-row {
+                flex-wrap: wrap;
+            }
+
+            .booking-field {
+                flex: 1 1 200px;
+            }
+
+            .booking-form-row .booking-field {
+                flex: 1 1 calc(50% - 12px);
+                min-width: 0;
+            }
+
+            .booking-action {
+                width: 100%;
+            }
+
+            .quote-btn,
+            .clear-btn {
+                flex: 1;
+            }
 
             .stats-section {
                 margin-top: -20px;
@@ -3343,20 +3368,25 @@
             }
 
             .booking-form-row {
+                flex-direction: column;
                 flex-wrap: wrap;
             }
 
             .booking-form-row .booking-field {
-                flex: 1 1 180px;
+                flex: 1 1 100%;
+                width: 100%;
             }
 
             .booking-action {
                 width: 100%;
+                flex-direction: row;
             }
 
             .quote-btn,
             .clear-btn {
                 flex: 1;
+                width: 100%;
+                text-align: center;
             }
 
             .hero-content .lead {
@@ -3414,36 +3444,6 @@
 
             .whatsapp-tooltip {
                 display: none;
-            }
-
-            @media (max-width: 992px) {
-                .booking-form-row {
-                    flex-wrap: wrap;
-                }
-
-                .booking-field {
-                    flex: 1 1 200px;
-                }
-            }
-
-            @media (max-width: 768px) {
-                .hero-content h1 {
-                    font-size: 2rem;
-                }
-
-                .booking-form-row {
-                    flex-direction: column;
-                }
-
-                .booking-action {
-                    justify-content: stretch;
-                }
-
-                .quote-btn,
-                .clear-btn {
-                    width: 100%;
-                    text-align: center;
-                }
             }
         }
     </style>
