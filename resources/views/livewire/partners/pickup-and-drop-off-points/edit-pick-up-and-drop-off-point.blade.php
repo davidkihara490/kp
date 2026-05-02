@@ -211,7 +211,7 @@
                                     @enderror
                                 </div>
 
-                                <div class="mb-3">
+                                <!-- <div class="mb-3">
                                     <label for="longitude" class="form-label">
                                         <i class="bi bi-globe me-2"></i>
                                         Longitude <span class="text-danger">*</span>
@@ -237,7 +237,7 @@
                                     @error('latitude')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -751,7 +751,7 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
 
-                getLocation();
+                // getLocation();
 
                 function getLocation() {
                     if (navigator.geolocation) {

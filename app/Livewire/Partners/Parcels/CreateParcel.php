@@ -104,6 +104,8 @@ class CreateParcel extends Component
 
     public $weightRanges = [];
     public $partner_id;
+
+    public $senderPickUpAndDropOffPoints;
     protected SMSService $smsService;
 
     // Validation rules
@@ -181,8 +183,35 @@ class CreateParcel extends Component
     public function mount()
     {
 
-        $modelClass = current_user_type();
-        $user = $modelClass ? $modelClass::find(Auth::guard('partner')->user()->id) : null;
+        // $modelClass = current_user_type();
+        // $user = $modelClass ? $modelClass::find(Auth::guard('partner')->user()->id) : null;
+
+
+        // if ($this->loggedUser->partner && $this->loggedUser->partner->partner_type ==  "transport") {
+
+        //     // dd(11111);
+        // } elseif ($this->loggedUser->partner && $this->loggedUser->partner->partner_type ==  "pickup-dropoff") {
+
+        //     // dd(2222222);
+        //     $query = Parcel::where('sender_partner_id', $this->loggedUser->partner->id)
+        //         ->orWhere('delivery_partner_id', $this->loggedUser->partner->id);
+        // } elseif ($this->loggedUser->driver && $this->loggedUser->driver) {
+
+        //     // dd(333333);
+        //     $query = Parcel::where('driver_id', $this->loggedUser->driver->id);
+        // } elseif ($this->loggedUser->parcelHandlingAssistant) {
+        //     // dd(4444444);
+        //     $query = Parcel::where('pha_id', $this->loggedUser->parcelHandlingAssistant->id)
+        //         ->orWhere('delivery_partner_id', $this->loggedUser->parcelHandlingAssistant->partner->id);
+        //     // ->orWhere('delivery_partner_id', $this->loggedUser->partner->id);
+        // }
+
+
+
+        $user = Auth::guard('partner')->user()->parcelHandlingAssistant || Auth::guard('partner')->user()->partner;
+        $loggedInUser = Auth::guard('partner')->user();
+
+        // dd($user, $loggedInUser->partner);
 
         $this->parcel_number = Parcel::generateParcelNumber();
         $this->loadOptions();
@@ -195,6 +224,13 @@ class CreateParcel extends Component
         if ($this->parcel_type && $this->weight) {
             $this->calculatePriceByTypeAndWeight();
         }
+
+        $this->senderPickUpAndDropOffPoints = PickUpAndDropOffPoint::where('partner_id', $loggedInUser->partner->id)
+            ->where('status', true)
+            ->orderBy('name')
+            ->get();
+
+        // dd($this->senderPickUpAndDropOffPoints);
 
         $pha = Auth::guard('partner')->user()->parcelHandlingAssistant;
 

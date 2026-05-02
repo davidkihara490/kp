@@ -1029,7 +1029,7 @@
                             </div>
                             
                             <div class="quote-actions">
-                                <a href="#stations" class="btn btn-outline-primary">
+                                <a href="{{ route('points') }}" class="btn btn-outline-primary">
                                     <i class="bi bi-geo-alt me-2"></i>Find Nearest Station
                                 </a>
                                 <button class="btn btn-primary" id="newQuote">

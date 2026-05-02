@@ -21,8 +21,8 @@ class CreatePickUpAndDropOffPoint extends Component
     public $is_24_hours = false;
     public $capacity;
     public $notes;
-    public $latitude;
-    public $longitude;
+    // public $latitude;
+    // public $longitude;
 
     // Operating hours for each day of the week
     public $operating_hours = [
@@ -52,8 +52,8 @@ class CreatePickUpAndDropOffPoint extends Component
             'is_24_hours' => 'boolean',
             'capacity' => 'nullable|integer|min:1',
             'notes' => 'nullable|string|max:1000',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
+            // 'latitude' => 'nullable|numeric',
+            // 'longitude' => 'nullable|numeric',
         ];
 
         // if (!$this->is_24_hours) {
@@ -219,8 +219,8 @@ class CreatePickUpAndDropOffPoint extends Component
                 // 'operating_days' => json_encode($operatingTimesArray),
                 'capacity' => $this->capacity,
                 'notes' => $this->notes,
-                'latitude' => $this->latitude,
-                'longitude' => $this->longitude,
+                // 'latitude' => $this->latitude,
+                // 'longitude' => $this->longitude,
             ]);
 
             DB::commit();
