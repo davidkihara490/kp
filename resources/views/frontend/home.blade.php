@@ -30,8 +30,7 @@
                 </div>
                 <div class="brand-text d-none d-md-block">
                     <span class="fw-bold fs-5">{{ config('app.name') }}</span>
-                    <small class="d-block text-muted" style="font-size: 0.75rem; line-height: 1;">Professional Courier
-                        Service</small>
+                    <small class="d-block text-muted" style="font-size: 0.75rem; line-height: 1;">Send and receive parcels to/from town near you</small>
                 </div>
             </a>
 
