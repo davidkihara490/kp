@@ -792,14 +792,6 @@
                     </div>
                     <div class="col-lg-5">
                         <div class="business-buttons">
-                            <!-- <a href="{{ route('partners.marketplace') }}" target="_blank" class="business-btn marketplace-btn">
-                                <span class="btn-icon"><i class="bi bi-shop"></i></span>
-                                <span class="btn-text">
-                                    <small>Visit our</small>
-                                    <strong>Marketplace</strong>
-                                </span>
-                                <span class="btn-arrow"><i class="bi bi-arrow-right"></i></span>
-                            </a> -->
                             <a href="{{ route('partners.login') }}" class="business-btn partner-btn">
                                 <span class="btn-icon"><i class="bi bi-briefcase"></i></span>
                                 <span class="btn-text">
