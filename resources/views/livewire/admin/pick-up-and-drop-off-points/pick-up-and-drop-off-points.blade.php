@@ -4,6 +4,7 @@
             <h3 class="card-title font-weight-bold d-inline">
                 Pick Up And Drop Off Points
             </h3>
+            <a class="btn btn-success btn-sm float-right ml-2" href="{{ route('admin.points.create') }}"><i class="fas fa-plus"></i>New Warehouse</a>
             <button class="btn btn-info btn-sm float-right" wire:click="$toggle('showFilters')">
                 <i class="fas fa-filter"></i> {{ $showFilters ? 'Hide Filters' : 'Show Filters' }}
             </button>
@@ -27,65 +28,76 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-3">
                     <div class="form-group">
                         <label for="town">Filter by Town</label>
                         <select class="form-control" wire:model.live="selectedTown" id="town">
                             <option value="">All Towns</option>
                             @foreach($towns as $town)
-                                <option value="{{ $town->id }}">{{ $town->name }}</option>
+                            <option value="{{ $town->id }}">{{ $town->name }}</option>
                             @endforeach
                         </select>
                     </div>
                 </div>
-                
-                <div class="col-md-3">
+
+                <div class="col-md-2">
                     <div class="form-group">
                         <label for="partner">Filter by Partner</label>
                         <select class="form-control" wire:model.live="selectedPartner" id="partner">
                             <option value="">All Partners</option>
                             @foreach($partners as $partner)
-                                <option value="{{ $partner->id }}">{{ $partner->company_name }}</option>
+                            <option value="{{ $partner->id }}">{{ $partner->company_name }}</option>
                             @endforeach
                         </select>
                     </div>
                 </div>
-                
-                <div class="col-md-3">
+
+                <div class="col-md-2">
                     <div class="form-group">
                         <label for="status">Filter by Status</label>
                         <select class="form-control" wire:model.live="selectedStatus" id="status">
                             <option value="">All Statuses</option>
                             @foreach($statuses as $status)
-                                <option value="{{ $status }}">{{ ucfirst($status) }}</option>
+                            <option value="{{ $status }}">{{ ucfirst($status) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="status">Filter by Type</label>
+                        <select class="form-control" wire:model.live="selectedType" id="type">
+                            <option value="">All Types</option>
+                            @foreach($types as $type)
+                            <option value="{{ $type }}">{{ ucfirst($type) }}</option>
                             @endforeach
                         </select>
                     </div>
                 </div>
             </div>
-            
+
             <div class="row">
                 <div class="col-md-4">
                     <div class="form-group">
                         <label>Filter by Number of Parcels</label>
                         <div class="row">
                             <div class="col-md-6">
-                                <input type="number" class="form-control" 
-                                    wire:model.live="minParcels" 
+                                <input type="number" class="form-control"
+                                    wire:model.live="minParcels"
                                     placeholder="Min parcels"
                                     min="0">
                             </div>
                             <div class="col-md-6">
-                                <input type="number" class="form-control" 
-                                    wire:model.live="maxParcels" 
+                                <input type="number" class="form-control"
+                                    wire:model.live="maxParcels"
                                     placeholder="Max parcels"
                                     min="0">
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-8">
                     <div class="form-group">
                         <label>&nbsp;</label>
@@ -122,6 +134,7 @@
                         <tr>
                             <th>#</th>
                             <th>Name</th>
+                            <th>Type</th>
                             <th>Town</th>
                             <th>Partner</th>
                             <th>Contact Email</th>
@@ -136,6 +149,7 @@
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $station->name }}</td>
+                            <td>{{ $station->type }}</td>
                             <td>{{ $station->town->name ?? 'N/A' }}</td>
                             <td>{{ $station->partner->company_name ?? 'N/A' }}</td>
                             <td>{{ $station->contact_email ?? 'N/A' }}</td>
@@ -181,7 +195,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="text-center">
+                            <td colspan="10" class="text-center">
                                 <div class="alert alert-info mb-0">
                                     No points found matching your criteria
                                 </div>
@@ -193,6 +207,7 @@
                         <tr>
                             <th>#</th>
                             <th>Name</th>
+                            <th>Type</th>
                             <th>Town</th>
                             <th>Station Partner</th>
                             <th>Contact Email</th>
@@ -248,9 +263,11 @@
         font-size: 0.875rem;
         padding: 0.25rem 0.5rem;
     }
+
     .table-responsive {
         overflow-x: auto;
     }
+
     .filter-section {
         transition: all 0.3s ease;
     }

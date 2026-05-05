@@ -72,7 +72,7 @@
                 <i class="bi bi-cash"></i>
                 <span>Drivers</span>
             </a>
-            <a href="{{ route('marketplace') }}" class="nav-link" target="_blank">
+            <a href="{{ route('partners.marketplace') }}" class="nav-link">
                 <i class="bi bi-bank"></i>
                 <span>Marketplace</span>
             </a>

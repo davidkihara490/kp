@@ -22,7 +22,7 @@ class HomeController extends Controller
     public function index()
     {
         $towns = Town::where('status', true)->orderBy('name', 'ASC')->get();
-        $pickUpAndDropOffPoints = PickUpAndDropOffPoint::where('status', 'active')->get();
+        $pickUpAndDropOffPoints = PickUpAndDropOffPoint::where('type', 'pickup-dropoff')->where('status', 'active')->get();
         $blogPosts = BlogPost::where('status', 'published')->limit(4)->get();
         $faqs = FAQ::where('status', true)->get();
         $parcelTypes = Item::all();
@@ -39,7 +39,10 @@ class HomeController extends Controller
             });
         }
 
-        return  view('frontend.home', compact('towns', 'pickUpAndDropOffPoints', 'blogPosts', 'faqs', 'counties', 'parcelTypes', 'itemCategories'));
+        $countiesCovered = County::count();
+        $totalPickUpPoints = PickUpAndDropOffPoint::count();
+
+        return  view('frontend.home', compact('totalPickUpPoints','countiesCovered','towns', 'pickUpAndDropOffPoints', 'blogPosts', 'faqs', 'counties', 'parcelTypes', 'itemCategories'));
     }
 
     public function calculate(Request $request)

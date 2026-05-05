@@ -272,6 +272,69 @@
             });
         });
     </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            getLocation();
+
+            function getLocation() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            // Set values directly to input fields
+                            const latitudeInput = document.getElementById('latitude');
+                            const longitudeInput = document.getElementById('longitude');
+
+                            if (latitudeInput && longitudeInput) {
+                                latitudeInput.value = position.coords.latitude;
+                                longitudeInput.value = position.coords.longitude;
+
+                                // Trigger change event for any listeners
+                                latitudeInput.dispatchEvent(new Event('change'));
+                                longitudeInput.dispatchEvent(new Event('change'));
+                            }
+                        },
+                        function(error) {
+                            console.log('Error getting location:', error.message);
+                            showLocationError(error);
+                        }
+                    );
+                } else {
+                    console.log('Geolocation is not supported by this browser.');
+                    showGeolocationNotSupported();
+                }
+            }
+
+            function showLocationError(error) {
+                let message = '';
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        message = 'Location permission denied. Please enable location access.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        message = 'Location information unavailable.';
+                        break;
+                    case error.TIMEOUT:
+                        message = 'Location request timed out.';
+                        break;
+                }
+                // Display error message (optional)
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-warning';
+                errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + message;
+                document.querySelector('.card-body')?.prepend(errorDiv);
+                setTimeout(() => errorDiv.remove(), 5000);
+            }
+
+            function showGeolocationNotSupported() {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-danger';
+                errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Geolocation is not supported by your browser.';
+                document.querySelector('.card-body')?.prepend(errorDiv);
+            }
+        });
+    </script>
+
 </body>
 
 </html>

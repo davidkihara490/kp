@@ -296,8 +296,10 @@ class Parcel extends Model
     {
         return $this->belongsTo(PickUpAndDropOffPoint::class, 'delivery_pick_up_drop_off_point_id');
     }
-
-
+    public function parcelPayout()
+    {
+        return $this->hasMany(ParcelPayout::class, 'parcel_id');
+    }
 
     public function createdBy()
     {

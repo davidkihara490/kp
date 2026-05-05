@@ -8,6 +8,6 @@
 
 @section('content')
 <div>
-    <livewire:admin.pick-up-and-drop-off-points.edit-pick-up-and-drop-off-point id="$id" />
+    <livewire:admin.pick-up-and-drop-off-points.edit-pick-up-and-drop-off-point :id="$id" />
 </div>
 @endsection

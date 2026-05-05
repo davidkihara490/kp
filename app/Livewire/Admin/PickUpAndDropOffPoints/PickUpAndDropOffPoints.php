@@ -16,6 +16,8 @@ class PickUpAndDropOffPoints extends Component
     public $selectedTown = '';
     public $selectedPartner = '';
     public $selectedStatus = '';
+    public $selectedType = '';
+
     public $minParcels = '';
     public $maxParcels = '';
     public $showFilters = false;
@@ -52,6 +54,7 @@ class PickUpAndDropOffPoints extends Component
         $this->selectedTown = '';
         $this->selectedPartner = '';
         $this->selectedStatus = '';
+        $this->selectedType = '';
         $this->minParcels = '';
         $this->maxParcels = '';
         $this->resetPage();
@@ -79,6 +82,10 @@ class PickUpAndDropOffPoints extends Component
     }
 
     public function updatedSelectedStatus()
+    {
+        $this->resetPage();
+    }
+    public function updatedSelectedType()
     {
         $this->resetPage();
     }
@@ -113,6 +120,9 @@ class PickUpAndDropOffPoints extends Component
             ->when($this->selectedStatus, function ($query) {
                 $query->where('status', $this->selectedStatus);
             })
+            ->when($this->selectedType, function ($query) {
+                $query->where('type', $this->selectedType);
+            })
             ->when($this->minParcels, function ($query) {
                 $query->havingRaw(
                     '(sender_parcels_count + delivery_parcels_count) >= ?',
@@ -132,12 +142,14 @@ class PickUpAndDropOffPoints extends Component
         $towns = Town::orderBy('name')->get();
         $partners = Partner::orderBy('company_name')->get();
         $statuses = ['active', 'inactive', 'pending', 'suspended'];
+        $types = ['warehouse', 'pickup-dropoff'];
 
         return view('livewire.admin.pick-up-and-drop-off-points.pick-up-and-drop-off-points', [
             'pickUpAndDropOffPoints' => $pickUpAndDropOffPoints,
             'towns' => $towns,
             'partners' => $partners,
             'statuses' => $statuses,
+            'types' => $types,
         ]);
     }
 }

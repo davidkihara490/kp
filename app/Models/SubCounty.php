@@ -30,3 +30,4 @@ class SubCounty extends Model
         );
     }
 }
+

@@ -1011,7 +1011,7 @@
                 </div>
                 <div class="brand-text d-none d-md-block">
                     <span class="fw-bold fs-5">{{ config('app.name') }}</span>
-                    <small class="d-block text-muted" style="font-size: 0.75rem; line-height: 1;">Professional Courier Service</small>
+                    <small class="d-block text-muted" style="font-size: 0.75rem; line-height: 1;">Send and receive parcels to/from town near you</small>
                 </div>
             </a>
 
@@ -1334,17 +1334,12 @@
                         <div class="business-solutions-text">
                             <span class="badge bg-primary mb-2">BUSINESS SOLUTIONS</span>
                             <h4 class="mb-1">Grow Your Business With Karibu Parcels</h4>
-                            <p class="text-muted">Explore our marketplace and partner programs designed for businesses</p>
+                            <!-- <p class="text-muted">Explore our marketplace and partner programs designed for businesses</p> -->
                         </div>
                     </div>
                     <div class="col-lg-5">
                         <div class="business-buttons d-flex gap-3 flex-wrap justify-content-lg-end">
-                            <a href="{{ route('marketplace') }}" class="business-btn marketplace-btn">
-                                <span class="btn-icon"><i class="bi bi-shop"></i></span>
-                                <span class="btn-text"><small>Visit our</small><br>
-                                <strong>Marketplace</strong></span>
-                                <span class="btn-arrow"><i class="bi bi-arrow-right"></i></span>
-                            </a>
+                            
                             <a href="{{ route('partners.login') }}" class="business-btn partner-btn">
                                 <span class="btn-icon"><i class="bi bi-briefcase"></i></span>
                                 <span class="btn-text"><small>Partner Portal</small><br>

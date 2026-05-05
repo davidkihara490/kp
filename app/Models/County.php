@@ -36,3 +36,5 @@ class County extends Model
             ->flatMap(fn($town) => $town->pickUpAndDropOffPoint);
     }
 }
+
+

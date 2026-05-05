@@ -119,12 +119,12 @@
                                             @enderror
                                         </div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-12">
                                             <label class="form-label required">Town</label>
                                             <select class="form-select @error('sender_town_id') is-invalid @enderror"
-                                                wire:model.live.debounce.750ms="sender_town_id">
-                                                <option value="">Select town</option>
-                                                @foreach($towns as $town)
+                                                wire:model.live="sender_town_id">
+                                                <option value="">Select Town</option>
+                                                @foreach($senderTowns as $town)
                                                 <option value="{{ $town->id }}">{{ $town->name }}</option>
                                                 @endforeach
                                             </select>
@@ -133,12 +133,12 @@
                                             @enderror
                                         </div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-12">
                                             <label class="form-label required">Pickup Point</label>
                                             <select class="form-select @error('sender_pick_up_drop_off_point_id') is-invalid @enderror"
-                                                wire:model="sender_pick_up_drop_off_point_id">
+                                                wire:model.live="sender_pick_up_drop_off_point_id">
                                                 <option value="">Select pickup point</option>
-                                                @foreach($pickUpAndDropOffPoints as $point)
+                                                @foreach($senderPickUpAndDropOffPoints as $point)
                                                 <option value="{{ $point->id }}">{{ $point->name }}</option>
                                                 @endforeach
                                             </select>
@@ -192,13 +192,26 @@
                                             @enderror
                                         </div>
 
+                                        <div class="col-md-6">
+                                            <label class="form-label required">County</label>
+                                            <select class="form-select @error('receiver_county_id') is-invalid @enderror"
+                                                wire:model.live.debounce.750ms="receiver_county_id">
+                                                <option value="">Select County</option>
+                                                @foreach($counties as $county)
+                                                <option value="{{ $county->id }}">{{ $county->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('receiver_county_id')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
 
                                         <div class="col-md-6">
                                             <label class="form-label required">Town</label>
                                             <select class="form-select @error('receiver_town_id') is-invalid @enderror"
                                                 wire:model.live.debounce.750ms="receiver_town_id">
                                                 <option value="">Select town</option>
-                                                @foreach($towns as $town)
+                                                @foreach($countyTowns as $town)
                                                 <option value="{{ $town->id }}">{{ $town->name }}</option>
                                                 @endforeach
                                             </select>
@@ -207,13 +220,18 @@
                                             @enderror
                                         </div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-12">
                                             <label class="form-label required">Delivery Point</label>
                                             <select class="form-select @error('delivery_pick_up_drop_off_point_id') is-invalid @enderror"
                                                 wire:model="delivery_pick_up_drop_off_point_id">
                                                 <option value="">Select delivery point</option>
-                                                @foreach($pickUpAndDropOffPoints as $point)
-                                                <option value="{{ $point->id }}">{{ $point->name }}</option>
+                                                @foreach($receiverPickUpAndDropOffPoints as $point)
+                                                <option value="{{ $point->id }}">
+                                                    {{ $point->name }}
+                                                    @if($point->address)
+                                                    --({{ $point->address }})
+                                                    @endif
+                                                </option>
                                                 @endforeach
                                             </select>
                                             @error('delivery_pick_up_drop_off_point_id')
@@ -991,6 +1009,7 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);

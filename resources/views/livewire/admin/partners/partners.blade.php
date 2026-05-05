@@ -8,6 +8,10 @@
                         Partners Management
                     </h3>
                 </div>
+
+                @if(Auth::guard('admin')->user()->can('partner.create'))
+                <a href="{{ route('admin.partners.create') }}" class="btn btn-success btn-sm float-right">New </a>
+                @endif
             </div>
 
             <div class="card-body">

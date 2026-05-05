@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Karibu Parcels - Professional Courier Service</title>
+    <title>Karibu Parcels - Send and receive parcels to/from town near you.</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!--Bootstrap Icons -->
@@ -203,13 +203,13 @@
             <div class="row">
                 <div class="col-6 col-md-3">
                     <div class="stat-item">
-                        <div class="stat-number">24/7</div>
-                        <div class="stat-label">Service Hours</div>
+                        <div class="stat-number">{{ $totalPickUpPoints }}+</div>
+                        <div class="stat-label">PickUp and Drop Off ponts</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="stat-item">
-                        <div class="stat-number">40+</div>
+                        <div class="stat-number">{{ $countiesCovered }}</div>
                         <div class="stat-label">Counties</div>
                     </div>
                 </div>
@@ -734,8 +734,7 @@
                             <div class="brand-text">
                                 <span class="fw-bold fs-5">{{ config('app.name') }}</span>
                                 <small class="d-block text-muted"
-                                    style="font-size: 0.75rem; line-height: 1;">Professional Courier
-                                    Service</small>
+                                    style="font-size: 0.75rem; line-height: 1;">Send and receive parcels to/from town near you.</small>
                             </div>
                         </a>
                     </h4>
@@ -793,14 +792,14 @@
                     </div>
                     <div class="col-lg-5">
                         <div class="business-buttons">
-                            <a href="{{ route('marketplace') }}" target="_blank" class="business-btn marketplace-btn">
+                            <!-- <a href="{{ route('partners.marketplace') }}" target="_blank" class="business-btn marketplace-btn">
                                 <span class="btn-icon"><i class="bi bi-shop"></i></span>
                                 <span class="btn-text">
                                     <small>Visit our</small>
                                     <strong>Marketplace</strong>
                                 </span>
                                 <span class="btn-arrow"><i class="bi bi-arrow-right"></i></span>
-                            </a>
+                            </a> -->
                             <a href="{{ route('partners.login') }}" class="business-btn partner-btn">
                                 <span class="btn-icon"><i class="bi bi-briefcase"></i></span>
                                 <span class="btn-text">

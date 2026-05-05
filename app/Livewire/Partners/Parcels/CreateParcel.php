@@ -11,6 +11,7 @@ use App\Models\Town;
 use App\Models\User;
 use App\Models\Contact;
 use App\Models\Item;
+use App\Models\ParcelPayout;
 use App\Models\Partner;
 use App\Models\PickUpAndDropOffPoint;
 use App\Models\Pricing;
@@ -45,6 +46,7 @@ class CreateParcel extends Component
     public $sender_notes = '';
     public $sender_pick_up_drop_off_point_id;
     public $save_sender_as_contact = false;
+    public $senderTowns = [];
 
     // Receiver Information
     public $receiver_name = '';
@@ -54,9 +56,11 @@ class CreateParcel extends Component
     public $receiver_county_id = '';
     public $receiver_subcounty_id = '';
     public $receiver_town_id = '';
+    public $countyTowns  = [];
     public $receiver_notes = '';
     public $delivery_pick_up_drop_off_point_id;
     public $save_receiver_as_contact = false;
+    public $receiverPickUpAndDropOffPoints = [];
 
     // Parcel Details
     public $parcel_type = 'package';
@@ -105,7 +109,7 @@ class CreateParcel extends Component
     public $weightRanges = [];
     public $partner_id;
 
-    public $senderPickUpAndDropOffPoints;
+    public $senderPickUpAndDropOffPoints = [];
     protected SMSService $smsService;
 
     // Validation rules
@@ -121,6 +125,7 @@ class CreateParcel extends Component
             'receiver_name' => 'required|string|max:255',
             'receiver_phone' => 'required|string|max:20',
             // 'receiver_address' => 'required|string|max:500',
+            'receiver_county_id' => 'required|exists:counties,id',
             'receiver_town_id' => 'required|exists:towns,id',
             'delivery_pick_up_drop_off_point_id' => 'required|exists:pick_up_and_drop_off_points,id',
 
@@ -182,36 +187,22 @@ class CreateParcel extends Component
 
     public function mount()
     {
-
-        // $modelClass = current_user_type();
-        // $user = $modelClass ? $modelClass::find(Auth::guard('partner')->user()->id) : null;
-
-
-        // if ($this->loggedUser->partner && $this->loggedUser->partner->partner_type ==  "transport") {
-
-        //     // dd(11111);
-        // } elseif ($this->loggedUser->partner && $this->loggedUser->partner->partner_type ==  "pickup-dropoff") {
-
-        //     // dd(2222222);
-        //     $query = Parcel::where('sender_partner_id', $this->loggedUser->partner->id)
-        //         ->orWhere('delivery_partner_id', $this->loggedUser->partner->id);
-        // } elseif ($this->loggedUser->driver && $this->loggedUser->driver) {
-
-        //     // dd(333333);
-        //     $query = Parcel::where('driver_id', $this->loggedUser->driver->id);
-        // } elseif ($this->loggedUser->parcelHandlingAssistant) {
-        //     // dd(4444444);
-        //     $query = Parcel::where('pha_id', $this->loggedUser->parcelHandlingAssistant->id)
-        //         ->orWhere('delivery_partner_id', $this->loggedUser->parcelHandlingAssistant->partner->id);
-        //     // ->orWhere('delivery_partner_id', $this->loggedUser->partner->id);
-        // }
-
-
-
-        $user = Auth::guard('partner')->user()->parcelHandlingAssistant || Auth::guard('partner')->user()->partner;
         $loggedInUser = Auth::guard('partner')->user();
+        $partner = match ($loggedInUser->user_type) {
+            'pickup-dropoff' => $loggedInUser->partner,
+            'pha' => $loggedInUser->parcelHandlingAssistant->partner,
+            default => null,
+        };
 
-        // dd($user, $loggedInUser->partner);
+
+        $points = PickUpAndDropOffPoint::where('partner_id', $partner->id)
+            ->where('status', true)
+            ->with('town') // important
+            ->orderBy('name')
+            ->get();
+
+        $this->senderTowns = $points->pluck('town')->unique('id')->values();
+
 
         $this->parcel_number = Parcel::generateParcelNumber();
         $this->loadOptions();
@@ -224,17 +215,6 @@ class CreateParcel extends Component
         if ($this->parcel_type && $this->weight) {
             $this->calculatePriceByTypeAndWeight();
         }
-
-        $this->senderPickUpAndDropOffPoints = PickUpAndDropOffPoint::where('partner_id', $loggedInUser->partner->id)
-            ->where('status', true)
-            ->orderBy('name')
-            ->get();
-
-        // dd($this->senderPickUpAndDropOffPoints);
-
-        $pha = Auth::guard('partner')->user()->parcelHandlingAssistant;
-
-        $loggedInUser = Auth::guard('partner')->user();
     }
 
     public function loadOptions()
@@ -261,10 +241,26 @@ class CreateParcel extends Component
         }
     }
 
+    public function updatedSenderTownId($value)
+    {
+        try {
+            if ($value) {
+                $this->senderPickUpAndDropOffPoints = PickUpAndDropOffPoint::where('town_id', (int)$value)
+                    ->where('status', true)
+                    ->orderBy('name')
+                    ->get();
+            }
+            $this->calculatePrice();
+        } catch (\Exception $e) {
+            Log::error('Error updating sender details: ' . $e->getMessage());
+        }
+    }
+
     public function updatedSenderCountyId($value)
     {
         try {
             if ($value) {
+
                 $this->subcounties = SubCounty::where('county_id', $value)
                     ->orderBy('name')
                     ->get();
@@ -294,7 +290,6 @@ class CreateParcel extends Component
             Log::error('Error updating sender subcounty: ' . $e->getMessage());
         }
     }
-
     public function updatedParcelType()
     {
         $this->calculatePriceByTypeAndWeight();
@@ -478,9 +473,47 @@ class CreateParcel extends Component
             ->groupBy('item_id');
     }
 
+    public function senderPickUpDropOffPointId($value)
+    {
+        try {
+            if ($value) {
+                $point = PickUpAndDropOffPoint::where('id', (int)$value)->first();
+                $this->sender_town_id = $point->town_id;
+            }
+            $this->calculatePrice();
+        } catch (\Exception $e) {
+            Log::error('Error updating sender details: ' . $e->getMessage());
+        }
+    }
+
     public function updatedReceiverCountyId($value)
     {
-        $this->calculatePrice();
+        try {
+            if ($value) {
+                $county = County::where('id', (int)$value)->first();
+                $this->countyTowns = $county->towns()->where('status', true)->get();
+            } else {
+                $this->countyTowns = Town::where('status', true)->orderBy('name')->get();
+            }
+            $this->calculatePrice();
+        } catch (\Exception $e) {
+            Log::error('Error updating sender county: ' . $e->getMessage());
+        }
+    }
+
+    public function updatedReceiverTownId($value)
+    {
+        try {
+            if ($value) {
+                $town = Town::where('id', (int)$value)->first();
+                $this->receiverPickUpAndDropOffPoints = PickUpAndDropOffPoint::where('town_id', $town->id)->where('status', true)->get();
+            } else {
+                $this->receiverPickUpAndDropOffPoints = PickUpAndDropOffPoint::where('status', true)->get();
+            }
+            $this->calculatePrice();
+        } catch (\Exception $e) {
+            Log::error('Error updating sender county: ' . $e->getMessage());
+        }
     }
 
     public function updatedPackageType($value)
@@ -605,7 +638,7 @@ class CreateParcel extends Component
                 'address' => $this->receiver_address,
                 'county_id' => $this->receiver_county_id,
                 'sub_county_id' => $this->receiver_subcounty_id,
-                'town_id' => $this->receiver_town_id,
+                // 'town_id' => $this->receiver_town_id,
             ]);
             $this->receiver_id = $receiverContact->id;
             // }
@@ -682,6 +715,19 @@ class CreateParcel extends Component
             ];
 
             $parcel = Parcel::create($parcelData);
+
+            $parcelPayout = ParcelPayout::create([
+                'parcel_id' => $parcel->id,
+                'partner_id' => Auth::guard('partner')->user()->parcelHandlingAssistant?->partner?->id ?? Auth::guard('partner')->user()->partner?->id,
+                'type' => 'pickup-dropoff',
+                'destination' => null,
+                'destination_id' => null,
+                'origin_id' => $this->sender_pick_up_drop_off_point_id,
+                'amount' => ($parcel->total_amount * 20) / 100,
+                'status' => 'pending',
+                'paid_out_on' => null,
+                'cancelation_reason' => null
+            ]);
 
             $parcelStatus = $parcel->updateParcelStatus(
                 Parcel::STATUS_CREATED,

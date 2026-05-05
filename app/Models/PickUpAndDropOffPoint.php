@@ -12,6 +12,7 @@ class PickUpAndDropOffPoint extends Model
 
     protected $fillable = [
         'partner_id',
+        'type',
         'name',
         'code',
         'town_id',
