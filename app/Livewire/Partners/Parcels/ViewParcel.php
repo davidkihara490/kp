@@ -2,15 +2,21 @@
 
 namespace App\Livewire\Partners\Parcels;
 
+use App\Livewire\Admin\Settings\Pricing\Pricings;
+use App\Mail\NewParcel;
 use App\Models\Parcel;
 use App\Models\Payment;
+use App\Models\User;
 use App\Services\MpesaService;
-use Carbon\Carbon; 
+use App\Services\SMSService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\Mail;
+
 use Exception;
 
 class ViewParcel extends Component
@@ -64,6 +70,9 @@ class ViewParcel extends Component
     public $pickup_code = '';
     public $pickupVerificationError = '';
     protected $mpesaService;
+
+    protected SMSService $smsService;
+
     public function boot(MpesaService $mpesaService)
     {
         $this->mpesaService = $mpesaService;
@@ -400,7 +409,7 @@ class ViewParcel extends Component
         }
     }
 
-    public function processPayment()
+    public function processPayment(SMSService $smsService)
     {
         $totalPaid = $this->parcel->payments()
             ->where('status', 'completed')
@@ -428,6 +437,39 @@ class ViewParcel extends Component
         try {
             if ($this->paymentMethod === 'mpesa') {
                 $this->processMpesaPayment();
+
+                try {
+                    Log::info('Created Parcel. Sending notification to admin');
+
+                    $admins = User::permission([
+                        'parcel.view',
+                        'parcel.update',
+                        'parcel.delete'
+                    ])->get();
+                    foreach ($admins as $admin) {
+                        Mail::to($admin->email)->send(new NewParcel($this->parcel));
+                    }
+                } catch (\Throwable $th) {
+                    Log::error('Failed to send email to admins after parcel is created: ', [
+                        'error' => $th->getMessage(),
+                        'stack' => $th->getTraceAsString(),
+                    ]);
+                }
+
+                try {
+                    Log::info('Sending SMS to Parcel Recipient Start');
+                    $smsService->sendRecipientParcelCreatedSMS(
+                        formatKenyaNumber($this->parcel->receiver_phone),
+                        $this->parcel->receiver_name,
+                        $this->parcel->parcel_id,
+                    );
+                    Log::info('Sending SMS to Parcel Recipient End');
+                } catch (\Throwable $th) {
+                    Log::error('Failed to send SMS to receipient: ', [
+                        'error' => $th->getMessage(),
+                        'stack' => $th->getTraceAsString(),
+                    ]);
+                }
             } else {
                 $this->processOtherPayment();
             }

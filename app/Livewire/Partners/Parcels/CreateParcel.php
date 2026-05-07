@@ -746,39 +746,6 @@ class CreateParcel extends Component
 
             DB::commit();
 
-            try {
-                Log::info('Created Parcel. Sending notification to admin');
-
-                $admins = User::permission([
-                    'parcel.view',
-                    'parcel.update',
-                    'parcel.delete'
-                ])->get();
-                foreach ($admins as $admin) {
-                    Mail::to($admin->email)->send(new NewParcel($parcel));
-                }
-            } catch (\Throwable $th) {
-                Log::error('Failed to send email to admins after parcel is created: ', [
-                    'error' => $th->getMessage(),
-                    'stack' => $th->getTraceAsString(),
-                ]);
-            }
-
-            try {
-                Log::info('Sending SMS to Parcel Recipient Start');
-                $smsService->sendRecipientParcelCreatedSMS(
-                    formatKenyaNumber($parcel->receiver_phone),
-                    $parcel->receiver_name,
-                    $parcel->parcel_id,
-                );
-                Log::info('Sending SMS to Parcel Recipient End');
-            } catch (\Throwable $th) {
-                Log::error('Failed to send SMS to receipient: ', [
-                    'error' => $th->getMessage(),
-                    'stack' => $th->getTraceAsString(),
-                ]);
-            }
-
             return redirect()->route('partners.parcels.view', $parcel->id);
         } catch (\Illuminate\Validation\ValidationException $e) {
             dd($e->getMessage());

@@ -46,34 +46,26 @@ class Driver extends Model
         'driving_license_expiry_date' => 'date',
         'is_available' => 'boolean',
     ];
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-
     public function partner()
     {
         return $this->belongsTo(Partner::class, 'partner_id');
     }
-
     public function scopeAvailable($query)
     {
         return $query->where('is_available', true);
     }
-
-
     public function parcels(): MorphMany
     {
         return $this->morphMany(Parcel::class, 'transporter');
     }
-
-
     public function fleets()
     {
         return $this->hasMany(DriverFleetAssignment::class, 'driver_id');
     }
-
     public function currentFleet()
     {
         return $this->fleets()->where('status', 'active')->whereNull('to')->latest()->first();

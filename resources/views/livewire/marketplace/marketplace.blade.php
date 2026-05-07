@@ -869,18 +869,9 @@
                                     </div>
                                     <div class="col-6">
                                         <small class="text-muted">Final Payout</small>
-                                        <div class="fw-semibold text-success">KES {{ number_format($selectedParcel->partner_payout ?? $calculated_payout, 0) }}</div>
+                                        <div class="fw-semibold text-success">KES {{ $calculated_payout }}</div>
                                     </div>
-                                    <div class="col-12 mt-2">
-                                        <small class="text-muted">Delivery Type</small>
-                                        <div class="fw-semibold">
-                                            @if($selectedParcel->delivery_option === 'warehouse')
-                                            <i class="bi bi-building-warehouse me-1"></i> Warehouse Delivery
-                                            @else
-                                            <i class="bi bi-house-door me-1"></i> Door-to-Door
-                                            @endif
-                                        </div>
-                                    </div>
+                                    <hr>
                                     <div class="col-12 mt-2">
                                         <small class="text-muted">Route</small>
                                         <div>{{ $selectedParcel->senderTown->name ?? 'N/A' }} →
@@ -889,7 +880,15 @@
                                             @else
                                             {{ $selectedParcel->receiverTown->name ?? 'N/A' }}
                                             @endif
+                                        </div><br>
+                                        <div>{{ $selectedParcel->senderPickUpDropOffPoint->name }} →
+                                            @if($selectedParcel->delivery_option === 'warehouse' && $selectedParcel->assignedWarehouse)
+                                            {{ $selectedParcel->assignedWarehouse->town->name ?? 'Warehouse' }}
+                                            @else
+                                            {{ $selectedParcel->receiverTown->name ?? 'N/A' }}
+                                            @endif
                                         </div>
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -900,16 +899,7 @@
                                     <option value="">Choose a driver...</option>
                                     @foreach($drivers as $driver)
                                     <option value="{{ $driver->id }}">
-                                        {{ $driver->first_name }} {{ $driver->last_name }} -
-                                        @if($driver->currentFleet && $driver->currentFleet->fleet)
-                                        {{ $driver->currentFleet->fleet->registration_number }}
-                                        ({{ $driver->currentFleet->fleet->vehicle_type }})
-                                        @else
-                                        No vehicle assigned
-                                        @endif
-                                        @if($driver->is_available)
-                                        - Available
-                                        @endif
+                                        {{ $driver->full_name }}
                                     </option>
                                     @endforeach
                                 </select>
