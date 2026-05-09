@@ -173,7 +173,7 @@
                                 @endif
                             </td>
                             <td>
-                                @if(Auth::guard('admin')->user()->can('pickup-and-dropoff-point.update'))
+                                @if(Auth::guard('admin')->user()->can('pickup-and-dropoff-point.view'))
                                 <a href="{{ route('admin.points.view', $station->id) }}" class="btn btn-sm btn-primary"
                                     title="{{ __('View') }}">
                                     <i class="fas fa-eye"></i>
@@ -185,7 +185,7 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 @endif
-                                @if(Auth::guard('admin')->user()->can('pickup-and-dropoff-point.update'))
+                                @if(Auth::guard('admin')->user()->can('pickup-and-dropoff-point.delete'))
                                 <button class="btn btn-sm btn-danger" wire:click="confirm({{ $station->id }})"
                                     title="{{ __('Delete') }}">
                                     <i class="fas fa-trash-alt"></i>
