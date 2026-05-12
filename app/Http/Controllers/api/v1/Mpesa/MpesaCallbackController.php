@@ -22,6 +22,7 @@ class MpesaCallbackController extends Controller
     public function stkCallback(Request $request)
     {
 
+        Log::info('M-Pesa STK Callback Received', $request->all());
         // // Get the callback data from request and decode it
         $callbackData = $request->json()->all();
 
