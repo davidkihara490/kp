@@ -5,6 +5,7 @@ namespace App\Livewire\Partners\Parcels;
 use App\Livewire\Admin\Settings\Pricing\Pricings;
 use App\Mail\NewParcel;
 use App\Models\Parcel;
+use App\Models\Partner;
 use App\Models\Payment;
 use App\Models\User;
 use App\Services\MpesaService;
@@ -438,6 +439,7 @@ class ViewParcel extends Component
             if ($this->paymentMethod === 'mpesa') {
                 $this->processMpesaPayment();
 
+                //Sending email to admins
                 try {
                     Log::info('Created Parcel. Sending notification to admin');
 
@@ -456,16 +458,60 @@ class ViewParcel extends Component
                     ]);
                 }
 
+                //Send SMS to sender
+                try {
+                    Log::info('Sending SMS to Parcel Sender Start');
+                    $smsService->sendSenderParcelCreatedSMS(
+                        formatKenyaNumber($this->parcel->sender_phone),
+                        $this->parcel->sender_name,
+                        $this->parcel->parcel_id,
+                        $this->parcel->receiverTown->name
+                    );
+                    Log::info('Sending SMS to Parcel Sender End');
+                } catch (\Throwable $th) {
+                    Log::error('Failed to send SMS to receipient: ', [
+                        'error' => $th->getMessage(),
+                        'stack' => $th->getTraceAsString(),
+                    ]);
+                }
+
+                //Send SMS to recipients
                 try {
                     Log::info('Sending SMS to Parcel Recipient Start');
                     $smsService->sendRecipientParcelCreatedSMS(
                         formatKenyaNumber($this->parcel->receiver_phone),
                         $this->parcel->receiver_name,
                         $this->parcel->parcel_id,
+                        $this->parcel->receiverTown->name
                     );
                     Log::info('Sending SMS to Parcel Recipient End');
                 } catch (\Throwable $th) {
                     Log::error('Failed to send SMS to receipient: ', [
+                        'error' => $th->getMessage(),
+                        'stack' => $th->getTraceAsString(),
+                    ]);
+                }
+
+                //Send SMS to transport partners
+                try {
+                    $transportPartners = Partner::where('partner_type', 'transport')->where('verification_status', 'verified')->with('owner')->get();
+                    Log::info('Sending SMS to Transport Partner Start');
+
+                    foreach ($transportPartners as $partner) {
+
+                        // Send to owner phone
+                        if (!empty($partner->owner?->phone_number)) {
+                            $smsService->sendTransportParnerParcelBookedSMS(
+                                formatKenyaNumber($partner->owner?->phone_number),
+                                $this->parcel->senderTown->name,
+                                $this->parcel->receiverTown->name
+                            );
+                        }
+                    }
+
+                    Log::info('Sending SMS to Transport Partner End');
+                } catch (\Throwable $th) {
+                    Log::error('Failed to send SMS to transport partners: ', [
                         'error' => $th->getMessage(),
                         'stack' => $th->getTraceAsString(),
                     ]);

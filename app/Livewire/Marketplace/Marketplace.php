@@ -13,9 +13,11 @@ use App\Models\ParcelPayout;
 use App\Models\Partner;
 use App\Models\PaymentStructure;
 use App\Models\PickUpAndDropOffPoint;
+use App\Services\SMSService;
 use Illuminate\Broadcasting\Broadcasters\NullBroadcaster;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class Marketplace extends Component
 {
@@ -99,13 +101,14 @@ class Marketplace extends Component
 
     public $warehousePaymentStructure;
     public $pickUpDropOffPaymentStructure;
+    protected SMSService $smsService;
 
 
     // Add these methods
     public function initiateDeliveryOption($parcelId)
     {
         $this->selectedParcel = Parcel::findOrFail($parcelId);
-        $this->base_payout = $this->selectedParcel->total_amount ?? 0;
+        $this->base_payout = $this->selectedParcel->base_price ?? 0;
         $this->delivery_option = '';
         $this->selected_warehouse_id = '';
         $this->calculated_payout = 0;
@@ -136,7 +139,7 @@ class Marketplace extends Component
 
     public function calculatePayout()
     {
-        $cost = $this->selectedParcel->total_amount;
+        $cost = $this->selectedParcel->base_price;
 
         if ($this->delivery_option === 'warehouse') {
             $this->calculated_payout = ($cost * $this->warehousePaymentStructure->transport_partner_percentage) / 100;
@@ -338,7 +341,7 @@ class Marketplace extends Component
         $this->selectedParcel = $parcel;
 
         // Calculate payouts
-        $this->base_payout = $parcel->total_amount ?? 0;
+        $this->base_payout = $parcel->base_price ?? 0;
 
         // $this->warehouse_payout = $this->base_payout * self::WAREHOUSE_PERCENTAGE;
         // $this->final_destination_payout = $this->base_payout * self::FINAL_DESTINATION_PERCENTAGE;
@@ -418,11 +421,11 @@ class Marketplace extends Component
             if ($this->delivery_option === 'warehouse') {
                 $destination = 'warehouse';
                 $destination_id = $this->selected_warehouse_id;
-                $amount = ($this->selectedParcel->total_amount * $this->warehousePaymentStructure->transport_partner_percentage) / 100;
+                $amount = ($this->selectedParcel->base_price * $this->warehousePaymentStructure->transport_partner_percentage) / 100;
             } elseif ($this->delivery_option === 'final_destination') {
                 $destination = 'final';
                 $destination_id = $this->selectedParcel->delivery_pick_up_drop_off_point_id;
-                $amount = ($this->selectedParcel->total_amount * $this->pickUpDropOffPaymentStructure->transport_partner_percentage) / 100;
+                $amount = ($this->selectedParcel->base_price * $this->pickUpDropOffPaymentStructure->transport_partner_percentage) / 100;
             }
 
             $parcelPayout = ParcelPayout::create([
@@ -449,7 +452,7 @@ class Marketplace extends Component
             ]);
         } catch (\Exception $e) {
 
-        dd($e->getMessage());
+            dd($e->getMessage());
             DB::rollBack();
             $this->dispatch('show-notification', [
                 'type' => 'error',
@@ -481,7 +484,7 @@ class Marketplace extends Component
         $this->assignment_notes = '';
     }
 
-    public function assignDriver()
+    public function assignDriver(SMSService $smsService)
     {
         $this->validate([
             'selectedParcel.id' => 'required|exists:parcels,id',
@@ -500,6 +503,7 @@ class Marketplace extends Component
         try {
             $driver = Driver::find($this->selectedDriver);
 
+            $parcelCode = $this->selectedParcel->generateDeliveryOtp();
             DB::beginTransaction();
             $this->selectedParcel->updateParcelStatus(
                 Parcel::STATUS_ASSIGNED,
@@ -507,7 +511,7 @@ class Marketplace extends Component
                 'transport',
                 'Parcel assigned to driver: ' . $driver->first_name . ' ' . $driver->last_name,
                 $driver->id,
-                $this->selectedParcel->generateDeliveryOtp(),
+                $parcelCode
             );
 
             $this->selectedParcel->current_status = Parcel::STATUS_ASSIGNED;
@@ -515,6 +519,25 @@ class Marketplace extends Component
             $this->selectedParcel->save();
 
             DB::commit();
+
+
+            //Send Driver SMS notification
+            try {
+                Log::info('START::Sending SMS to driver after Asignment');
+                $smsService->sendDriverAssignmentSMS(
+                    $driver->phone_number,
+                    $driver->full_name,
+                    $this->parcel->senderTown->name,
+                    $this->parcel->receiverTown->name,
+                    $parcelCode
+                );
+                Log::info('START::Sending SMS to driver after Asignment');
+            } catch (\Throwable $th) {
+                Log::error('Failed to send SMS to driver: ', [
+                    'error' => $th->getMessage(),
+                    'stack' => $th->getTraceAsString(),
+                ]);
+            }
 
             // Refresh statistics
             $this->loadStatistics();

@@ -53,19 +53,35 @@ class SMSService
         );
     }
 
-    public function sendRecipientParcelCreatedSMS(string $phoneNumber, string $recipientName, string $parcelId)
+    public function sendSenderParcelCreatedSMS(string $phoneNumber, string $senderName, string $parcelId, string $destinationTown)
     {
         return $this->sendMessage(
             $phoneNumber,
-            "Hi {$recipientName}! We have received your parcel. You will be notified when the parcel arrives at the pick-up point. You can also track on karibuparcels.com with code {$parcelId}."
+            "Hi {$senderName}! Your parcel has been booked successfully. You will be notified when the parcel arrives in {$destinationTown}. You can also track on karibuparcels.com with code {$parcelId}."
         );
     }
 
-    public function sendDriverAssignmentSMS(string $phoneNumber, string $driverName, string $code)
+    public function sendRecipientParcelCreatedSMS(string $phoneNumber, string $recipientName, string $parcelId, string $destinationTown)
     {
         return $this->sendMessage(
             $phoneNumber,
-            "Hi {$driverName}! You have been assigned to deliver a parcel. Parcel code is {$code}. Use this code at the pick up point."
+            "Hi {$recipientName}! Your parcel has been booked successfully. You will be notified when the parcel arrives in {$destinationTown}. You can also track on karibuparcels.com with code {$parcelId}."
+        );
+    }
+
+    public function sendTransportParnerParcelBookedSMS(string $phoneNumber, string $origintown, string $destinationtown)
+    {
+        return $this->sendMessage(
+            $phoneNumber,
+            "Karibu Parcels, there is a parcel that has been booked from {$origintown} to {$destinationtown}. Login to your portal to see details and assign the driver"
+        );
+    }
+
+    public function sendDriverAssignmentSMS(string $phoneNumber, string $driverName, string $originTown,  string $destinationTown, string $code)
+    {
+        return $this->sendMessage(
+            $phoneNumber,
+            "Karibu Parcels, Hi {$driverName}! A parcel has been assigned to you from {$originTown} to {$destinationTown}.Parcel code is {$code}."
         );
     }
     public function sendBulkSMS(array $recipients)
