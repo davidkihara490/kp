@@ -786,12 +786,15 @@ class CreateParcel extends Component
                 'oversized' => 'Oversized',
             ],
             'paymentMethods' => [
-                'cash' => 'Cash',
                 'mpesa' => 'M-Pesa',
-                'card' => 'Card',
-                'bank_transfer' => 'Bank Transfer',
-                'wallet' => 'Wallet',
             ],
+            // 'paymentMethods' => [
+            //     'cash' => 'Cash',
+            //     'mpesa' => 'M-Pesa',
+            //     'card' => 'Card',
+            //     'bank_transfer' => 'Bank Transfer',
+            //     'wallet' => 'Wallet',
+            // ],
             'paymentStatuses' => [
                 'pending' => 'Pending',
                 'paid' => 'Paid',

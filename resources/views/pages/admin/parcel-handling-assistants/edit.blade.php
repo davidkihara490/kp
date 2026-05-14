@@ -8,6 +8,6 @@
 
 @section('content')
     <div>
-        <livewire:admin.parcel-handling-assistants.create-parcel-handling-assistant :id="$id" />
+        <livewire:admin.parcel-handling-assistants.edit-parcel-handling-assistant :id="$id" />
     </div>
 @endsection

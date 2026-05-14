@@ -31,58 +31,76 @@
                     </div>
                     <div class="stat-content">
                         <span class="stat-label">Total Parcels</span>
-                        <span class="stat-value">{{ $totalParcels }}</span>
-                    </div>
-                    <div class="stat-trend positive">
-                        <i class="bi bi-arrow-up"></i>
-                        +12%
+                        @if(auth()->guard('partner')->user()->user_type == 'driver')
+                        <span class="stat-value">{{ $statParcels->where('driver_id', auth()->guard('partner')->user()->driver->id)->count() }}</span>
+                        @elseif(auth()->guard('partner')->user()->user_type == 'pha')
+                        <span class="stat-value">{{ $statParcels->where('sender_partner_id', auth()->guard('partner')->user()->parcelHandlingAssistant->partner->id)->count() }}</span>
+                        @elseif(auth()->guard('partner')->user()->user_type == 'pickup-dropoff')
+                        <span class="stat-value">{{ $statParcels->where('sender_partner_id', auth()->guard('partner')->user()->partner->id)->count() }}</span>
+                        @endif
                     </div>
                 </div>
 
+
+                @if(auth()->guard('partner')->user()->user_type == 'driver')
                 <div class="stat-card pending">
                     <div class="stat-icon">
                         <i class="bi bi-clock"></i>
                     </div>
                     <div class="stat-content">
                         <span class="stat-label">Pending</span>
-                        <span class="stat-value">{{ $pendingParcels }}</span>
+                        <span class="stat-value">{{ $statParcels->where('driver_id', auth()->guard('partner')->user()->driver->id)->where('current_status', 'assigned')->count() }}</span>
                     </div>
                     <div class="stat-progress">
                         <div class="progress">
-                            <div class="progress-bar bg-warning" style="width: {{ ($pendingParcels / max($totalParcels, 1)) * 100 }}%"></div>
+                            <div class="progress-bar bg-warning" style="width: {{ ($statParcels->where('driver_id', auth()->guard('partner')->user()->driver->id)->where('current_status', 'assigned')->count() / max($statParcels->where('driver_id', auth()->guard('partner')->user()->driver->id)->count(), 1)) * 100 }}%"></div>
                         </div>
                     </div>
                 </div>
+                @else
+                <span class="stat-value">{{ $totalParcels }}</span>
+                @endif
 
+
+                @if(auth()->guard('partner')->user()->user_type == 'driver')
                 <div class="stat-card transit">
                     <div class="stat-icon">
                         <i class="bi bi-truck"></i>
                     </div>
                     <div class="stat-content">
                         <span class="stat-label">In Transit</span>
-                        <span class="stat-value">{{ $inTransitParcels }}</span>
+                        <span class="stat-value">{{ $statParcels->where('driver_id', auth()->guard('partner')->user()->driver->id)->where('current_status', 'in_transit')->count() }}</span>
                     </div>
                     <div class="stat-progress">
                         <div class="progress">
-                            <div class="progress-bar bg-info" style="width: {{ ($inTransitParcels / max($totalParcels, 1)) * 100 }}%"></div>
+                            <div class="progress-bar bg-info" style="width: {{ ($statParcels->where('driver_id', auth()->guard('partner')->user()->driver->id)->where('current_status', 'in_transit')->count() / max($statParcels->where('driver_id', auth()->guard('partner')->user()->driver->id)->count(), 1)) * 100 }}%"></div>
                         </div>
                     </div>
                 </div>
+                @else
+                <span class="stat-value">{{ $totalParcels }}</span>
+                @endif
 
+                @if(auth()->guard('partner')->user()->user_type == 'driver')
                 <div class="stat-card delivered">
                     <div class="stat-icon">
                         <i class="bi bi-check-circle"></i>
                     </div>
                     <div class="stat-content">
                         <span class="stat-label">Delivered</span>
-                        <span class="stat-value">{{ $deliveredParcels ?? 0 }}</span>
+                        <span class="stat-value">{{ $statParcels->where('driver_id', auth()->guard('partner')->user()->driver->id)->where('current_status', 'arrived_at_destination')->count() }}</span>
                     </div>
                     <div class="stat-trend positive">
                         <i class="bi bi-check"></i>
-                        {{ round(($deliveredParcels ?? 0) / max($totalParcels, 1) * 100) }}% success
+                        {{ round(($statParcels->where('driver_id', auth()->guard('partner')->user()->driver->id)->where('current_status', 'arrived_at_destination')->count()  ?? 0) / max($statParcels->where('driver_id', auth()->guard('partner')->user()->driver->id)->count(), 1) * 100) }}% success
                     </div>
                 </div>
+                @else
+                <span class="stat-value">{{ $totalParcels }}</span>
+                @endif
 
+                @if(auth()->guard('partner')->user()->user_type == 'driver')
+                @else
                 <div class="stat-card revenue">
                     <div class="stat-icon">
                         <i class="bi bi-cash-stack"></i>
@@ -96,6 +114,8 @@
                         This month
                     </div>
                 </div>
+                @endif
+
             </div>
 
             <!-- Search and Filters Bar -->
@@ -281,6 +301,181 @@
             @endif
 
             <!-- Parcels Table -->
+
+            @if(auth()->guard('partner')->user()->user_type == 'driver')
+            <div class="table-container">
+                <div class="table-responsive">
+                    <table class="table parcels-table">
+                        <thead>
+                            <tr>
+                                <th width="50">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" wire:model="selectAll" id="selectAll">
+                                    </div>
+                                </th>
+                                <th wire:click="sortBy('parcel_number')" class="sortable">
+                                    <div class="d-flex align-items-center">
+                                        Parcel
+                                        @if ($sortField === 'parcel_number')
+                                        <i class="bi bi-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ms-2"></i>
+                                        @endif
+                                    </div>
+                                </th>
+                                <th>Parcel Details</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th wire:click="sortBy('current_status')" class="sortable">
+                                    <div class="d-flex align-items-center">
+                                        Status
+                                        @if ($sortField === 'current_status')
+                                        <i class="bi bi-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ms-2"></i>
+                                        @endif
+                                    </div>
+                                </th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($parcels as $parcel)
+                            <tr class="{{ in_array($parcel->id, $selectedParcels) ? 'selected-row' : '' }}">
+                                <td>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                            value="{{ $parcel->id }}" wire:model="selectedParcels">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="parcel-info-cell">
+                                        <a href="{{ route('partners.parcels.view', $parcel->id) }}"
+                                            class="parcel-number">
+                                            {{ $parcel->parcel_id }}
+                                        </a>
+                                        <div class="parcel-amount">
+                                            KES {{ number_format($parcel->total_amount, 2) }}
+                                        </div>
+                                        @if ($parcel->is_overdue)
+                                        <span class="overdue-badge">
+                                            <i class="bi bi-exclamation-circle me-1"></i>
+                                            Overdue
+                                        </span>
+                                        @endif
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="details-cell">
+                                        <div class="content-preview">
+                                            {{ Str::limit($parcel->content_description ?? 'No description', 30) }}
+                                        </div>
+                                        <div class="badges-group">
+                                            @php
+                                            $typeBadge = $this->getParcelTypeBadge($parcel->parcel_type);
+                                            @endphp
+                                            <span class="badge badge-type" style="background: {{ $typeBadge['color'] }}20; color: {{ $typeBadge['color'] }}">
+                                                <i class="bi {{ $typeBadge['icon'] }} me-1"></i>
+                                                {{ $typeBadge['text'] }}
+                                            </span>
+                                            @if($parcel->requiresSpecialHandling())
+                                            @php
+                                            $handlingBadge = $this->getPackageTypeBadge($parcel->package_type);
+                                            @endphp
+                                            <span class="badge badge-handling" style="background: {{ $handlingBadge['color'] }}20; color: {{ $handlingBadge['color'] }}">
+                                                <i class="bi {{ $handlingBadge['icon'] }} me-1"></i>
+                                                {{ $handlingBadge['text'] }}
+                                            </span>
+                                            @endif
+                                        </div>
+                                        <div class="weight-info">
+                                            <i class="bi bi-weight"></i>
+                                            {{ $parcel->weight }} {{ $parcel->weight_unit }}
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong>{{ $parcel->senderTown->name }}</strong> <br>
+                                    <span class="badge bg-info">{{ $parcel->senderPickUpDropOffPoint->name }}</span> <br>
+                                    <span class="badge bg-warning">{{ $parcel->senderPickUpDropOffPoint->address }} </span><br>
+                                </td>
+
+                                <td>
+                                    <strong>{{ $parcel->receiverTown->name }}</strong> <br>
+                                    <span class="badge bg-info">{{ $parcel->deliveryStation->name }}</span> <br>
+                                    <span class="badge bg-warning">{{ $parcel->deliveryStation->address }} </span><br>
+                                </td>
+
+                                <td>
+                                    @php
+                                    $statusBadge = $this->getStatusBadge($parcel->current_status);
+                                    @endphp
+                                    <div class="status-wrapper">
+                                        <span class="status-badge" style="background: {{ $statusBadge['color'] }}20; color: {{ $statusBadge['color'] }}">
+                                            <i class="bi {{ $statusBadge['icon'] }} me-1"></i>
+                                            {{ $statusBadge['text'] }}
+                                        </span>
+                                        @if ($parcel->estimated_delivery_date)
+                                        <div class="estimated-date">
+                                            <i class="bi bi-calendar"></i>
+                                            Est: {{ $parcel->estimated_delivery_date->format('M d') }}
+                                        </div>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="{{ route('partners.parcels.view', $parcel->id) }}"
+                                            class="action-btn view" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="9">
+                                    <div class="empty-state">
+                                        <div class="empty-icon">
+                                            <i class="bi bi-box-seam"></i>
+                                        </div>
+                                        <h4>No Parcels Found</h4>
+                                        <p>
+                                            @if ($this->hasActiveFilters())
+                                            No parcels match your current filters. Try adjusting your search criteria.
+                                            @else
+                                            No parcels have been added yet. Start by creating your first parcel.
+                                            @endif
+                                        </p>
+                                        @if ($this->hasActiveFilters())
+                                        <button class="btn btn-primary" wire:click="resetFilters">
+                                            <i class="bi bi-x-circle me-2"></i>
+                                            Clear Filters
+                                        </button>
+                                        @else
+                                        <a href="{{ route('partners.parcels.create') }}" class="btn btn-primary">
+                                            <i class="bi bi-plus-circle me-2"></i>
+                                            Create First Parcel
+                                        </a>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-wrapper mt-4">
+                <div class="pagination-info">
+                    Showing {{ $parcels->firstItem() ?? 0 }} to {{ $parcels->lastItem() ?? 0 }} of {{ $parcels->total() }} parcels
+                </div>
+                <div class="pagination-links">
+                    {{ $parcels->links('pagination::bootstrap-5') }}
+                </div>
+            </div>
+            @else
+
             <div class="table-container">
                 <div class="table-responsive">
                     <table class="table parcels-table">
@@ -553,6 +748,8 @@
                     {{ $parcels->links('pagination::bootstrap-5') }}
                 </div>
             </div>
+            @endif
+
 
             <!-- Assign Driver Modal -->
             <div class="modal fade" id="assignDriverModal" tabindex="-1" aria-labelledby="assignDriverModalLabel" aria-hidden="true" wire:ignore.self>

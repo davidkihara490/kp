@@ -23,10 +23,10 @@
 
         <form wire:submit.prevent="updateProfile">
             @if (session()->has('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="alert alert-success alert-dismissible fade show" role="alert" x-data="{show: true}" x-show="show" x-init="setTimeout(() => show = false, 5000)">
                 <i class="bi bi-check-circle me-2"></i>
                 {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" @click="show = false"></button>
             </div>
             @endif
 
@@ -37,6 +37,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             @endif
+
             <!-- Basic Information Card -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white py-3 border-bottom">
@@ -47,45 +48,33 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium">Partner Type</label>
-                            <div class="partner-type-selector">
-                                <div class="btn-group w-100" role="group">
-                                    <button class="btn btn-outline-info">
-                                        @if($partner_type == 'pickup-dropoff')
-                                        Pickup-Dropoff Partner
-                                        @elseif($partner_type == 'transport')
-                                        Transport Partner
-                                        @endif
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <label class="form-label fw-medium">Company Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('company_name') is-invalid @enderror"
                                 wire:model="company_name"
+                                wire:loading.attr="disabled"
                                 placeholder="Enter your company name">
                             @error('company_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label fw-medium">Registration Number <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('registration_number') is-invalid @enderror"
                                 wire:model="registration_number"
+                                wire:loading.attr="disabled"
                                 placeholder="e.g., CPR/2021/12345">
                             @error('registration_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label fw-medium">KRA PIN <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('kra_pin') is-invalid @enderror"
                                 wire:model="kra_pin"
-                                placeholder="e.g., A123456789X">
+                                wire:loading.attr="disabled"
+                                placeholder="e.g., A123456789X"
+                                style="text-transform: uppercase">
                             @error('kra_pin') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -93,29 +82,92 @@
             <!-- Service Areas Card -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="fw-bold mb-0">
-                        <i class="fas fa-map-marker-alt text-warning me-2"></i>
-                        Service Areas
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <h5 class="fw-bold mb-0">
+                                <i class="fas fa-map-marker-alt text-warning me-2"></i>
+                                Service Areas
+                            </h5>
+                            <p class="text-muted small mt-2 mb-0">Select the towns where you operate</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <div class="input-group" style="width: 250px;">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" 
+                                    class="form-control" 
+                                    id="townSearch" 
+                                    placeholder="Search towns..."
+                                    wire:model.live.debounce.300ms="searchTerm">
+                                @if($searchTerm)
+                                <button class="btn btn-outline-secondary" type="button" wire:click="$set('searchTerm', '')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                @endif
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" wire:click="selectAllTowns">
+                                <i class="fas fa-check-double me-1"></i> Select All
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="deselectAllTowns">
+                                <i class="fas fa-times me-1"></i> Deselect All
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
-                    <label class="form-label fw-medium">Select Towns You Operate In</label>
+                    <!-- Selection Summary -->
+                    <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>{{ count($service_towns) }}</strong> town(s) selected
+                                @if($searchTerm)
+                                <span class="ms-2">
+                                    <i class="fas fa-filter me-1"></i>
+                                    Showing results for: "<strong>{{ $searchTerm }}</strong>"
+                                </span>
+                                @endif
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    </div>
+
+                    <!-- All towns displayed in a grid -->
+                    @if(count($availableTowns) > 0)
                     <div class="row">
                         @foreach($availableTowns as $town)
-                        <div class="col-md-3 mb-2">
+                        <div class="col-md-4 col-lg-3 mb-3 town-item">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox"
+                                <input class="form-check-input town-checkbox" type="checkbox"
                                     value="{{ $town->id }}"
                                     id="town_{{ $town->id }}"
                                     wire:model="service_towns">
                                 <label class="form-check-label" for="town_{{ $town->id }}">
-                                    {{ $town->name }}
+                                    <strong>{{ $town->name }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-map-pin me-1"></i>
+                                        {{ $town->subCounty->name ?? 'N/A' }}, 
+                                        {{ $town->subCounty->county->name ?? 'N/A' }}
+                                    </small>
+                                    @if(in_array($town->id, $service_towns))
+                                    <i class="fas fa-check-circle text-success ms-1"></i>
+                                    @endif
                                 </label>
                             </div>
                         </div>
                         @endforeach
                     </div>
-                    @error('service_towns') <span class="text-danger small">{{ $message }}</span> @enderror
+                    @else
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No towns found matching "<strong>{{ $searchTerm }}</strong>"</p>
+                        <button type="button" class="btn btn-sm btn-primary" wire:click="$set('searchTerm', '')">
+                            Clear Search
+                        </button>
+                    </div>
+                    @endif
+
+                    @error('service_towns') <div class="text-danger small mt-2">{{ $message }}</div> @enderror
                 </div>
             </div>
 
@@ -126,43 +178,219 @@
                         <i class="fas fa-file-contract text-danger me-2"></i>
                         Documents & Certificates
                     </h5>
+                    <p class="text-muted small mt-2 mb-0">Upload PDF, JPG, or PNG files (Max 5MB each)</p>
                 </div>
                 <div class="card-body">
-                    <div class="row g-3">
+                    <div class="row g-4">
                         <!-- Registration Certificate -->
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Registration Certificate</label>
-                            <div class="document-upload">
-                                <input type="file" class="form-control @error('registration_certificate') is-invalid @enderror"
-                                    wire:model="registration_certificate"
-                                    accept=".pdf,.jpg,.jpeg,.png">
-                                @error('registration_certificate') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                @if($current_registration_certificate)
-                                <small class="text-success mt-1 d-block">
-                                    <i class="fas fa-check-circle me-1"></i>
-                                    Current file: {{ basename($current_registration_certificate) }}
-                                </small>
-                                @endif
+                            <div class="document-card">
+                                <label class="form-label fw-medium">
+                                    <i class="fas fa-building me-1"></i>
+                                    Registration Certificate
+                                    <span class="text-muted small">(Optional)</span>
+                                </label>
+                                <div class="document-upload-wrapper">
+                                    <input type="file" class="form-control @error('registration_certificate') is-invalid @enderror"
+                                        wire:model="registration_certificate"
+                                        accept=".pdf,.jpg,.jpeg,.png">
+                                    @error('registration_certificate') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    
+                                    @if($current_registration_certificate)
+                                    <div class="current-document mt-2 p-2 bg-light rounded">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="flex-grow-1">
+                                                <i class="fas fa-check-circle text-success me-1"></i>
+                                                <small>Current: {{ basename($current_registration_certificate) }}</small>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger ms-2" 
+                                                wire:click="removeDocument('registration')"
+                                                wire:confirm="Are you sure you want to remove this document?">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @endif
+                                    
+                                    @if($registration_certificate)
+                                    <div class="mt-2">
+                                        <small class="text-info">
+                                            <i class="fas fa-spinner fa-spin me-1"></i>
+                                            New file selected: {{ $registration_certificate->getClientOriginalName() }}
+                                        </small>
+                                    </div>
+                                    @endif
+                                </div>
                             </div>
                         </div>
 
                         <!-- KRA PIN Certificate -->
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">KRA PIN Certificate</label>
-                            <div class="document-upload">
-                                <input type="file" class="form-control @error('pin_certificate') is-invalid @enderror"
-                                    wire:model="pin_certificate"
-                                    accept=".pdf,.jpg,.jpeg,.png">
-                                @error('pin_certificate') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                @if($current_pin_certificate)
-                                <small class="text-success mt-1 d-block">
-                                    <i class="fas fa-check-circle me-1"></i>
-                                    Current file: {{ basename($current_pin_certificate) }}
-                                </small>
-                                @endif
+                            <div class="document-card">
+                                <label class="form-label fw-medium">
+                                    <i class="fas fa-file-invoice me-1"></i>
+                                    KRA PIN Certificate
+                                    <span class="text-muted small">(Optional)</span>
+                                </label>
+                                <div class="document-upload-wrapper">
+                                    <input type="file" class="form-control @error('pin_certificate') is-invalid @enderror"
+                                        wire:model="pin_certificate"
+                                        accept=".pdf,.jpg,.jpeg,.png">
+                                    @error('pin_certificate') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    
+                                    @if($current_pin_certificate)
+                                    <div class="current-document mt-2 p-2 bg-light rounded">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="flex-grow-1">
+                                                <i class="fas fa-check-circle text-success me-1"></i>
+                                                <small>Current: {{ basename($current_pin_certificate) }}</small>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger ms-2" 
+                                                wire:click="removeDocument('pin')"
+                                                wire:confirm="Are you sure you want to remove this document?">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @endif
+                                    
+                                    @if($pin_certificate)
+                                    <div class="mt-2">
+                                        <small class="text-info">
+                                            <i class="fas fa-spinner fa-spin me-1"></i>
+                                            New file selected: {{ $pin_certificate->getClientOriginalName() }}
+                                        </small>
+                                    </div>
+                                    @endif
+                                </div>
                             </div>
                         </div>
 
+                        <!-- Compliance Certificate -->
+                        <div class="col-md-6">
+                            <div class="document-card">
+                                <label class="form-label fw-medium">
+                                    <i class="fas fa-shield-alt me-1"></i>
+                                    Compliance Certificate
+                                    <span class="text-muted small">(Optional)</span>
+                                </label>
+                                <div class="document-upload-wrapper">
+                                    <input type="file" class="form-control @error('compliance_certificate') is-invalid @enderror"
+                                        wire:model="compliance_certificate"
+                                        accept=".pdf,.jpg,.jpeg,.png">
+                                    @error('compliance_certificate') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    
+                                    @if($current_compliance_certificate)
+                                    <div class="current-document mt-2 p-2 bg-light rounded">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="flex-grow-1">
+                                                <i class="fas fa-check-circle text-success me-1"></i>
+                                                <small>Current: {{ basename($current_compliance_certificate) }}</small>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger ms-2" 
+                                                wire:click="removeDocument('compliance')"
+                                                wire:confirm="Are you sure you want to remove this document?">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @endif
+                                    
+                                    @if($compliance_certificate)
+                                    <div class="mt-2">
+                                        <small class="text-info">
+                                            <i class="fas fa-spinner fa-spin me-1"></i>
+                                            New file selected: {{ $compliance_certificate->getClientOriginalName() }}
+                                        </small>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Insurance Certificate -->
+                        <div class="col-md-6">
+                            <div class="document-card">
+                                <label class="form-label fw-medium">
+                                    <i class="fas fa-umbrella me-1"></i>
+                                    Insurance Certificate
+                                    <span class="text-muted small">(Optional)</span>
+                                </label>
+                                <div class="document-upload-wrapper">
+                                    <input type="file" class="form-control @error('insurance_certificate') is-invalid @enderror"
+                                        wire:model="insurance_certificate"
+                                        accept=".pdf,.jpg,.jpeg,.png">
+                                    @error('insurance_certificate') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    
+                                    @if($current_insurance_certificate)
+                                    <div class="current-document mt-2 p-2 bg-light rounded">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="flex-grow-1">
+                                                <i class="fas fa-check-circle text-success me-1"></i>
+                                                <small>Current: {{ basename($current_insurance_certificate) }}</small>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger ms-2" 
+                                                wire:click="removeDocument('insurance')"
+                                                wire:confirm="Are you sure you want to remove this document?">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @endif
+                                    
+                                    @if($insurance_certificate)
+                                    <div class="mt-2">
+                                        <small class="text-info">
+                                            <i class="fas fa-spinner fa-spin me-1"></i>
+                                            New file selected: {{ $insurance_certificate->getClientOriginalName() }}
+                                        </small>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Drivers Certificate -->
+                        <div class="col-md-6">
+                            <div class="document-card">
+                                <label class="form-label fw-medium">
+                                    <i class="fas fa-id-card me-1"></i>
+                                    Drivers Certificate
+                                    <span class="text-muted small">(Optional)</span>
+                                </label>
+                                <div class="document-upload-wrapper">
+                                    <input type="file" class="form-control @error('drivers_certificate') is-invalid @enderror"
+                                        wire:model="drivers_certificate"
+                                        accept=".pdf,.jpg,.jpeg,.png">
+                                    @error('drivers_certificate') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    
+                                    @if($current_drivers_certificate)
+                                    <div class="current-document mt-2 p-2 bg-light rounded">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="flex-grow-1">
+                                                <i class="fas fa-check-circle text-success me-1"></i>
+                                                <small>Current: {{ basename($current_drivers_certificate) }}</small>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger ms-2" 
+                                                wire:click="removeDocument('drivers')"
+                                                wire:confirm="Are you sure you want to remove this document?">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @endif
+                                    
+                                    @if($drivers_certificate)
+                                    <div class="mt-2">
+                                        <small class="text-info">
+                                            <i class="fas fa-spinner fa-spin me-1"></i>
+                                            New file selected: {{ $drivers_certificate->getClientOriginalName() }}
+                                        </small>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -178,12 +406,12 @@
                     <div class="d-flex gap-3">
                         <button type="button" class="btn btn-outline-primary"
                             wire:click="$refresh">
-                            <i class="fas fa-redo me-2"></i>Reset Form
+                            <i class="fas fa-redo me-2"></i>Reset
                         </button>
                         <button type="submit"
                             class="btn btn-primary btn-gradient"
                             wire:loading.attr="disabled"
-                            wire:target="updateProfile">
+                            wire:target="updateProfile, registration_certificate, pin_certificate, compliance_certificate, insurance_certificate, drivers_certificate">
                             <span wire:loading.remove wire:target="updateProfile">
                                 <i class="fas fa-save me-2"></i>Update Profile
                             </span>
@@ -223,6 +451,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        background: rgba(255, 255, 255, 0.1);
     }
 
     .btn-gradient {
@@ -231,104 +460,178 @@
         color: white;
         padding: 10px 24px;
         font-weight: 500;
+        transition: all 0.3s ease;
     }
 
-    .btn-gradient:hover {
+    .btn-gradient:hover:not(:disabled) {
         background: linear-gradient(135deg, #5a6fd8 0%, #6a4199 100%);
         color: white;
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
-        transition: all 0.3s ease;
+    }
+
+    .btn-gradient:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
     }
 
     .card {
         border-radius: 12px;
         overflow: hidden;
+        transition: all 0.3s ease;
     }
 
-    .partner-type-selector .btn-group .btn {
-        padding: 12px 20px;
-        font-weight: 500;
+    .card:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08) !important;
     }
 
-    .partner-type-selector .btn-check:checked+.btn {
-        background-color: rgba(102, 126, 234, 0.1);
-        border-color: #667eea;
-        color: #667eea;
+    .town-item {
+        animation: fadeInUp 0.3s ease-out;
+        animation-fill-mode: both;
     }
 
-    .partner-type-selector .btn-check:checked+.btn-outline-info {
-        background-color: rgba(23, 162, 184, 0.1) !important;
-        border-color: #17a2b8 !important;
-        color: #17a2b8 !important;
+    .town-item:nth-child(n) {
+        animation-delay: calc(0.02s * var(--item-index, 0));
     }
 
-    .partner-type-selector .btn-check:checked+.btn-outline-success {
-        background-color: rgba(40, 167, 69, 0.1) !important;
-        border-color: #28a745 !important;
-        color: #28a745 !important;
+    .form-check {
+        padding: 10px 12px;
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 1px solid transparent;
     }
 
-    .email-input-group .email-item {
-        background: linear-gradient(to right, #f8f9fa, #fff);
-        border: 1px solid rgba(0, 0, 0, 0.05);
+    .form-check:hover {
+        background-color: #f8f9fa;
+        border-color: #e9ecef;
+        transform: translateX(3px);
     }
 
-    .email-input-group .email-item:hover {
-        background: linear-gradient(to right, #e9ecef, #f8f9fa);
-    }
-
-    .document-upload {
-        position: relative;
-    }
-
-    .document-upload input[type="file"] {
-        padding: 8px;
-    }
-
-    .form-check.form-switch .form-check-input {
-        width: 3em;
-        height: 1.5em;
+    .form-check-input {
+        margin-top: 0.3rem;
         cursor: pointer;
     }
 
-    .form-check.form-switch .form-check-input:checked {
-        background-color: #28a745;
-        border-color: #28a745;
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
     }
 
-    .form-check.form-switch .form-check-input:focus {
-        border-color: #28a745;
-        box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+    .form-check-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+    }
+
+    .form-check-label {
+        cursor: pointer;
+        user-select: none;
+        font-size: 0.9rem;
+        margin-left: 0.5rem;
+    }
+
+    .document-card {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .document-card:hover {
+        background: #f1f3f5;
+        transform: translateY(-2px);
+    }
+
+    .current-document {
+        background: #e9ecef !important;
+        border-left: 3px solid #28a745;
+        border-radius: 4px;
+    }
+
+    .form-control:focus,
+    .form-select:focus,
+    .input-group:focus-within {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
     }
 
     .sticky-footer {
         position: sticky;
         bottom: 0;
         z-index: 100;
+        background: white;
         box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        border-radius: 8px 8px 0 0;
     }
 
-    .form-control:focus,
-    .form-select:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+    .alert {
+        animation: slideDown 0.5s ease-out;
     }
 
-    .input-group-text {
-        background-color: #f8f9fa;
-        border-color: #dee2e6;
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
-    textarea.form-control {
-        resize: vertical;
-        min-height: 100px;
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
-    .badge {
-        font-size: 0.85em;
-        font-weight: 500;
-        letter-spacing: 0.5px;
+    /* Loading states */
+    [wire\:loading] {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .header-card {
+            padding: 20px;
+        }
+        
+        .icon-wrapper {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .icon-wrapper i {
+            font-size: 1.5rem !important;
+        }
+        
+        .sticky-footer {
+            padding: 15px !important;
+        }
+        
+        .form-check-label {
+            font-size: 0.8rem;
+        }
+        
+        .btn-sm {
+            font-size: 0.7rem;
+        }
+        
+        .input-group {
+            width: 100% !important;
+            margin-bottom: 10px;
+        }
+        
+        .form-check {
+            padding: 8px;
+        }
     }
 </style>
 @endpush
@@ -336,26 +639,27 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Add animation to cards
-        const cards = document.querySelectorAll('.card');
-        cards.forEach((card, index) => {
-            card.style.animationDelay = `${index * 0.1}s`;
-            card.classList.add('animate__animated', 'animate__fadeInUp');
-        });
-
         // Auto-format KRA PIN to uppercase
         const kraPinInput = document.querySelector('[wire\\:model="kra_pin"]');
         if (kraPinInput) {
             kraPinInput.addEventListener('input', function(e) {
                 this.value = this.value.toUpperCase();
+                this.dispatchEvent(new Event('input', { bubbles: true }));
             });
         }
-
-        // Add tooltips
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        const tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
+        
+        // Apply animation delays to town items
+        const townItems = document.querySelectorAll('.town-item');
+        townItems.forEach((item, index) => {
+            item.style.setProperty('--item-index', index);
         });
+        
+        // Listen for profile update success
+        if (typeof Livewire !== 'undefined') {
+            Livewire.on('profile-updated', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
     });
 </script>
 @endpush

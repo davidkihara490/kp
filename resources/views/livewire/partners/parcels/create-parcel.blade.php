@@ -627,17 +627,6 @@
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
-
-                                            <div class="col-12">
-                                                <label class="form-label fw-bold">Discount Amount (KES)</label>
-                                                <input type="number"
-                                                    class="form-control form-control-lg"
-                                                    wire:model="discount_amount"
-                                                    step="0.01"
-                                                    min="0"
-                                                    placeholder="0.00">
-                                                <small class="text-muted fw-medium">Optional: Apply discount to total amount</small>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>

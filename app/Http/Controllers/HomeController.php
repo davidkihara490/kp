@@ -16,6 +16,7 @@ use App\Models\Town;
 use App\Models\ZoneCounty;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class HomeController extends Controller
 {
@@ -42,7 +43,7 @@ class HomeController extends Controller
         $countiesCovered = County::count();
         $totalPickUpPoints = PickUpAndDropOffPoint::count();
 
-        return  view('frontend.home', compact('totalPickUpPoints','countiesCovered','towns', 'pickUpAndDropOffPoints', 'blogPosts', 'faqs', 'counties', 'parcelTypes', 'itemCategories'));
+        return  view('frontend.home', compact('totalPickUpPoints', 'countiesCovered', 'towns', 'pickUpAndDropOffPoints', 'blogPosts', 'faqs', 'counties', 'parcelTypes', 'itemCategories'));
     }
 
     public function calculate(Request $request)
@@ -55,36 +56,36 @@ class HomeController extends Controller
         ]);
 
         try {
-        $item = Item::where('id', $request->item_category)->first();
+            $item = Item::where('id', $request->item_category)->first();
 
-        $fromTown = Town::findOrFail($request->from_town_id);
-        $toTown = Town::findOrFail($request->to_town_id);
+            $fromTown = Town::findOrFail($request->from_town_id);
+            $toTown = Town::findOrFail($request->to_town_id);
 
-        $fromZone = ZoneCounty::where('county_id', $fromTown->subCounty->county->id)->first();
-        $fromZoneId = $fromZone->zone_id;
+            $fromZone = ZoneCounty::where('county_id', $fromTown->subCounty->county->id)->first();
+            $fromZoneId = $fromZone->zone_id;
 
-        $toZone = ZoneCounty::where('county_id', $toTown->subCounty->county->id)->first();
-        $toZoneId = $toZone->zone_id;
+            $toZone = ZoneCounty::where('county_id', $toTown->subCounty->county->id)->first();
+            $toZoneId = $toZone->zone_id;
 
-        $pricing = Pricing::where('item_id', $item->id)
-            // ->where('min_weight', '<=', $request->weight)
-            // ->where('max_weight', '>=', $request->weight)
-            ->first();
+            $pricing = Pricing::where('item_id', $item->id)
+                // ->where('min_weight', '<=', $request->weight)
+                // ->where('max_weight', '>=', $request->weight)
+                ->first();
 
-        $quote = PricingItem::where('pricing_id', $pricing->id)
-            ->where('source_zone_id', $fromZoneId)
-            ->where('destination_zone_id', $toZoneId)
-            ->first();
+            $quote = PricingItem::where('pricing_id', $pricing->id)
+                ->where('source_zone_id', $fromZoneId)
+                ->where('destination_zone_id', $toZoneId)
+                ->first();
 
-        return response()->json([
-            'success' => true,
-            'quote_id' => uniqid(), // Generate or get from DB
-            'from_town' => $fromTown->name,
-            'to_town' => $toTown->name,
-            // 'weight' => $request->weight,
-            'item_category' => $item->name,
-            'total' => $quote->cost,
-        ]);
+            return response()->json([
+                'success' => true,
+                'quote_id' => uniqid(), // Generate or get from DB
+                'from_town' => $fromTown->name,
+                'to_town' => $toTown->name,
+                // 'weight' => $request->weight,
+                'item_category' => $item->name,
+                'total' => $quote->cost,
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -117,5 +118,34 @@ class HomeController extends Controller
     {
         $policy = PrivacyPolicy::where('is_active', true)->orderBy('id', 'DESC')->first();
         return view('frontend.policy', compact('policy'));
+    }
+
+    public function sendContactEmail(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string',
+        ]);
+
+        $toEmail = 'davidkihara490@gmail.com';
+
+        Mail::raw(
+            "Name: {$request->name}\n" .
+                "Email: {$request->email}\n" .
+                "Subject: {$request->subject}\n\n" .
+                "Message:\n{$request->message}",
+            function ($message) use ($request, $toEmail) {
+                $message->to($toEmail)
+                    ->subject($request->subject)
+                    ->replyTo($request->email, $request->name);
+            }
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Email sent successfully.',
+        ]);
     }
 }

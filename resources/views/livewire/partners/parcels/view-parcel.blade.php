@@ -1118,10 +1118,6 @@
                                     wire:model.live="paymentMethod">
                                     <option value="">Select payment method</option>
                                     <option value="mpesa">M-Pesa</option>
-                                    <option value="cash">Cash</option>
-                                    <option value="card">Card</option>
-                                    <option value="bank_transfer">Bank Transfer</option>
-                                    <option value="wallet">Wallet</option>
                                 </select>
                                 @error('paymentMethod')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>

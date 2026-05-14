@@ -518,6 +518,15 @@ class Marketplace extends Component
             $this->selectedParcel->driver_id = $driver->id;
             $this->selectedParcel->save();
 
+            // $this->selectedParcel->update([
+            //     'driver_id' => $driver->id,
+            //     'current_status' => Parcel::STATUS_ASSIGNED,
+            //     // 'assignment_notes' => $this->assignment_notes,
+            //     // 'delivery_otp' => $parcelCode,
+            // ]);
+
+
+
             DB::commit();
 
 
@@ -525,10 +534,10 @@ class Marketplace extends Component
             try {
                 Log::info('START::Sending SMS to driver after Asignment');
                 $smsService->sendDriverAssignmentSMS(
-                    $driver->phone_number,
+                    formatKenyaNumber($driver->phone_number),
                     $driver->full_name,
-                    $this->parcel->senderTown->name,
-                    $this->parcel->receiverTown->name,
+                    $this->selectedParcel->senderTown->name,
+                    $this->selectedParcel->receiverTown->name,
                     $parcelCode
                 );
                 Log::info('START::Sending SMS to driver after Asignment');

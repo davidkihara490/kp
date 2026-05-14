@@ -5,9 +5,9 @@
                 <h3 class="card-title font-weight-bold d-inline">
                     <i class="fas fa-users-cog mr-2"></i>Parcel Handling Assistants
                 </h3>
-                <!-- <a href="{{ route('admin.pha.create') }}" class="btn btn-success btn-sm float-right">
+                <a href="{{ route('admin.pha.create') }}" class="btn btn-success btn-sm float-right">
                     <i class="fas fa-user-plus mr-2"></i>Add Assistant
-                </a> -->
+                </a>
             </div>
 
             <div class="card-body">

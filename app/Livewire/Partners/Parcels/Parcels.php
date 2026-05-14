@@ -295,6 +295,8 @@ class Parcels extends Component
 
         $parcels = $query->orderBy($this->sortField, $this->sortDirection)->paginate(10);
 
+        $statParcels = $query->get();
+
         // Stats calculations
         $totalParcels = $query->count();
         $pendingParcels = Parcel::where('current_status', 'pending')->count();
@@ -345,6 +347,7 @@ class Parcels extends Component
             'pendingParcels' => $pendingParcels,
             'inTransitParcels' => $inTransitParcels,
             'deliveredParcels' => $deliveredParcels,
+            'statParcels' => $statParcels
         ]);
     }
 

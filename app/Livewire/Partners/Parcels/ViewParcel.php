@@ -323,12 +323,15 @@ class ViewParcel extends Component
             'parcel' => $this->parcel,
             'payments' => $this->getPayments(),
             'paymentMethods' => [
-                'cash' => 'Cash',
                 'mpesa' => 'M-Pesa',
-                'card' => 'Card',
-                'bank_transfer' => 'Bank Transfer',
-                'wallet' => 'Wallet',
             ],
+            // 'paymentMethods' => [
+            //     'cash' => 'Cash',
+            //     'mpesa' => 'M-Pesa',
+            //     'card' => 'Card',
+            //     'bank_transfer' => 'Bank Transfer',
+            //     'wallet' => 'Wallet',
+            // ],
         ]);
     }
 

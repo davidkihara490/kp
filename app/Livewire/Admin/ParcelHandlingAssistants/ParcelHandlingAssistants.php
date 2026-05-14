@@ -133,7 +133,7 @@ class ParcelHandlingAssistants extends Component
             }
             
             // Suspend all active employments
-            $assistant->employments()->where('status', 'active')->update(['status' => 'suspended']);
+            // $assistant->employments()->where('status', 'active')->update(['status' => 'suspended']);
             
             session()->flash('warning', "Assistant '{$assistant->full_name}' has been suspended.");
         }

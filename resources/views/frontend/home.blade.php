@@ -1263,28 +1263,30 @@
                         _token: $('meta[name="csrf-token"]').attr('content')
                     };
 
-                    // Simulate email sending (replace with actual AJAX)
-                    setTimeout(function() {
-                        submitBtn.prop('disabled', false).html(originalText);
 
-                        const successMessage = $(`
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <i class="bi bi-check-circle-fill me-2"></i>
-                                Thank you for your message! We will get back to you within 2 hours.
-                                <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
-                            </div>
-                        `);
+                    console.log(formData);
+                    // Simulate email sending (replace with actuacontactFormMessagel AJAX)
+                    // setTimeout(function() {
+                    //     submitBtn.prop('disabled', false).html(originalText);
 
-                        $('#contactFormMessage').html(successMessage).slideDown();
-                        $('#contactForm')[0].reset();
+                    //     const successMessage = $(`
+                    //         <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    //             <i class="bi bi-check-circle-fill me-2"></i>
+                    //             Thank you for your message! We will get back to you within 2 hours.
+                    //             <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+                    //         </div>
+                    //     `);
 
-                        setTimeout(() => {
-                            $('#contactFormMessage').slideUp();
-                        }, 5000);
-                    }, 1500);
+                    //     $('#contactFormMessage').html(successMessage).slideDown();
+                    //     $('#contactForm')[0].reset();
+
+                    //     setTimeout(() => {
+                    //         $('#contactFormMessage').slideUp();
+                    //     }, 5000);
+                    // }, 1500);
 
                     // Uncomment for actual AJAX
-                    /*
+                    
                     $.ajax({
                         url: '/send-contact-email',
                         method: 'POST',
@@ -1325,7 +1327,7 @@
                             }, 5000);
                         }
                     });
-                    */
+                
                 });
             }
         });
