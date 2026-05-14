@@ -84,6 +84,15 @@ class SMSService
             "Karibu Parcels, Hi {$driverName}! A parcel has been assigned to you from {$originTown} to {$destinationTown}.Parcel code is {$code}."
         );
     }
+
+    public function sendRecipientSMSWhenParcelArrives(string $phoneNumber, string $recipientName, string $parcelId, string $destinationTown)
+    {
+        return $this->sendMessage(
+            $phoneNumber,
+            "Hi {$recipientName}! Your parcel has arrived at {$destinationTown}. Please come with your original ID/passport to collect it. Parcel code is {$parcelId}."
+        );
+    }
+
     public function sendBulkSMS(array $recipients)
     {
         // if (!$this->hasSufficientBalance()) {

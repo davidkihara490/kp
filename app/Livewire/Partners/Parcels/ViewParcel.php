@@ -263,7 +263,7 @@ class ViewParcel extends Component
         }
     }
 
-    public function receiveParcelFromDriver()
+    public function receiveParcelFromDriver(SMSService  $smsService)
     {
         $this->latestStatus = $this->parcel->statuses()
             ->whereNotNull('driver_id')
@@ -290,6 +290,24 @@ class ViewParcel extends Component
         $this->parcel->current_status = Parcel::STATUS_ARRIVED_AT_DESTINATION;
         $this->parcel->driver_id = $this->selectedDriver->id;
         $this->parcel->save();
+
+
+        //Send SMS to receiver
+        try {
+            Log::info('Sending SMS to Parcel Sender Start');
+            $smsService->sendRecipientSMSWhenParcelArrives(
+                formatKenyaNumber($this->parcel->receiver_phone),
+                $this->parcel->receiver_name,
+                $this->parcel->parcel_id,
+                $this->parcel->receiverTown->name
+            );
+            Log::info('Sending SMS to Parcel Sender End');
+        } catch (\Throwable $th) {
+            Log::error('Failed to send SMS to receipient: ', [
+                'error' => $th->getMessage(),
+                'stack' => $th->getTraceAsString(),
+            ]);
+        }
         DB::commit();
     }
 
