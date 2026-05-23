@@ -8,13 +8,13 @@
                 </h3>
                 <div class="card-tools">
                     @php
-                        $statusBadge = $this->getStatusBadge($parcel->current_status);
+                    $statusBadge = $this->getStatusBadge($parcel->current_status);
                     @endphp
                     <span class="badge badge-{{ $statusBadge['color'] }} mr-2">
                         <i class="fas {{ $statusBadge['icon'] }} mr-1"></i>
                         {{ ucfirst(str_replace('_', ' ', $parcel->current_status)) }}
                     </span>
-                    
+
                     <span class="badge badge-{{ $this->getPaymentStatusColor($parcel->payment_status) }}">
                         <i class="fas fa-money-bill-wave mr-1"></i>
                         {{ ucfirst($parcel->payment_status) }}
@@ -39,7 +39,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-3 col-sm-6">
                     <div class="small-box bg-success">
                         <div class="inner">
@@ -51,7 +51,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-3 col-sm-6">
                     <div class="small-box bg-warning">
                         <div class="inner">
@@ -63,7 +63,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-3 col-sm-6">
                     <div class="small-box bg-danger">
                         <div class="inner">
@@ -140,7 +140,7 @@
                                         @endif
                                     </table>
                                 </div>
-                                
+
                                 <div class="col-md-6">
                                     <h5 class="text-success">Receiver Information</h5>
                                     <table class="table table-sm">
@@ -202,9 +202,9 @@
                                             <th>Insurance Required:</th>
                                             <td>
                                                 @if($parcel->insurance_required)
-                                                    <span class="badge badge-success">Yes</span>
+                                                <span class="badge badge-success">Yes</span>
                                                 @else
-                                                    <span class="badge badge-secondary">No</span>
+                                                <span class="badge badge-secondary">No</span>
                                                 @endif
                                             </td>
                                         </tr>
@@ -240,54 +240,54 @@
                         </div>
                         <div class="card-body p-0">
                             @if($parcel->statuses && $parcel->statuses->count() > 0)
-                                <div class="timeline">
-                                    @foreach($parcel->statuses as $status)
-                                    <div>
-                                        <i class="fas fa-circle bg-{{ $this->getStatusBadge($status->status)['color'] }}"></i>
-                                        <div class="timeline-item">
-                                            <span class="time">
-                                                <i class="fas fa-clock mr-1"></i>
-                                                {{ $status->created_at->format('d/m/Y H:i') }}
+                            <div class="timeline">
+                                @foreach($parcel->statuses as $status)
+                                <div>
+                                    <i class="fas fa-circle bg-{{ $this->getStatusBadge($status->status)['color'] }}"></i>
+                                    <div class="timeline-item">
+                                        <span class="time">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            {{ $status->created_at->format('d/m/Y H:i') }}
+                                        </span>
+                                        <h3 class="timeline-header">
+                                            <span class="badge badge-{{ $this->getStatusBadge($status->status)['color'] }}">
+                                                {{ ucfirst(str_replace('_', ' ', $status->status)) }}
                                             </span>
-                                            <h3 class="timeline-header">
-                                                <span class="badge badge-{{ $this->getStatusBadge($status->status)['color'] }}">
-                                                    {{ ucfirst(str_replace('_', ' ', $status->status)) }}
-                                                </span>
-                                                @if($status->changed_by_type === 'driver' && $status->driver)
-                                                    <small class="ml-2">by {{ $status->driver->full_name }} (Driver)</small>
-                                                @elseif($status->changer)
-                                                    <small class="ml-2">by {{ $status->changer->name }}</small>
-                                                @elseif($status->changed_by_type === 'system')
-                                                    <small class="ml-2">by System</small>
-                                                @endif
-                                            </h3>
-                                            @if($status->notes)
-                                            <div class="timeline-body">
-                                                {{ $status->notes }}
-                                            </div>
+                                            @if($status->changed_by_type === 'driver' && $status->driver)
+                                            <small class="ml-2">by {{ $status->driver->full_name }} (Driver)</small>
+                                            @elseif($status->changer)
+                                            <small class="ml-2">by {{ $status->changer->name }}</small>
+                                            @elseif($status->changed_by_type === 'system')
+                                            <small class="ml-2">by System</small>
                                             @endif
-                                            @if($status->otp)
-                                            <div class="timeline-footer">
-                                                <span class="badge badge-info">
-                                                    OTP: {{ $status->otp }} 
-                                                    @if($status->otp_verified)
-                                                        <i class="fas fa-check-circle text-success ml-1"></i>
-                                                    @endif
-                                                </span>
-                                            </div>
-                                            @endif
+                                        </h3>
+                                        @if($status->notes)
+                                        <div class="timeline-body">
+                                            {{ $status->notes }}
                                         </div>
+                                        @endif
+                                        @if($status->otp)
+                                        <div class="timeline-footer">
+                                            <span class="badge badge-info">
+                                                OTP: {{ $status->otp }}
+                                                @if($status->otp_verified)
+                                                <i class="fas fa-check-circle text-success ml-1"></i>
+                                                @endif
+                                            </span>
+                                        </div>
+                                        @endif
                                     </div>
-                                    @endforeach
                                 </div>
+                                @endforeach
+                            </div>
                             @else
-                                <div class="text-center py-4">
-                                    <i class="fas fa-history fa-3x text-muted mb-3"></i>
-                                    <p>No tracking history available</p>
-                                    <button class="btn btn-sm btn-primary" wire:click="$set('showUpdateStatusModal', true)">
-                                        <i class="fas fa-plus mr-1"></i> Add First Status
-                                    </button>
-                                </div>
+                            <div class="text-center py-4">
+                                <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                                <p>No tracking history available</p>
+                                <button class="btn btn-sm btn-primary" wire:click="$set('showUpdateStatusModal', true)">
+                                    <i class="fas fa-plus mr-1"></i> Add First Status
+                                </button>
+                            </div>
                             @endif
                         </div>
                     </div>
@@ -340,7 +340,7 @@
                                         </tr>
                                     </table>
                                 </div>
-                                
+
                                 <div class="col-md-6">
                                     <h5>Payment Details</h5>
                                     <table class="table table-sm">
@@ -367,25 +367,25 @@
                                     </table>
 
                                     @if($parcel->payments && $parcel->payments->count() > 0)
-                                        <h5 class="mt-3">Payment Transactions</h5>
-                                        <table class="table table-sm">
-                                            <thead>
-                                                <tr>
-                                                    <th>Reference</th>
-                                                    <th>Amount</th>
-                                                    <th>Date</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($parcel->payments as $payment)
-                                                <tr>
-                                                    <td>{{ $payment->reference_number }}</td>
-                                                    <td>KES {{ number_format($payment->amount, 2) }}</td>
-                                                    <td>{{ $payment->payment_date?->format('d/m/Y') }}</td>
-                                                </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
+                                    <h5 class="mt-3">Payment Transactions</h5>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Reference</th>
+                                                <th>Amount</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($parcel->payments as $payment)
+                                            <tr>
+                                                <td>{{ $payment->reference_number }}</td>
+                                                <td>KES {{ number_format($payment->amount, 2) }}</td>
+                                                <td>{{ $payment->payment_date?->format('d/m/Y') }}</td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
                                     @endif
                                 </div>
                             </div>
@@ -425,7 +425,7 @@
                                         </tr>
                                     </table>
                                 </div>
-                                
+
                                 <div class="col-md-6">
                                     <h5>Delivery Details</h5>
                                     <table class="table table-sm">
@@ -491,75 +491,75 @@
                         </div>
                         <div class="card-body">
                             @if($parcel->parcelPickUp)
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <h5>Pickup Person Details</h5>
-                                        <table class="table table-sm">
-                                            <tr>
-                                                <th>Type:</th>
-                                                <td>
-                                                    <span class="badge badge-{{ $parcel->parcelPickUp->isOwnerPickup() ? 'success' : 'info' }}">
-                                                        {{ ucfirst($parcel->parcelPickUp->pickup_person_type) }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Name:</th>
-                                                <td>{{ $parcel->parcelPickUp->pickup_person_name }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Phone:</th>
-                                                <td>{{ $parcel->parcelPickUp->pickup_person_phone }}</td>
-                                            </tr>
-                                            @if($parcel->parcelPickUp->pickup_person_id_number)
-                                            <tr>
-                                                <th>ID Number:</th>
-                                                <td>{{ $parcel->parcelPickUp->pickup_person_id_number }}</td>
-                                            </tr>
-                                            @endif
-                                            @if($parcel->parcelPickUp->pickup_person_relationship)
-                                            <tr>
-                                                <th>Relationship:</th>
-                                                <td>{{ $parcel->parcelPickUp->pickup_person_relationship }}</td>
-                                            </tr>
-                                            @endif
-                                            @if($parcel->parcelPickUp->pickup_reason)
-                                            <tr>
-                                                <th>Reason:</th>
-                                                <td>{{ $parcel->parcelPickUp->pickup_reason }}</td>
-                                            </tr>
-                                            @endif
-                                        </table>
-                                    </div>
-                                    
-                                    <div class="col-md-6">
-                                        <h5>Verification Details</h5>
-                                        <table class="table table-sm">
-                                            <tr>
-                                                <th>Verified By:</th>
-                                                <td>{{ $parcel->parcelPickUp->verifier->name ?? 'N/A' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Verified At:</th>
-                                                <td>{{ $parcel->parcelPickUp->verified_at?->format('d/m/Y H:i') }}</td>
-                                            </tr>
-                                            @if($parcel->parcelPickUp->notes)
-                                            <tr>
-                                                <th>Notes:</th>
-                                                <td>{{ $parcel->parcelPickUp->notes }}</td>
-                                            </tr>
-                                            @endif
-                                        </table>
-                                    </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Pickup Person Details</h5>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <th>Type:</th>
+                                            <td>
+                                                <span class="badge badge-{{ $parcel->parcelPickUp->isOwnerPickup() ? 'success' : 'info' }}">
+                                                    {{ ucfirst($parcel->parcelPickUp->pickup_person_type) }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Name:</th>
+                                            <td>{{ $parcel->parcelPickUp->pickup_person_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Phone:</th>
+                                            <td>{{ $parcel->parcelPickUp->pickup_person_phone }}</td>
+                                        </tr>
+                                        @if($parcel->parcelPickUp->pickup_person_id_number)
+                                        <tr>
+                                            <th>ID Number:</th>
+                                            <td>{{ $parcel->parcelPickUp->pickup_person_id_number }}</td>
+                                        </tr>
+                                        @endif
+                                        @if($parcel->parcelPickUp->pickup_person_relationship)
+                                        <tr>
+                                            <th>Relationship:</th>
+                                            <td>{{ $parcel->parcelPickUp->pickup_person_relationship }}</td>
+                                        </tr>
+                                        @endif
+                                        @if($parcel->parcelPickUp->pickup_reason)
+                                        <tr>
+                                            <th>Reason:</th>
+                                            <td>{{ $parcel->parcelPickUp->pickup_reason }}</td>
+                                        </tr>
+                                        @endif
+                                    </table>
                                 </div>
+
+                                <div class="col-md-6">
+                                    <h5>Verification Details</h5>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <th>Verified By:</th>
+                                            <td>{{ $parcel->parcelPickUp->verifier->name ?? 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Verified At:</th>
+                                            <td>{{ $parcel->parcelPickUp->verified_at?->format('d/m/Y H:i') }}</td>
+                                        </tr>
+                                        @if($parcel->parcelPickUp->notes)
+                                        <tr>
+                                            <th>Notes:</th>
+                                            <td>{{ $parcel->parcelPickUp->notes }}</td>
+                                        </tr>
+                                        @endif
+                                    </table>
+                                </div>
+                            </div>
                             @else
-                                <div class="text-center py-4">
-                                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-                                    <p>No pickup recorded yet</p>
-                                    <button class="btn btn-success" wire:click="$set('showPickupModal', true)">
-                                        <i class="fas fa-plus mr-1"></i> Record Pickup
-                                    </button>
-                                </div>
+                            <div class="text-center py-4">
+                                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                                <p>No pickup recorded yet</p>
+                                <button class="btn btn-success" wire:click="$set('showPickupModal', true)">
+                                    <i class="fas fa-plus mr-1"></i> Record Pickup
+                                </button>
+                            </div>
                             @endif
                         </div>
                     </div>
@@ -579,19 +579,31 @@
                                 <button class="btn btn-primary btn-block" wire:click="$set('showUpdateStatusModal', true)">
                                     <i class="fas fa-sync-alt mr-2"></i> Update Status
                                 </button>
-                                
+
                                 <button class="btn btn-info btn-block" wire:click="generateOtp">
                                     <i class="fas fa-key mr-2"></i> Generate OTP
                                 </button>
-                                
+
                                 <button class="btn btn-success btn-block" wire:click="printLabel">
                                     <i class="fas fa-print mr-2"></i> Print Label
                                 </button>
-                                
+
+                                @php
+                                $hasAccepted = \App\Models\ParcelStatus::where('parcel_id', $parcel->id)
+                                ->where('status', 'accepted')
+                                ->exists();
+                                @endphp
+
+                                @if(!$hasAccepted)
+                                <button class="btn btn-secondary btn-block" wire:click="assignTransportPartner">
+                                    <i class="fas fa-truck mr-2"></i> Assign Transport Partner
+                                </button>
+                                @endif
+
                                 <a href="{{ route('admin.parcels.edit', $parcel->id) }}" class="btn btn-warning btn-block">
                                     <i class="fas fa-edit mr-2"></i> Edit Parcel
                                 </a>
-                                
+
                                 <button class="btn btn-danger btn-block" wire:click="confirmDelete">
                                     <i class="fas fa-trash mr-2"></i> Delete Parcel
                                 </button>
@@ -640,7 +652,7 @@
                 </div>
                 <div class="col-md-6 text-right">
                     <span class="text-muted">
-                        Created by: {{ $parcel->createdBy->name ?? 'System' }} | 
+                        Created by: {{ $parcel->createdBy->name ?? 'System' }} |
                         Last updated: {{ $parcel->updated_at->diffForHumans() }}
                     </span>
                 </div>
@@ -651,7 +663,7 @@
     <!-- Update Status Modal -->
     @if($showUpdateStatusModal)
     <div wire:ignore.self class="modal fade show d-block" tabindex="-1" role="dialog"
-         style="background-color: rgba(0,0,0,0.5);">
+        style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -670,23 +682,23 @@
                             <select wire:model="newStatus" id="newStatus" class="form-control" required>
                                 <option value="">Select Status</option>
                                 @foreach($statusOptions as $value => $label)
-                                    <option value="{{ $value }}">{{ $label }}</option>
+                                <option value="{{ $value }}">{{ $label }}</option>
                                 @endforeach
                             </select>
                             @error('newStatus') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="statusNotes">Notes</label>
-                            <textarea wire:model="statusNotes" id="statusNotes" 
-                                      class="form-control" rows="3"
-                                      placeholder="Add any notes about this status update..."></textarea>
+                            <textarea wire:model="statusNotes" id="statusNotes"
+                                class="form-control" rows="3"
+                                placeholder="Add any notes about this status update..."></textarea>
                             @error('statusNotes') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" 
-                                wire:click="$set('showUpdateStatusModal', false)">
+                        <button type="button" class="btn btn-secondary"
+                            wire:click="$set('showUpdateStatusModal', false)">
                             Cancel
                         </button>
                         <button type="submit" class="btn btn-primary">
@@ -702,7 +714,7 @@
     <!-- Record Pickup Modal -->
     @if($showPickupModal)
     <div wire:ignore.self class="modal fade show d-block" tabindex="-1" role="dialog"
-         style="background-color: rgba(0,0,0,0.5);">
+        style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -739,28 +751,28 @@
                         </div>
 
                         @if($pickupPersonType === 'other')
-                            <div class="form-group">
-                                <label>ID Number <span class="text-danger">*</span></label>
-                                <input type="text" wire:model="pickupPersonIdNumber" class="form-control" required>
-                            </div>
+                        <div class="form-group">
+                            <label>ID Number <span class="text-danger">*</span></label>
+                            <input type="text" wire:model="pickupPersonIdNumber" class="form-control" required>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Relationship to Owner <span class="text-danger">*</span></label>
-                                <select wire:model="pickupPersonRelationship" class="form-control" required>
-                                    <option value="">Select Relationship</option>
-                                    <option value="Spouse">Spouse</option>
-                                    <option value="Parent">Parent</option>
-                                    <option value="Child">Child</option>
-                                    <option value="Sibling">Sibling</option>
-                                    <option value="Friend">Friend</option>
-                                    <option value="Colleague">Colleague</option>
-                                </select>
-                            </div>
+                        <div class="form-group">
+                            <label>Relationship to Owner <span class="text-danger">*</span></label>
+                            <select wire:model="pickupPersonRelationship" class="form-control" required>
+                                <option value="">Select Relationship</option>
+                                <option value="Spouse">Spouse</option>
+                                <option value="Parent">Parent</option>
+                                <option value="Child">Child</option>
+                                <option value="Sibling">Sibling</option>
+                                <option value="Friend">Friend</option>
+                                <option value="Colleague">Colleague</option>
+                            </select>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Reason for Pickup</label>
-                                <textarea wire:model="pickupReason" class="form-control" rows="2"></textarea>
-                            </div>
+                        <div class="form-group">
+                            <label>Reason for Pickup</label>
+                            <textarea wire:model="pickupReason" class="form-control" rows="2"></textarea>
+                        </div>
                         @endif
 
                         <div class="form-group">
@@ -769,8 +781,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" 
-                                wire:click="$set('showPickupModal', false)">
+                        <button type="button" class="btn btn-secondary"
+                            wire:click="$set('showPickupModal', false)">
                             Cancel
                         </button>
                         <button type="submit" class="btn btn-success">
@@ -783,10 +795,146 @@
     </div>
     @endif
 
+    <!-- Transport Partner Assignment Modal -->
+    @if($showTransportPartnerModal)
+    <div wire:ignore.self class="modal fade show d-block" tabindex="-1" role="dialog"
+        style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-truck mr-2"></i>
+                        Assign Transport Partner
+                    </h5>
+                    <button type="button" class="close text-white" wire:click="$set('showTransportPartnerModal', false)">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Parcel Route Information -->
+                    <div class="alert alert-info mb-4">
+                        <h6 class="font-weight-bold mb-2"><i class="fas fa-route mr-2"></i>Parcel Route</h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-center flex-grow-1">
+                                <i class="fas fa-map-marker-alt text-primary mb-1"></i>
+                                <div><strong>From:</strong></div>
+                                <div>{{ $parcel->senderTown->name ?? 'N/A' }}</div>
+                                <small class="text-muted">{{ $parcel->senderTown->region ?? '' }}</small>
+                            </div>
+                            <div class="px-3">
+                                <i class="fas fa-arrow-right fa-2x text-muted"></i>
+                            </div>
+                            <div class="text-center flex-grow-1">
+                                <i class="fas fa-map-marker-alt text-success mb-1"></i>
+                                <div><strong>To:</strong></div>
+                                <div>{{ $parcel->receiverTown->name ?? 'N/A' }}</div>
+                                <small class="text-muted">{{ $parcel->receiverTown->region ?? '' }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transport Partner Dropdown -->
+                    <div class="form-group">
+                        <label for="transportPartnerSelect">
+                            <i class="fas fa-building mr-1"></i> Select Transport Partner
+                            <span class="text-danger">*</span>
+                        </label>
+                        <select wire:model.live="selectedTransportPartnerId" id="transportPartnerSelect"
+                            class="form-control" required>
+                            <option value="">-- Select a transport partner --</option>
+                            @foreach($transportPartners as $partner)
+                            <option value="{{ $partner->id }}">
+                                {{ $partner->company_name }} -> {{ $partner->towns->count() }}towns(s)
+                            </option>
+                            @endforeach
+                        </select>
+                        @if($transportPartners->count() == 0)
+                        <small class="text-danger d-block mt-1">No transport partners available. Please add a transport partner first.</small>
+                        @endif
+                    </div>
+
+                    <!-- Operating Towns Display (shown only when partner is selected) -->
+                    @if($selectedTransportPartnerId)
+                    @php
+                    $selectedPartner = $transportPartners->firstWhere('id', $selectedTransportPartnerId);
+                    @endphp
+                    @if($selectedPartner)
+                    <div class="alert alert-light border mt-3">
+                        <div class="d-flex align-items-start">
+                            <div class="mr-3">
+                                <i class="fas fa-city fa-2x text-info"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-2 font-weight-bold text-info">
+                                    <i class="fas fa-truck-moving mr-1"></i>
+                                    {{ $selectedPartner->company_name }}
+                                </h6>
+
+                                <div class="mb-2">
+                                    <strong>Operating Towns:</strong>
+                                    @if($selectedPartner->towns && $selectedPartner->towns->count() > 0)
+                                    <div class="mt-2">
+                                        @foreach($selectedPartner->towns as $town)
+                                        <span class="badge badge-primary mr-1 mb-1 p-2">
+                                            <i class="fas fa-map-marker-alt mr-1"></i>{{ $town->town->name }}
+                                        </span>
+                                        @endforeach
+                                    </div>
+                                    <small class="text-muted mt-1 d-block">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        This partner operates in {{ $selectedPartner->towns->count() }} town(s)
+                                    </small>
+                                    @else
+                                    <div class="text-warning mt-1">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        No operating towns specified for this partner
+                                    </div>
+                                    @endif
+                                </div>
+
+                                @if($selectedPartner->phone_number || $selectedPartner->email)
+                                <hr class="my-2">
+                                <div class="row small">
+                                    @if($selectedPartner->phone_number)
+                                    <div class="col-md-6">
+                                        <i class="fas fa-phone mr-1 text-muted"></i>
+                                        <strong>Phone:</strong> {{ $selectedPartner->phone_number }}
+                                    </div>
+                                    @endif
+                                    @if($selectedPartner->email)
+                                    <div class="col-md-6">
+                                        <i class="fas fa-envelope mr-1 text-muted"></i>
+                                        <strong>Email:</strong> {{ $selectedPartner->email }}
+                                    </div>
+                                    @endif
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        wire:click="$set('showTransportPartnerModal', false)">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary"
+                        wire:click="saveTransportPartnerAssignment"
+                        {{ !$selectedTransportPartnerId || $transportPartners->count() == 0 ? 'disabled' : '' }}>
+                        <i class="fas fa-save mr-1"></i> Assign Partner
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- OTP Modal -->
     @if($showOtpModal)
     <div wire:ignore.self class="modal fade show d-block" tabindex="-1" role="dialog"
-         style="background-color: rgba(0,0,0,0.5);">
+        style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
@@ -810,8 +958,8 @@
                     <button type="button" class="btn btn-primary" onclick="window.print()">
                         <i class="fas fa-print mr-1"></i> Print OTP
                     </button>
-                    <button type="button" class="btn btn-secondary" 
-                            wire:click="$set('showOtpModal', false)">
+                    <button type="button" class="btn btn-secondary"
+                        wire:click="$set('showOtpModal', false)">
                         Close
                     </button>
                 </div>
@@ -827,7 +975,7 @@
             padding: 0;
             list-style: none;
         }
-        
+
         .timeline:before {
             content: '';
             position: absolute;
@@ -839,24 +987,24 @@
             margin: 0;
             border-radius: 2px;
         }
-        
-        .timeline > div {
+
+        .timeline>div {
             position: relative;
             margin-right: 10px;
             margin-bottom: 15px;
         }
-        
-        .timeline > div:before,
-        .timeline > div:after {
+
+        .timeline>div:before,
+        .timeline>div:after {
             content: " ";
             display: table;
         }
-        
-        .timeline > div:after {
+
+        .timeline>div:after {
             clear: both;
         }
-        
-        .timeline > div > .timeline-item {
+
+        .timeline>div>.timeline-item {
             margin-top: 0;
             background: #fff;
             color: #444;
@@ -866,15 +1014,15 @@
             position: relative;
             border-radius: 3px;
         }
-        
-        .timeline > div > .timeline-item > .time {
+
+        .timeline>div>.timeline-item>.time {
             color: #999;
             float: right;
             padding: 10px;
             font-size: 12px;
         }
-        
-        .timeline > div > .timeline-item > .timeline-header {
+
+        .timeline>div>.timeline-item>.timeline-header {
             margin: 0;
             color: #555;
             border-bottom: 1px solid #f4f4f4;
@@ -882,17 +1030,17 @@
             font-size: 16px;
             line-height: 1.1;
         }
-        
-        .timeline > div > .timeline-item > .timeline-body {
+
+        .timeline>div>.timeline-item>.timeline-body {
             padding: 10px;
         }
-        
-        .timeline > div > .timeline-item > .timeline-footer {
+
+        .timeline>div>.timeline-item>.timeline-footer {
             padding: 10px;
         }
-        
-        .timeline > div > .fas,
-        .timeline > div > .fas {
+
+        .timeline>div>.fas,
+        .timeline>div>.fas {
             width: 30px;
             height: 30px;
             font-size: 15px;
@@ -905,36 +1053,36 @@
             left: 18px;
             top: 0;
         }
-        
+
         .small-box {
             border-radius: 0.25rem;
-            box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+            box-shadow: 0 0 1px rgba(0, 0, 0, .125), 0 1px 3px rgba(0, 0, 0, .2);
             display: block;
             margin-bottom: 20px;
             position: relative;
             color: #fff;
         }
-        
-        .small-box > .inner {
+
+        .small-box>.inner {
             padding: 10px;
         }
-        
-        .small-box > .small-box-footer {
+
+        .small-box>.small-box-footer {
             position: relative;
             text-align: center;
             padding: 3px 0;
-            color: rgba(255,255,255,.8);
+            color: rgba(255, 255, 255, .8);
             display: block;
             z-index: 10;
-            background: rgba(0,0,0,.1);
+            background: rgba(0, 0, 0, .1);
             text-decoration: none;
         }
-        
-        .small-box > .small-box-footer:hover {
+
+        .small-box>.small-box-footer:hover {
             color: #fff;
-            background: rgba(0,0,0,.15);
+            background: rgba(0, 0, 0, .15);
         }
-        
+
         .small-box h3 {
             font-size: 2rem;
             font-weight: 700;
@@ -942,11 +1090,11 @@
             white-space: nowrap;
             padding: 0;
         }
-        
+
         .small-box p {
             font-size: 1rem;
         }
-        
+
         .small-box .icon {
             transition: all .3s linear;
             position: absolute;
@@ -954,29 +1102,29 @@
             right: 10px;
             z-index: 0;
             font-size: 2.5rem;
-            color: rgba(0,0,0,.15);
+            color: rgba(0, 0, 0, .15);
         }
-        
+
         .bg-info {
             background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
         }
-        
+
         .bg-success {
             background: linear-gradient(135deg, #28a745 0%, #218838 100%);
         }
-        
+
         .bg-warning {
             background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
         }
-        
+
         .bg-danger {
             background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
         }
-        
+
         .d-grid {
             display: grid;
         }
-        
+
         .gap-2 {
             gap: 0.5rem;
         }

@@ -28,6 +28,13 @@ class Payment extends Model
         'amount' => 'decimal:2',
     ];
 
+    const STATUS_PENDING = 'pending';
+    const STATUS_PROCESSING = 'processing';
+    const STATUS_COMPLETED = 'completed';
+    const STATUS_FAILED = 'failed';
+    const STATUS_CANCELLED = 'cancelled';
+    const STATUS_EXPIRED = 'expired';
+
     /**
      * Get the parcel associated with this payment
      */

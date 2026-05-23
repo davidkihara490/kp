@@ -7,8 +7,12 @@ use App\Models\ParcelStatus;
 use App\Models\ParcelPickUp;
 use App\Models\User;
 use App\Models\Driver;
+use App\Models\ParcelPayout;
+use App\Models\Partner;
+use App\Models\TransportPartner;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ViewParcel extends Component
 {
@@ -17,10 +21,12 @@ class ViewParcel extends Component
     public $showUpdateStatusModal = false;
     public $showPickupModal = false;
     public $showOtpModal = false;
+    public $showTransportPartnerModal = false;
     public $newStatus = '';
     public $statusNotes = '';
     public $otp = '';
-    
+    public $selectedTransportPartnerId = null;
+
     // Pickup form
     public $pickupPersonType = 'owner';
     public $pickupPersonName = '';
@@ -58,10 +64,10 @@ class ViewParcel extends Component
             'senderPickUpDropOffPoint',
             'deliveryStation',
             'payments',
-            'statuses' => function($query) {
+            'statuses' => function ($query) {
                 $query->with(['changer', 'driver'])->latest();
             },
-            'parcelPickUp' => function($query) {
+            'parcelPickUp' => function ($query) {
                 $query->with('verifier');
             }
         ])->findOrFail($id);
@@ -87,7 +93,7 @@ class ViewParcel extends Component
 
     public function getPaymentStatusColor($status)
     {
-        return match($status) {
+        return match ($status) {
             'paid' => 'success',
             'pending' => 'warning',
             'failed' => 'danger',
@@ -102,7 +108,7 @@ class ViewParcel extends Component
             $otp = $this->parcel->generateDeliveryOtp();
             $this->otp = $otp;
             $this->showOtpModal = true;
-            
+
             $this->dispatch('notify', [
                 'type' => 'success',
                 'message' => 'OTP generated successfully!'
@@ -121,7 +127,7 @@ class ViewParcel extends Component
 
         try {
             $changedByType = Auth::user()->user_type ?? 'admin';
-            
+
             $this->parcel->updateParcelStatus(
                 $this->newStatus,
                 Auth::id(),
@@ -133,9 +139,9 @@ class ViewParcel extends Component
 
             $this->reset(['newStatus', 'statusNotes']);
             $this->showUpdateStatusModal = false;
-            
+
             $this->parcel->refresh();
-            
+
             $this->dispatch('notify', [
                 'type' => 'success',
                 'message' => 'Parcel status updated successfully!'
@@ -177,13 +183,18 @@ class ViewParcel extends Component
             );
 
             $this->reset([
-                'pickupPersonType', 'pickupPersonName', 'pickupPersonPhone',
-                'pickupPersonIdNumber', 'pickupPersonRelationship', 'pickupReason', 'pickupNotes'
+                'pickupPersonType',
+                'pickupPersonName',
+                'pickupPersonPhone',
+                'pickupPersonIdNumber',
+                'pickupPersonRelationship',
+                'pickupReason',
+                'pickupNotes'
             ]);
             $this->showPickupModal = false;
-            
+
             $this->parcel->refresh();
-            
+
             $this->dispatch('notify', [
                 'type' => 'success',
                 'message' => 'Pickup recorded successfully!'
@@ -199,6 +210,74 @@ class ViewParcel extends Component
     public function assignToDriver()
     {
         return redirect()->route('admin.parcels.assign', $this->parcel->id);
+    }
+
+    public function assignTransportPartner()
+    {
+        $this->showTransportPartnerModal = true;
+    }
+
+    public function updateSelectedTransportPartnerId($value)
+    {
+        $this->selectedTransportPartnerId = $value;
+    }
+
+    public function saveTransportPartnerAssignment()
+    {
+        if (!$this->selectedTransportPartnerId) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Please select a transport partner'
+            ]);
+            return;
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $transportPartner = Partner::findOrFail($this->selectedTransportPartnerId);
+
+            $this->parcel->updateParcelStatus(
+                Parcel::STATUS_ACCEPTED,
+                $this->selectedTransportPartnerId,
+                'transport',
+                'Paercel accepted by admin and assigned to transport partner: ' . $transportPartner->company_name,
+
+                // 'Parcel accepted with ' . ($this->delivery_option === 'warehouse' ? 'warehouse' : 'final destination') . ' delivery. Payout: KES ' . $this->calculated_payout,
+                null,
+                $this->parcel->generateDeliveryOtp(),
+            );
+
+            // Add a status update for transport partner assignment
+            $this->parcel->updateParcelStatus(
+                $this->parcel->current_status,
+                Auth::id(),
+                Auth::user()->user_type ?? 'admin',
+                'Assigned to transport partner: ' . $transportPartner->company_name,
+                $this->parcel->driver_id,
+                null
+            );
+
+            $this->parcel->current_status = Parcel::STATUS_ACCEPTED;
+            $this->parcel->save();
+
+            $this->parcel->parcelPayout()->where('type', 'pickup-dropoff')->whereNotNull('origin_id')->update([
+                'status' => 'approved'
+            ]);
+
+            $this->showTransportPartnerModal = false;
+            $this->selectedTransportPartnerId = null;
+
+            $this->parcel->refresh();
+
+            DB::commit();
+
+            session()->flash('success', 'Transport partner assigned successfully!');
+        } catch (\Exception $e) {
+
+            DB::rollback();
+            session()->flash('error', 'Failed to assign transport partner: ' . $e->getMessage());
+        }
     }
 
     public function printLabel()
@@ -223,8 +302,12 @@ class ViewParcel extends Component
             'returned' => 'Return to Sender',
         ];
 
+        // Get available transport partners with their towns
+        $transportPartners = Partner::where('partner_type', 'transport')->with(['towns'])->get();
+
         return view('livewire.admin.parcels.view-parcel', [
             'statusOptions' => $statusOptions,
+            'transportPartners' => $transportPartners,
         ]);
     }
 }

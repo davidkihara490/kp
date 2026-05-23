@@ -3,9 +3,15 @@
 namespace App\Http\Controllers\api\v1\Mpesa;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\MpesaService;
 use Illuminate\Support\Facades\Log;
+use App\Mail\NewParcel;
+use App\Services\SMSService;
+use Illuminate\Support\Facades\Mail;
+
+
 
 class MpesaCallbackController extends Controller
 {
@@ -19,11 +25,15 @@ class MpesaCallbackController extends Controller
     /**
      * Handle M-Pesa STK Push callback
      */
-    public function stkCallback(Request $request)
+    public function stkCallback(Request $request, SMSService $smsService)
     {
-
         // Get the callback data from request and decode it
         $callbackData = $request->json()->all();
+
+        Log::info("+++++++++++++++++++++++++++++++++++++");
+        Log::info('M-Pesa STK Callback Received', $callbackData);
+        Log::info("+++++++++++++++++++++++++++++++++++++");
+
 
         // Check if stkCallback exists
         if (
@@ -39,11 +49,94 @@ class MpesaCallbackController extends Controller
 
         try {
             // Process the callback
-            $success = $this->mpesaService->handleCallback($callbackData);
+            $response = $this->mpesaService->handleCallback($callbackData);
 
-            if ($success) {
+            if ($response['success']) {
+
+            $payment = $response['payment'];
+
+            $parcel = $payment->parcel;
+                //Sending email to admins
+                try {
+                    Log::info('Created Parcel. Sending notification to admin');
+
+                    $admins = User::permission([
+                        'parcel.view',
+                        'parcel.update',
+                        'parcel.delete'
+                    ])->get();
+                    foreach ($admins as $admin) {
+                        Mail::to($admin->email)->send(new NewParcel($parcel));
+                    }
+                } catch (\Throwable $th) {
+                    Log::error('Failed to send email to admins after parcel is created: ', [
+                        'error' => $th->getMessage(),
+                        'stack' => $th->getTraceAsString(),
+                    ]);
+                }
+
+                //Send SMS to sender
+                try {
+                    Log::info('Sending SMS to Parcel Sender Start');
+                    $smsService->sendSenderParcelCreatedSMS(
+                        formatKenyaNumber($parcel->sender_phone),
+                        $parcel->sender_name,
+                        $parcel->parcel_id,
+                        $parcel->receiverTown->name
+                    );
+                    Log::info('Sending SMS to Parcel Sender End');
+                } catch (\Throwable $th) {
+                    Log::error('Failed to send SMS to receipient: ', [
+                        'error' => $th->getMessage(),
+                        'stack' => $th->getTraceAsString(),
+                    ]);
+                }
+
+                //Send SMS to recipients
+                try {
+                    Log::info('Sending SMS to Parcel Recipient Start');
+                    $smsService->sendRecipientParcelCreatedSMS(
+                        formatKenyaNumber($parcel->receiver_phone),
+                        $parcel->receiver_name,
+                        $parcel->parcel_id,
+                        $parcel->receiverTown->name
+                    );
+                    Log::info('Sending SMS to Parcel Recipient End');
+                } catch (\Throwable $th) {
+                    Log::error('Failed to send SMS to receipient: ', [
+                        'error' => $th->getMessage(),
+                        'stack' => $th->getTraceAsString(),
+                    ]);
+                }
+
+                //Send SMS to transport partners
+                // try {
+                //     $transportPartners = Partner::where('partner_type', 'transport')->where('verification_status', 'verified')->with('owner')->get();
+                //     Log::info('Sending SMS to Transport Partner Start');
+
+                //     foreach ($transportPartners as $partner) {
+
+                //         // Send to owner phone
+                //         if (!empty($partner->owner?->phone_number)) {
+                //             $smsService->sendTransportParnerParcelBookedSMS(
+                //                 formatKenyaNumber($partner->owner?->phone_number),
+                //                 $parcel->senderTown->name,
+                //                 $parcel->receiverTown->name
+                //             );
+                //         }
+                //     }
+
+                //     Log::info('Sending SMS to Transport Partner End');
+                // } catch (\Throwable $th) {
+                //     Log::error('Failed to send SMS to transport partners: ', [
+                //         'error' => $th->getMessage(),
+                //         'stack' => $th->getTraceAsString(),
+                //     ]);
+                // }
+
                 Log::info('Callback processed successfully');
 
+                Log::info("Payment is successful");
                 // Return success response to M-Pesa
                 return response()->json([
                     'ResultCode' => 0,

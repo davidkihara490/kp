@@ -12,10 +12,11 @@ class EditPaymentStructure extends Component
     public float $pick_up_drop_off_partner_percentage;
     public float $transport_partner_percentage;
     public float $platform_percentage;
+    public float $platform_deduction;
     public PaymentStructure $paymentStructure;
 
 
-    public function mount($id)
+    public function mount(int $id)
     {
         $this->paymentStructure = PaymentStructure::findOrFail($id);
         $this->delivery_type = $this->paymentStructure->delivery_type;
@@ -23,6 +24,7 @@ class EditPaymentStructure extends Component
         $this->pick_up_drop_off_partner_percentage = $this->paymentStructure->pick_up_drop_off_partner_percentage;
         $this->transport_partner_percentage = $this->paymentStructure->transport_partner_percentage;
         $this->platform_percentage = $this->paymentStructure->platform_percentage;
+        $this->platform_deduction = $this->paymentStructure->platform_deduction;
     }
 
     public function submit()
@@ -33,6 +35,7 @@ class EditPaymentStructure extends Component
             'pick_up_drop_off_partner_percentage' => 'required',
             'transport_partner_percentage' => 'required',
             'platform_percentage' => 'required',
+            'platform_deduction' => 'required',
 
         ]);
 
@@ -43,6 +46,7 @@ class EditPaymentStructure extends Component
                 'pick_up_drop_off_partner_percentage ' => $this->pick_up_drop_off_partner_percentage,
                 'transport_partner_percentage' => $this->transport_partner_percentage,
                 'platform_percentage' => $this->platform_percentage,
+                'platform_deduction' => $this->platform_deduction,
             ]);
 
             return redirect()->route('admin.payment-structure.index')->with('success', 'Payment structure updated successfully.');

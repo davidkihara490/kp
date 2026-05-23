@@ -347,7 +347,6 @@
                                     @endif
                                 </a>
                             </th>
-                            <th>Driver/Partner</th>
                             <th>
                                 <a href="#" wire:click.prevent="sortBy('created_at')">
                                     Created
@@ -414,17 +413,6 @@
                                     <i class="fas {{ $statusBadge['icon'] }} mr-1"></i>
                                     {{ ucfirst(str_replace('_', ' ', $parcel->current_status)) }}
                                 </span>
-                            </td>
-                            <td>
-                                @if($parcel->driver)
-                                <i class="fas fa-user mr-1"></i> {{ $parcel->driver->full_name }}
-                                <br>
-                                @endif
-                                @if($parcel->transportPartner)
-                                <small class="text-muted">
-                                    <i class="fas fa-building mr-1"></i> {{ $parcel->transportPartner->company_name }}
-                                </small>
-                                @endif
                             </td>
                             <td>
                                 {{ $parcel->created_at->format('d/m/Y') }}

@@ -72,6 +72,182 @@ class ViewParcel extends Component
     public $pickupVerificationError = '';
     protected $mpesaService;
 
+    public $showReceiptModal = false;
+    public $selectedPayment = null;
+    public $receiptData = [];
+
+    // Add these methods to your ViewParcel class
+
+    public function showReceipt($paymentId)
+    {
+        $this->selectedPayment = Payment::with('parcel')->findOrFail($paymentId);
+        $this->prepareReceiptData();
+        $this->showReceiptModal = true;
+    }
+
+    public function closeReceiptModal()
+    {
+        $this->showReceiptModal = false;
+        $this->selectedPayment = null;
+        $this->receiptData = [];
+    }
+
+    protected function prepareReceiptData()
+    {
+        $payment = $this->selectedPayment;
+        $parcel = $payment->parcel;
+
+        // Get all completed payments for this parcel
+        $allPayments = Payment::where('parcel_id', $parcel->id)
+            ->where('status', 'completed')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $totalPaid = $allPayments->sum('amount');
+        $previousPaymentsTotal = $allPayments->where('created_at', '<', $payment->created_at)->sum('amount');
+
+        $this->receiptData = [
+            'receipt_number' => $this->generateReceiptNumber($payment),
+            'payment' => $payment,
+            'parcel' => $parcel,
+            'total_paid' => $totalPaid,
+            'previous_payments_total' => $previousPaymentsTotal,
+            'payment_breakdown' => $allPayments,
+            'company_details' => $this->getCompanyDetails(),
+            'qr_code_url' => $this->generateQRCode($payment),
+        ];
+    }
+
+    protected function generateReceiptNumber($payment)
+    {
+        $prefix = 'RCP';
+        $date = $payment->created_at->format('Ymd');
+        $sequence = str_pad($payment->id, 6, '0', STR_PAD_LEFT);
+        return $prefix . $date . $sequence;
+    }
+
+    protected function getCompanyDetails()
+    {
+        // Fetch company details from settings or config
+        return [
+            'name' => config('app.name', 'Courier Service'),
+            'address' => '123 Business Park, Nairobi, Kenya',
+            'phone' => '+254 700 000000',
+            'email' => 'info@courier.com',
+            'website' => 'www.courier.com',
+            'pin' => 'P051234567Z',
+        ];
+    }
+
+    protected function generateQRCode($payment)
+    {
+
+        return;
+        // Generate verification URL
+        // $verificationUrl = route('receipt.verify', ['receipt' => $payment->reference_number]);
+
+        // You can use a QR code library like SimpleSoftwareIO\QrCode
+        // For now, return a placeholder or use an API
+        // try {
+        //     return 'https://quickchart.io/qr?text=' . urlencode($verificationUrl) . '&size=150';
+        // } catch (\Exception $e) {
+        //     return null;
+        // }
+    }
+
+    public function sendReceiptWhatsApp()
+    {
+        $payment = $this->selectedPayment;
+        $message = $this->generateReceiptMessage('whatsapp');
+        $phone = $payment->parcel->sender_phone ?? $payment->phone;
+
+        // Clean phone number for WhatsApp
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+        if (strlen($phone) == 10) {
+            $phone = '254' . substr($phone, -9);
+        } elseif (strlen($phone) == 9) {
+            $phone = '254' . $phone;
+        }
+
+        $whatsappUrl = 'https://wa.me/' . $phone . '?text=' . urlencode($message);
+
+        $this->dispatch('open-whatsapp', url: $whatsappUrl);
+        session()->flash('success', 'Opening WhatsApp to send receipt...');
+    }
+
+    public function sendReceiptEmail()
+    {
+        $payment = $this->selectedPayment;
+        $parcel = $payment->parcel;
+        $email = $parcel->sender_email ?? $parcel->receiver_email;
+
+        if (!$email) {
+            session()->flash('error', 'No email address available for this parcel.');
+            return;
+        }
+
+        try {
+            Mail::send('emails.receipt', ['receiptData' => $this->receiptData], function ($message) use ($email, $parcel) {
+                $message->to($email)
+                    ->subject('Payment Receipt - Parcel #' . $parcel->parcel_id)
+                    ->from(config('mail.from.address'), config('mail.from.name'));
+            });
+
+            session()->flash('success', 'Receipt sent via email successfully!');
+        } catch (\Exception $e) {
+            Log::error('Failed to send receipt email', ['error' => $e->getMessage()]);
+            session()->flash('error', 'Failed to send email. Please try again.');
+        }
+    }
+
+    public function sendReceiptSMS(SMSService $smsService)
+    {
+        $payment = $this->selectedPayment;
+        $parcel = $payment->parcel;
+        $phone = $parcel->sender_phone ?? $parcel->receiver_phone;
+        $message = $this->generateReceiptMessage('sms');
+
+        try {
+            $smsService->send($phone, $message);
+            session()->flash('success', 'Receipt sent via SMS successfully!');
+        } catch (\Exception $e) {
+            Log::error('Failed to send receipt SMS', ['error' => $e->getMessage()]);
+            session()->flash('error', 'Failed to send SMS. Please try again.');
+        }
+    }
+
+    public function printReceipt()
+    {
+        $this->dispatch('print-receipt');
+    }
+
+    protected function generateReceiptMessage($type = 'sms')
+    {
+        $payment = $this->selectedPayment;
+        $parcel = $payment->parcel;
+
+        if ($type === 'sms') {
+            return "RECEIPT: Payment of KES " . number_format($payment->amount, 2) .
+                " received for parcel #{$parcel->parcel_id}. " .
+                "Receipt No: {$this->receiptData['receipt_number']}. " .
+                "Total paid: KES " . number_format($this->receiptData['total_paid'], 2);
+        } else {
+            return "*COURIER SERVICE RECEIPT*\n\n" .
+                "Receipt No: {$this->receiptData['receipt_number']}\n" .
+                "Date: {$payment->created_at->format('Y-m-d H:i:s')}\n" .
+                "Parcel #: {$parcel->parcel_id}\n\n" .
+                "*Payment Details*\n" .
+                "Amount: KES " . number_format($payment->amount, 2) . "\n" .
+                "Method: " . ucfirst($payment->payment_method) . "\n" .
+                "Reference: {$payment->reference_number}\n\n" .
+                "*Payment Summary*\n" .
+                "Total Amount: KES " . number_format($parcel->total_amount, 2) . "\n" .
+                "Total Paid: KES " . number_format($this->receiptData['total_paid'], 2) . "\n" .
+                "Balance: KES " . number_format($parcel->total_amount - $this->receiptData['total_paid'], 2) . "\n\n" .
+                "Thank you for choosing " . config('app.name') . "!";
+        }
+    }
+
     protected SMSService $smsService;
 
     public function boot(MpesaService $mpesaService)
@@ -438,6 +614,7 @@ class ViewParcel extends Component
             ->sum('amount');
 
         $remainingBalance = $this->parcel->total_amount - $totalPaid;
+
         $this->validate([
             'paymentAmount' => 'required|numeric|min:1|max:' . $remainingBalance,
             'paymentMethod' => 'required|in:cash,mpesa,card,bank_transfer,wallet',
@@ -459,84 +636,6 @@ class ViewParcel extends Component
         try {
             if ($this->paymentMethod === 'mpesa') {
                 $this->processMpesaPayment();
-
-                //Sending email to admins
-                try {
-                    Log::info('Created Parcel. Sending notification to admin');
-
-                    $admins = User::permission([
-                        'parcel.view',
-                        'parcel.update',
-                        'parcel.delete'
-                    ])->get();
-                    foreach ($admins as $admin) {
-                        Mail::to($admin->email)->send(new NewParcel($this->parcel));
-                    }
-                } catch (\Throwable $th) {
-                    Log::error('Failed to send email to admins after parcel is created: ', [
-                        'error' => $th->getMessage(),
-                        'stack' => $th->getTraceAsString(),
-                    ]);
-                }
-
-                //Send SMS to sender
-                try {
-                    Log::info('Sending SMS to Parcel Sender Start');
-                    $smsService->sendSenderParcelCreatedSMS(
-                        formatKenyaNumber($this->parcel->sender_phone),
-                        $this->parcel->sender_name,
-                        $this->parcel->parcel_id,
-                        $this->parcel->receiverTown->name
-                    );
-                    Log::info('Sending SMS to Parcel Sender End');
-                } catch (\Throwable $th) {
-                    Log::error('Failed to send SMS to receipient: ', [
-                        'error' => $th->getMessage(),
-                        'stack' => $th->getTraceAsString(),
-                    ]);
-                }
-
-                //Send SMS to recipients
-                try {
-                    Log::info('Sending SMS to Parcel Recipient Start');
-                    $smsService->sendRecipientParcelCreatedSMS(
-                        formatKenyaNumber($this->parcel->receiver_phone),
-                        $this->parcel->receiver_name,
-                        $this->parcel->parcel_id,
-                        $this->parcel->receiverTown->name
-                    );
-                    Log::info('Sending SMS to Parcel Recipient End');
-                } catch (\Throwable $th) {
-                    Log::error('Failed to send SMS to receipient: ', [
-                        'error' => $th->getMessage(),
-                        'stack' => $th->getTraceAsString(),
-                    ]);
-                }
-
-                //Send SMS to transport partners
-                try {
-                    $transportPartners = Partner::where('partner_type', 'transport')->where('verification_status', 'verified')->with('owner')->get();
-                    Log::info('Sending SMS to Transport Partner Start');
-
-                    foreach ($transportPartners as $partner) {
-
-                        // Send to owner phone
-                        if (!empty($partner->owner?->phone_number)) {
-                            $smsService->sendTransportParnerParcelBookedSMS(
-                                formatKenyaNumber($partner->owner?->phone_number),
-                                $this->parcel->senderTown->name,
-                                $this->parcel->receiverTown->name
-                            );
-                        }
-                    }
-
-                    Log::info('Sending SMS to Transport Partner End');
-                } catch (\Throwable $th) {
-                    Log::error('Failed to send SMS to transport partners: ', [
-                        'error' => $th->getMessage(),
-                        'stack' => $th->getTraceAsString(),
-                    ]);
-                }
             } else {
                 $this->processOtherPayment();
             }

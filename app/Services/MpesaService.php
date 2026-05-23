@@ -213,7 +213,7 @@ class MpesaService
                         'amount' => $amount,
                         'payment_method' => 'mpesa',
                         'payment_date' => now(),
-                        'status' => 'pending',
+                        'status' => Payment::STATUS_PENDING,
                         'phone' => $phone,
                         'notes' => 'M-Pesa payment initiated. Awaiting confirmation.',
                         'paid_by' => $userId,
@@ -383,7 +383,7 @@ class MpesaService
                         MpesaTransaction::STATUS_EXPIRED
                     ])) {
                         $payment->update([
-                            'status' => 'failed',
+                            'status' => Payment::STATUS_FAILED,
                             'notes' => 'M-Pesa payment failed: ' . $userMessage,
                         ]);
                     }
@@ -395,7 +395,7 @@ class MpesaService
                             'amount' => $amountPaid ?? $transaction->amount,
                             'payment_method' => 'mpesa',
                             'payment_date' => now(),
-                            'status' => 'completed',
+                            'status' => Payment::STATUS_COMPLETED,
                             'phone' => $payerPhone ?? $transaction->phone_number,
                             'notes' => 'M-Pesa payment completed via callback. Receipt: ' . $mpesaReceiptNumber,
                             'paid_by' => $transaction->user_id,
@@ -408,14 +408,19 @@ class MpesaService
 
             DB::commit();
 
-            return true;
+            return [
+                'success' => true,
+                'payment' => $payment
+            ];
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Callback processing failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return false;
+            return [
+                'success' => false,
+            ];
         }
     }
 

@@ -776,8 +776,8 @@
                                         </td>
                                         <td>
                                             <button class="btn btn-sm btn-outline-info"
-                                                onclick="alert('Receipt generation coming soon')"
-                                                title="Print Receipt">
+                                                wire:click="showReceipt({{ $payment->id }})"
+                                                title="View Receipt">
                                                 <i class="bi bi-receipt"></i>
                                             </button>
                                         </td>
@@ -1185,7 +1185,7 @@
         @endif
 
         <div wire:poll.5s="checkMpesaStatus" class="d-none"></div>
-        
+
         @if($showDriverVerificationModal)
         <div class="modal fade show d-block" id="paymentModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-dialog-centered">
@@ -1548,6 +1548,220 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="button" class="btn btn-primary" disabled>Assign Driver</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- Receipt Modal -->
+        @if($showReceiptModal && $selectedPayment)
+        <div class="modal fade show d-block" id="receiptModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" wire:ignore.self>
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-receipt me-2"></i>
+                            Payment Receipt
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" wire:click="closeReceiptModal"></button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <!-- Receipt Content -->
+                        <div id="receipt-content" class="receipt-container p-4">
+                            <!-- Header -->
+                            <div class="text-center mb-4">
+                                <div class="company-logo mb-3">
+                                    <i class="bi bi-box-seam fs-1 text-primary"></i>
+                                </div>
+                                <h3 class="mb-1">{{ $receiptData['company_details']['name'] }}</h3>
+                                <p class="text-muted mb-0">{{ $receiptData['company_details']['address'] }}</p>
+                                <p class="text-muted small mb-0">
+                                    Tel: {{ $receiptData['company_details']['phone'] }} |
+                                    Email: {{ $receiptData['company_details']['email'] }}
+                                </p>
+                                <p class="text-muted small">PIN: {{ $receiptData['company_details']['pin'] }}</p>
+                                <hr class="my-3">
+                                <h4 class="mb-0">PAYMENT RECEIPT</h4>
+                                <p class="text-muted small">Receipt No: <strong>{{ $receiptData['receipt_number'] }}</strong></p>
+                            </div>
+
+                            <!-- Receipt Body -->
+                            <div class="row mb-4">
+                                <div class="col-6">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td class="fw-bold">Date:</td>
+                                            <td>{{ $selectedPayment->created_at->format('F d, Y H:i:s') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Parcel #:</td>
+                                            <td>{{ $selectedPayment->parcel->parcel_id }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Payment Method:</td>
+                                            <td>{{ ucfirst($selectedPayment->payment_method) }}</td>
+                                        </tr>
+                                        @if($selectedPayment->reference_number)
+                                        <tr>
+                                            <td class="fw-bold">Reference:</td>
+                                            <td><code>{{ $selectedPayment->reference_number }}</code></td>
+                                        </tr>
+                                        @endif
+                                    </table>
+                                </div>
+                                <div class="col-6">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td class="fw-bold">Customer Name:</td>
+                                            <td>{{ $selectedPayment->parcel->sender_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Customer Phone:</td>
+                                            <td>{{ $selectedPayment->parcel->sender_phone }}</td>
+                                        </tr>
+                                        @if($selectedPayment->parcel->sender_email)
+                                        <tr>
+                                            <td class="fw-bold">Customer Email:</td>
+                                            <td>{{ $selectedPayment->parcel->sender_email }}</td>
+                                        </tr>
+                                        @endif
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Payment Details -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <strong>Payment Details</strong>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-bordered mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Description</th>
+                                                <th class="text-end">Amount (KES)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Payment for Parcel #{{ $selectedPayment->parcel->parcel_id }}</td>
+                                                <td class="text-end fw-bold">{{ number_format($selectedPayment->amount, 2) }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Payment Summary -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <strong>Payment Summary</strong>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td>Total Parcel Amount:</td>
+                                            <td class="text-end">KES {{ number_format($selectedPayment->parcel->total_amount, 2) }}</td>
+                                        </tr>
+                                        @if($receiptData['previous_payments_total'] > 0)
+                                        <tr>
+                                            <td>Previous Payments:</td>
+                                            <td class="text-end">KES {{ number_format($receiptData['previous_payments_total'], 2) }}</td>
+                                        </tr>
+                                        @endif
+                                        <tr class="border-top">
+                                            <td class="fw-bold">Current Payment:</td>
+                                            <td class="text-end fw-bold text-success">KES {{ number_format($selectedPayment->amount, 2) }}</td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="fw-bold">Total Paid:</td>
+                                            <td class="text-end fw-bold">KES {{ number_format($receiptData['total_paid'], 2) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Remaining Balance:</td>
+                                            <td class="text-end fw-bold {{ ($selectedPayment->parcel->total_amount - $receiptData['total_paid']) > 0 ? 'text-danger' : 'text-success' }}">
+                                                KES {{ number_format($selectedPayment->parcel->total_amount - $receiptData['total_paid'], 2) }}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Payment History (if multiple payments) -->
+                            @if($receiptData['payment_breakdown']->count() > 1)
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <strong>Payment History</strong>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-sm mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Receipt No</th>
+                                                <th>Method</th>
+                                                <th class="text-end">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($receiptData['payment_breakdown'] as $payment)
+                                            <tr>
+                                                <td>{{ $payment->created_at->format('Y-m-d') }}</td>
+                                                <td><small>{{ $payment->reference_number ?? 'N/A' }}</small></td>
+                                                <td>{{ ucfirst($payment->payment_method) }}</td>
+                                                <td class="text-end">KES {{ number_format($payment->amount, 2) }}</td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                        <tfoot class="table-light">
+                                            <tr>
+                                                <th colspan="3" class="text-end">Total:</th>
+                                                <th class="text-end">KES {{ number_format($receiptData['total_paid'], 2) }}</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                            @endif
+
+                            <!-- QR Code (if available) -->
+                            @if($receiptData['qr_code_url'])
+                            <div class="text-center mb-4">
+                                <img src="{{ $receiptData['qr_code_url'] }}" alt="QR Code" style="width: 100px; height: 100px;">
+                                <p class="text-muted small mt-2">Scan to verify receipt</p>
+                            </div>
+                            @endif
+
+                            <!-- Footer -->
+                            <div class="text-center mt-4">
+                                <p class="mb-0"><strong>Thank you for choosing {{ $receiptData['company_details']['name'] }}!</strong></p>
+                                <p class="text-muted small mb-0">This is a computer generated receipt and does not require a signature.</p>
+                                <p class="text-muted small">For inquiries, please contact us at {{ $receiptData['company_details']['phone'] }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" wire:click="closeReceiptModal">
+                            <i class="bi bi-x me-2"></i>
+                            Close
+                        </button>
+                        <button type="button" class="btn btn-success" wire:click="sendReceiptWhatsApp">
+                            <i class="bi bi-whatsapp me-2"></i>
+                            WhatsApp
+                        </button>
+                        <button type="button" class="btn btn-info text-white" wire:click="sendReceiptEmail">
+                            <i class="bi bi-envelope me-2"></i>
+                            Email
+                        </button>
+                        <button type="button" class="btn btn-primary" wire:click="sendReceiptSMS">
+                            <i class="bi bi-chat-dots me-2"></i>
+                            SMS
+                        </button>
+                        <button type="button" class="btn btn-secondary" wire:click="printReceipt">
+                            <i class="bi bi-printer me-2"></i>
+                            Print
+                        </button>
                     </div>
                 </div>
             </div>
@@ -2027,6 +2241,55 @@
             }
         </style>
 
+        <style>
+            /* Receipt Styles */
+            .receipt-container {
+                background: white;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+
+            .receipt-container .table-bordered {
+                border: 1px solid #dee2e6;
+            }
+
+            .receipt-container .table-bordered th,
+            .receipt-container .table-bordered td {
+                border: 1px solid #dee2e6;
+                padding: 10px;
+            }
+
+            .receipt-container .card-header {
+                background-color: #f8f9fa;
+                border-bottom: 1px solid #dee2e6;
+            }
+
+            .receipt-container hr {
+                border-top: 2px solid #dee2e6;
+            }
+
+            /* Print specific styles */
+            @media print {
+                .modal-dialog {
+                    max-width: 100%;
+                    margin: 0;
+                }
+
+                .modal-content {
+                    border: none;
+                    box-shadow: none;
+                }
+
+                .modal-header,
+                .modal-footer {
+                    display: none;
+                }
+
+                .receipt-container {
+                    padding: 0;
+                }
+            }
+        </style>
+
         <script>
             function confirmCancel(parcelNumber) {
                 if (confirm(`Are you sure you want to cancel parcel #${parcelNumber}?`)) {
@@ -2120,6 +2383,77 @@
                         this.value = this.value.replace(/[^0-9]/g, '');
                     });
                 }
+            });
+        </script>
+
+        <script>
+            // Print receipt functionality
+            Livewire.on('print-receipt', () => {
+                const receiptContent = document.getElementById('receipt-content').cloneNode(true);
+                const printWindow = window.open('', '_blank');
+
+                printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Payment Receipt</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+            <style>
+                body {
+                    padding: 20px;
+                    font-family: Arial, sans-serif;
+                }
+                .receipt-container {
+                    max-width: 800px;
+                    margin: 0 auto;
+                }
+                .table-borderless td, .table-borderless th {
+                    border: none;
+                }
+                @media print {
+                    body {
+                        padding: 0;
+                        margin: 0;
+                    }
+                    .btn, .modal-footer {
+                        display: none !important;
+                    }
+                    .receipt-container {
+                        margin: 0;
+                        padding: 20px;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            ${receiptContent.outerHTML}
+            <div class="text-center mt-4" style="print-color-adjust: exact;">
+                <button class="btn btn-primary" onclick="window.print();">
+                    <i class="bi bi-printer me-2"></i>
+                    Print
+                </button>
+                <button class="btn btn-secondary" onclick="window.close();">
+                    <i class="bi bi-x me-2"></i>
+                    Close
+                </button>
+            </div>
+            <script>
+                // Auto-print
+                window.onload = function() {
+                    window.print();
+                }
+            <\/script>
+        </body>
+        </html>
+    `);
+
+                printWindow.document.close();
+            });
+
+            // Open WhatsApp
+            Livewire.on('open-whatsapp', (data) => {
+                window.open(data.url, '_blank');
             });
         </script>
     </div>

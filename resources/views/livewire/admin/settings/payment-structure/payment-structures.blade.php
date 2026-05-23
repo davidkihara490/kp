@@ -12,12 +12,21 @@
                 <thead>
                     <tr>
                         <th>#</th>
+                        <th></th>
+                        <th></th>
+                        <th>Platform Deduction(%)</th>
+                        <th colspan="4">Reminder</th>
+                        <th>Actions</th>
+                    </tr>
+                    <tr>
+                        <th>#</th>
                         <th>Delivery Type</th>
-                        <th>Tax</th>
-                        <th>PickUp Partner</th>
-                        <th>DropOff Partner</th>
-                        <th>Transport Partner</th>
-                        <th>Platform</th>
+                        <th>Tax(%)</th>
+                        <th>Platform Deduction(%)</th>
+                        <th>PickUp Partner(%)</th>
+                        <th>DropOff Partner(%)</th>
+                        <th>Transport Partner(%)</th>
+                        <th>Platform(%)</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -27,6 +36,7 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $paymentStructure->delivery_type }}</td>
                         <td>{{ $paymentStructure->tax_percentage }}</td>
+                        <td>{{ $paymentStructure->platform_deduction }}</td>
                         <td>{{ $paymentStructure->pick_up_drop_off_partner_percentage }}</td>
                         <td>{{ $paymentStructure->pick_up_drop_off_partner_percentage }}</td>
                         <td>{{ $paymentStructure->transport_partner_percentage }}</td>

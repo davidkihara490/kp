@@ -9,7 +9,7 @@
 
                 <form wire:submit.prevent="submit">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label>Delivery Type</label>
                                 <select class="form-control" wire:model="delivery_type" style="width: 100%;">
@@ -22,21 +22,29 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="form-group">
-                                <label>Tax(%)</label>
+                                <label>VAT Tax(%)</label>
                                 <input type="text" class="form-control" wire:model="tax_percentage" placeholder="" min="0">
                                 @error('tax_percentage')
                                 <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
                         </div>
-                        
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Platform Deduction(%)</label>
+                                <input type="text" class="form-control" wire:model="platform_deduction" placeholder="" min="0">
+                                @error('platform_deduction')
+                                <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
                     </div>
-
+                        <label><i>To be shared between partners and platform</i></label>
+                        <br>
                     <div class="row">
-                        
-
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label>Pick up/ Drop Off Partner Percentage</label>
@@ -65,7 +73,7 @@
                                 @enderror
                             </div>
                         </div>
-                        
+
                     </div>
 
 

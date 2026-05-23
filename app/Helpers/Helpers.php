@@ -93,3 +93,36 @@ if (! function_exists('formatKenyaNumber')) {
         }
     }
 }
+
+
+if (!function_exists('formatPhoneNumber')) {
+    function formatPhoneNumber(string $phone)
+    {
+        // Remove EVERYTHING except digits
+        $cleaned = preg_replace('/\D+/', '', $phone);
+
+        if (!$cleaned) {
+            return '';
+        }
+
+        // Already correct format
+        if (str_starts_with($cleaned, '254') && strlen($cleaned) === 12) {
+            return $cleaned;
+        }
+
+        // Local format starting with 0 (0712...)
+        if (str_starts_with($cleaned, '0')) {
+            $cleaned = '254' . substr($cleaned, 1);
+        }
+        // 9-digit format (712345678)
+        elseif (strlen($cleaned) === 9) {
+            $cleaned = '254' . $cleaned;
+        }
+        // If someone passes 7XXXXXXXXX (missing 0)
+        elseif (strlen($cleaned) === 10 && str_starts_with($cleaned, '7')) {
+            $cleaned = '254' . $cleaned;
+        }
+
+        return $cleaned;
+    }
+}

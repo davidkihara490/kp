@@ -317,6 +317,28 @@
                                         </div>
 
                                         <div class="col-12">
+                                            <div class="form-check form-check-lg p-3 bg-light rounded-3 mb-3">
+                                                <input class="form-check-input" type="checkbox"
+                                                    id="insurance_required"
+                                                    wire:model.live="insurance_required"
+                                                    style="width: 20px; height: 20px; cursor: pointer;">
+                                                <label class="form-check-label fw-semibold ms-2" for="insurance_required" style="cursor: pointer;">
+                                                    <i class="bi bi-shield-shaded text-success me-2"></i>
+                                                    Enable Insurance (2% of declared value)
+                                                </label>
+                                                @if($insurance_required && $declared_value > 0)
+                                                <div class="mt-2 ms-4 text-success">
+                                                    <small>
+                                                        <i class="bi bi-info-circle me-1"></i>
+                                                        Insurance cost: <strong>KES {{ number_format($declared_value * 0.02, 2) }}</strong>
+                                                        (2% of KES {{ number_format($declared_value, 2) }})
+                                                    </small>
+                                                </div>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
                                             <label class="form-label required">Content Description</label>
                                             <textarea class="form-control form-control-lg @error('content_description') is-invalid @enderror"
                                                 wire:model="content_description" rows="4" placeholder="Describe the contents of the parcel in detail"></textarea>
@@ -373,6 +395,16 @@
                                                     <span class="fw-semibold fs-5">Base Price:</span>
                                                     <span class="fw-bold fs-4 text-success">KES {{ number_format($base_price, 2) }}</span>
                                                 </div>
+
+                                                @if($insurance_required && $insurance_charge > 0)
+                                                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-2">
+                                                    <span class="fw-semibold fs-5">
+                                                        <i class="bi bi-shield-shaded me-1"></i>
+                                                        Insurance (2%):
+                                                    </span>
+                                                    <span class="fw-bold fs-4 text-info">KES {{ number_format($insurance_charge, 2) }}</span>
+                                                </div>
+                                                @endif
 
                                                 <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-2">
                                                     <span class="fw-semibold fs-5">Tax (16%):</span>
@@ -585,6 +617,14 @@
                                             <span class="fw-semibold fs-6">Base Price:</span>
                                             <span class="fw-bold fs-5">KES {{ number_format($base_price, 2) }}</span>
                                         </div>
+
+                                        @if($insurance_required && $insurance_charge > 0)
+                                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                                            <span class="fw-semibold fs-6">Insurance (2%):</span>
+                                            <span class="fw-bold fs-5 text-info">KES {{ number_format($insurance_charge, 2) }}</span>
+                                        </div>
+                                        @endif
+
                                         <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                                             <span class="fw-semibold fs-6">Tax (16%):</span>
                                             <span class="fw-bold fs-5">KES {{ number_format($tax_amount, 2) }}</span>
