@@ -34,7 +34,7 @@
 
             <a href="{{ route('partners.parcels.index') }}" class="nav-link">
                 <i class="bi bi-box-arrow-right"></i>
-                <span>Parcels</span>
+                <span>Outgoing Parcels</span>
             </a>
             @if($partnerType == "pickup-dropoff")
             <a href="#" class="nav-link">

@@ -95,6 +95,15 @@
                 </li>
                 @endcan
 
+                @if($admin->can('payment.view'))
+                <li class="nav-item">
+                    <a href="{{ route('admin.payouts.index') }}" class="nav-link {{ request()->routeIs('admin.payouts*') ? 'active' : '' }}">
+                        <i class="nav-icon far fa-calendar-alt"></i>
+                        <p>Payouts</p>
+                    </a>
+                </li>
+                @endcan
+
                 @if($admin->can('user.view'))
                 <li class="nav-item">
                     <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
@@ -216,7 +225,7 @@
                         </li>
                         @endif
 
-                    @if($admin->can('payment-structure.view'))
+                        @if($admin->can('payment-structure.view'))
                         <li class="nav-item">
                             <a href="{{ route('admin.payment-structure.index') }}"
                                 class="nav-link {{ request()->routeIs('admin.payment-structure*') ? 'active' : '' }}">
