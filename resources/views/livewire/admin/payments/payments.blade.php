@@ -323,7 +323,7 @@
                                 </span>
                             </td>
                             <td>
-                                {{ $payment->payment_date ? $payment->payment_date->format('d/m/Y H:i') : 'N/A' }}
+                                {{ $payment->payment_date ? $payment->payment_date : 'N/A' }}
                             </td>
                             <td>
                                 <span class="badge 
@@ -457,7 +457,7 @@
                                         </tr>
                                         <tr>
                                             <th>Date:</th>
-                                            <td>{{ $selectedPayment->payment_date?->format('d M Y H:i:s') }}</td>
+                                            <td>{{ $selectedPayment->payment_date }}</td>
                                         </tr>
                                         <tr>
                                             <th>Phone:</th>
@@ -527,7 +527,7 @@
                                         </tr>
                                         <tr>
                                             <th>Date:</th>
-                                            <td>{{ $selectedPayment->mpesaTransaction->transaction_date?->format('d M Y H:i:s') }}</td>
+                                            <td>{{ $selectedPayment->mpesaTransaction->transaction_date }}</td>
                                         </tr>
                                     </table>
                                 </div>
