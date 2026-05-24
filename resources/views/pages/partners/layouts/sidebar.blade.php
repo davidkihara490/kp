@@ -37,7 +37,6 @@
                 <span>Outgoing Parcels</span>
             </a>
             @if($partnerType == "pickup-dropoff")
-            <a href="#" class="nav-link">
                 <i class="bi bi-inbox"></i>
                 <span>Incoming Parcels</span>
             </a>

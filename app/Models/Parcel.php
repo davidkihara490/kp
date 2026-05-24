@@ -64,6 +64,7 @@ class Parcel extends Model
         // Delivery Information
         'delivery_partner_id',
         'delivery_pick_up_drop_off_point_id',
+        'delivery_flow',
 
         // Pricing
         'base_price',
