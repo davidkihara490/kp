@@ -15,6 +15,7 @@ class ParcelPayout extends Model
         'type',
         'destination',
         'destination_id',
+        'warehouse_id',
         'origin_id',
         'amount',
         'status',

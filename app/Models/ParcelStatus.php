@@ -11,6 +11,7 @@ class ParcelStatus extends Model
     use HasFactory;
     protected $fillable = [
         'parcel_id',
+        'current_location',
         'status',
         'changed_by',        // user or driver ID
         'changed_by_type',   // 'admin', 'partner', 'driver', 'system'
@@ -34,7 +35,13 @@ class ParcelStatus extends Model
         return $this->belongsTo(User::class, 'changed_by');
     }
 
-    public function driver(){
+    public function driver()
+    {
         return $this->belongsTo(Driver::class, 'driver_id');
+    }
+
+    public function currentPickUpAndDropOffPoint(): BelongsTo
+    {
+        return $this->belongsTo(PickUpAndDropOffPoint::class, 'current_location');
     }
 }

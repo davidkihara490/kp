@@ -65,6 +65,7 @@ class Parcel extends Model
         'delivery_partner_id',
         'delivery_pick_up_drop_off_point_id',
         'delivery_flow',
+        'warehouse_id',
 
         // Pricing
         'base_price',
@@ -158,6 +159,7 @@ class Parcel extends Model
     const STATUS_FAILED = 'failed';
     const STATUS_RETURNED = 'returned';
 
+
     /**
      * Boot the model.
      */
@@ -220,6 +222,10 @@ class Parcel extends Model
         return $this->belongsTo(Contact::class, 'sender_id');
     }
 
+    public function warehouse()
+    {
+        return $this->belongsTo(PickUpAndDropOffPoint::class, 'warehouse_id');
+    }
     // /**
     //  * Get the receiver contact.
     //  */
@@ -714,7 +720,129 @@ class Parcel extends Model
         return $this->statuses()->latest()->first();
     }
 
+    public function getCurrentLocationAttribute(): array
+    {
+        $latestStatus = $this->statuses()->latest()->first();
 
+        if (!$latestStatus) {
+            return [
+                'status' => 'unknown',
+                'message' => 'Parcel has no tracking history yet',
+            ];
+        }
+
+        $message = match ($latestStatus->status) {
+
+            self::STATUS_CREATED =>
+            'Parcel has been created and awaiting acceptance',
+
+            self::STATUS_ACCEPTED =>
+            'Parcel has been accepted by transport partner',
+
+            self::STATUS_ASSIGNED =>
+            'Driver assigned to parcel',
+
+            self::STATUS_IN_TRANSIT =>
+            'Parcel is currently in transit',
+
+            self::STATUS_PENDING =>
+            'Parcel is currently pending',
+
+            self::STATUS_WAREHOUSE =>
+            'Parcel is currently at warehouse',
+
+            self::STATUS_ARRIVED_AT_DESTINATION =>
+            'Parcel has arrived at destination branch',
+
+            self::STATUS_PICKED =>
+            'Parcel is out for final delivery',
+
+            self::STATUS_DELIVERED =>
+            'Parcel has been delivered successfully',
+
+            self::STATUS_FAILED =>
+            'Parcel delivery failed',
+
+            self::STATUS_RETURNED =>
+            'Parcel has been returned',
+
+            default =>
+            'Unknown parcel status',
+        };
+
+        return [
+            'pick-up-drop-off-point' => $latestStatus->currentPickUpAndDropOffPoint,
+            'status' => $latestStatus->status,
+            'message' => $message,
+            'updated_at' => $latestStatus->created_at,
+            'driver' => $latestStatus->driver?->name,
+            'notes' => $latestStatus->notes,
+        ];
+    }
+
+    public function getJourneyPathAttribute(): array
+    {
+        $statuses = $this->statuses()
+            ->orderBy('created_at')
+            ->get();
+
+        return $statuses->map(function ($status) {
+
+            $message = match ($status->status) {
+
+                self::STATUS_CREATED =>
+                'Parcel booked into system',
+
+                self::STATUS_ACCEPTED =>
+                'Transport partner accepted parcel',
+
+                self::STATUS_ASSIGNED =>
+                'Driver assigned',
+
+                self::STATUS_IN_TRANSIT =>
+                'Parcel in transit',
+
+                self::STATUS_PENDING =>
+                'Parcel pending',
+
+                self::STATUS_WAREHOUSE =>
+                'Parcel received at warehouse',
+
+                self::STATUS_ARRIVED_AT_DESTINATION =>
+                'Parcel arrived at destination branch',
+
+                self::STATUS_PICKED =>
+                'Parcel picked for final delivery',
+
+                self::STATUS_DELIVERED =>
+                'Parcel delivered',
+
+                self::STATUS_FAILED =>
+                'Delivery failed',
+
+                self::STATUS_RETURNED =>
+                'Parcel returned',
+
+                default =>
+                'Unknown status',
+            };
+
+            return [
+                'status' => $status->status,
+                'message' => $message,
+                'notes' => $status->notes,
+                'driver' => $status->driver?->name,
+                'changed_by' => $status->changer?->name,
+                'timestamp' => $status->created_at,
+            ];
+        })->toArray();
+    }
+
+
+    public function latestStatus()
+    {
+        return $this->hasOne(ParcelStatus::class)->latestOfMany();
+    }
 
     // protected function isValidTransition(string $newStatus): bool
     // {
@@ -768,6 +896,7 @@ class Parcel extends Model
 
     public function updateParcelStatus(
         string $newStatus,
+        ?int $currentLocation = null,
         ?int $changedBy = null,
         ?string $changedByType = null,
         ?string $notes = null,
@@ -776,6 +905,7 @@ class Parcel extends Model
     ): void {
         DB::transaction(function () use (
             $newStatus,
+            $currentLocation,
             $changedBy,
             $changedByType,
             $notes,
@@ -807,6 +937,7 @@ class Parcel extends Model
             // 📝 Create Status History Record
             $this->statuses()->create([
                 'status'          => $newStatus,
+                'current_location' => $currentLocation,
                 'changed_by'      => $changedBy,
                 'changed_by_type' => $changedByType,
                 'notes'           => $notes,
@@ -846,6 +977,11 @@ class Parcel extends Model
         }
 
         return Hash::check($otp, $this->delivery_otp);
+    }
+
+    public function parcelPayouts()
+    {
+        return $this->hasMany(ParcelPayout::class);
     }
 
     public function calculateParcelPayout(

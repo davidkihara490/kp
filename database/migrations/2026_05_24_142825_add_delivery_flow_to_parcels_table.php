@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::table('parcels', function (Blueprint $table) {
             $table->enum('delivery_flow', [
-                'direct',
+                'final_destination',
                 'warehouse',
             ])->nullable()->after('delivery_pick_up_drop_off_point_id');
+            $table->unsignedBigInteger('warehouse_id')->nullable()->after('delivery_flow')->index('parcels_warehouse_id_foreign');
         });
     }
 
@@ -26,6 +27,7 @@ return new class extends Migration
     {
         Schema::table('parcels', function (Blueprint $table) {
             $table->dropColumn('delivery_flow');
+            $table->dropColumn('warehouse_id');
         });
     }
 };

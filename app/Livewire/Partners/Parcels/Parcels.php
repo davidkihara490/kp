@@ -7,8 +7,10 @@ use App\Models\Driver;
 use App\Models\County;
 use App\Models\Partner;
 use App\Models\Customer;
+use App\Services\SMSService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Url;
@@ -153,7 +155,7 @@ class Parcels extends Component
         $this->selectedDriverId = $driverId;
     }
 
-    public function assignDriver()
+    public function assignDriver(SMSService $smsService)
     {
         $this->validate([
             'selectedDriverId' => 'required|exists:drivers,id',
@@ -167,21 +169,42 @@ class Parcels extends Component
             $driver = Driver::find($this->selectedDriverId);
 
             DB::beginTransaction();
+
+            $parcelCode = $this->selectedParcelForDriver->generateDeliveryOtp();
             $this->selectedParcelForDriver->updateParcelStatus(
                 Parcel::STATUS_ASSIGNED,
+                $this->selectedParcelForDriver->sender_pick_up_drop_off_point_id,
                 Auth::guard('partner')->user()->id,
-                'transport',
-                'Parcel assigned to driver',
+                current_user_type(),
+                'Parcel assigned to driver: ' . $driver->first_name . ' ' . $driver->last_name,
                 $driver->id,
-                $this->selectedParcelForDriver->generateDeliveryOtp(),
+                $parcelCode,
             );
 
-            //TODO::Send Email and text to driver when assigned the parcel
             $this->selectedParcelForDriver->current_status = Parcel::STATUS_ASSIGNED;
-            $this->selectedPaselectedParcelForDriverrcel->driver_id = $driver->id;
+            $this->selectedParcelForDriver->driver_id = $driver->id;
             $this->selectedParcelForDriver->save();
 
             DB::commit();
+
+            //Send Driver SMS notification
+            try {
+                Log::info('START::Sending SMS to driver after Asignment');
+                $smsService->sendDriverAssignmentSMS(
+                    formatKenyaNumber($driver->phone_number),
+                    $driver->first_name,
+                    $this->selectedParcelForDriver->parcel_id,
+                    $this->selectedParcelForDriver->senderTown->name,
+                    $this->selectedParcelForDriver->receiverTown->name,
+                    $parcelCode
+                );
+                Log::info('START::Sending SMS to driver after Asignment');
+            } catch (\Throwable $th) {
+                Log::error('Failed to send SMS to driver: ', [
+                    'error' => $th->getMessage(),
+                    'stack' => $th->getTraceAsString(),
+                ]);
+            }
 
 
             // Refresh statistics
@@ -236,35 +259,24 @@ class Parcels extends Component
         $query = Parcel::query();
 
         if ($this->loggedUser->partner && $this->loggedUser->partner->partner_type ==  "transport") {
-
-            // dd(11111);
-            $query = Parcel::where('transport_partner_id', $this->loggedUser->partner->id);
+            $query = Parcel::whereHas('parcelPayouts', function ($query) {
+                $query->where('partner_id', $this->loggedUser->partner->id);
+            })->with([
+                'parcelPayouts' => function ($query) {
+                    $query->where('partner_id', $this->loggedUser->partner->id);
+                }
+            ]);
         } elseif ($this->loggedUser->partner && $this->loggedUser->partner->partner_type ==  "pickup-dropoff") {
-
-            // dd(2222222);
             $query = Parcel::where('sender_partner_id', $this->loggedUser->partner->id)
                 ->orWhere('delivery_partner_id', $this->loggedUser->partner->id);
         } elseif ($this->loggedUser->driver && $this->loggedUser->driver) {
-
-            // dd(333333);
             $query = Parcel::where('driver_id', $this->loggedUser->driver->id);
         } elseif ($this->loggedUser->parcelHandlingAssistant) {
-            // dd(4444444);
-            $query = Parcel::where('pha_id', $this->loggedUser->parcelHandlingAssistant->id)
-                ->orWhere('delivery_partner_id', $this->loggedUser->parcelHandlingAssistant->partner->id);
-            // ->orWhere('delivery_partner_id', $this->loggedUser->partner->id);
+            $query = Parcel::where(function ($q) {
+                $q->where('pha_id', $this->loggedUser->parcelHandlingAssistant->id)
+                    ->orWhere('delivery_partner_id', $this->loggedUser->parcelHandlingAssistant->partner->id);
+            });
         }
-
-        // Filter by partner type
-        // if ($this->partnerType == 'transport') {
-        //     $query = Parcel::where('transport_partner_id', $this->partner->id);
-        // } elseif ($this->partnerType == 'transport' && $this->loggedDriver) {
-        //     $query = Parcel::where('driver_id', $this->loggedDriver->id);
-        // } else {
-        //     $query = Parcel::where('transport_partner_id', $this->partner->id);
-        // }
-
-
 
         // Apply filters
         $query = $query->when($this->search, function ($query) {

@@ -34,14 +34,8 @@
 
             <a href="{{ route('partners.parcels.index') }}" class="nav-link">
                 <i class="bi bi-box-arrow-right"></i>
-                <span>Outgoing Parcels</span>
+                <span>Parcels</span>
             </a>
-            @if($partnerType == "pickup-dropoff")
-                <i class="bi bi-inbox"></i>
-                <span>Incoming Parcels</span>
-            </a>
-            @endif
-
             <a href="#" class="nav-link">
                 <i class="bi bi-bank"></i>
                 <span>Earnings</span>

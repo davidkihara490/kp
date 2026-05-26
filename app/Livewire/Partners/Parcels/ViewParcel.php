@@ -5,6 +5,7 @@ namespace App\Livewire\Partners\Parcels;
 use App\Livewire\Admin\Settings\Pricing\Pricings;
 use App\Mail\NewParcel;
 use App\Models\Parcel;
+use App\Models\ParcelPayout;
 use App\Models\Partner;
 use App\Models\Payment;
 use App\Models\User;
@@ -359,12 +360,28 @@ class ViewParcel extends Component
 
             $this->parcel->updateParcelStatus(
                 Parcel::STATUS_PICKED,
+                $this->parcel->delivery_pick_up_drop_off_point_id,
                 Auth::guard('partner')->user()->id,
-                'pha',
+                current_user_type(),
                 $notes,
                 NULL,
                 NULL,
             );
+
+            $payout = $this->parcel->calculateParcelPayout((float)($this->parcel->base_price + $this->parcel->tax_amount), 'direct');
+            ParcelPayout::create([
+                'parcel_id' =>  $this->parcel->id,
+                'partner_id' => Auth::guard('partner')->user()->parcelHandlingAssistant?->partner?->id ?? Auth::guard('partner')->user()->partner?->id,
+                'type' => 'pickup-dropoff',
+                'destination' => 'final',
+                'destination_id' => $this->selectedParcel->delivery_pick_up_drop_off_point_id,
+                'origin_id' => $this->selectedParcel->sender_pick_up_drop_off_point_id,
+                'amount' => $payout['pick_up_drop_off_partner']['amount'],,
+                'status' => 'approved',
+                'paid_out_on' => null,
+                'cancelation_reason' => null
+            ]);
+
 
             DB::commit();
 
@@ -421,16 +438,24 @@ class ViewParcel extends Component
 
             $this->parcel->updateParcelStatus(
                 Parcel::STATUS_IN_TRANSIT,
+                $this->parcel->sender_pick_up_drop_off_point_id,
                 Auth::guard('partner')->user()->id,
-                'pha',
+                current_user_type(),
                 'Parcel picked by driver',
                 $this->selectedDriver->id,
-                $this->parcel->generateDeliveryOtp(),
+                null,
             );
 
             $this->parcel->current_status = Parcel::STATUS_IN_TRANSIT;
             $this->parcel->driver_id = $this->selectedDriver->id;
             $this->parcel->save();
+
+
+            $this->parcel->parcelPayouts()
+                ->where('origin_id', $this->parcel->sender_pick_up_drop_off_point_id)
+                ->where('type', 'pickup-dropoff')->update([
+                    'status' => 'approved'
+                ]);
             DB::commit();
 
             $this->closeDriverVerificationModal();
@@ -454,19 +479,53 @@ class ViewParcel extends Component
         $this->latestStatus->otp_verified = true;
         $this->latestStatus->save();
 
+        $notes = null;
+        $currentLocation = null;
+        $status = null;
+        $parcelCode = $this->selectedParcelForDriver->generateDeliveryOtp();
+
+
+        if ($this->parcel->delivery_flow == 'warehouse') {
+            if ($this->parcel->current_location['pick-up-drop-off-point']->id == $this->parcel->warehouse_id) {
+                $status = Parcel::STATUS_ARRIVED_AT_DESTINATION;
+                $currentLocation = $this->parcel->delivery_pick_up_drop_off_point_id;
+                $notes = 'Parcel arrived at destination: '
+                    . ($this->parcel->deliveryStation?->name ?? 'pickup-point');
+            }
+            if ($this->parcel->current_location['pick-up-drop-off-point']->id == $this->parcel->sender_pick_up_drop_off_point_id) {
+                $status = Parcel::STATUS_WAREHOUSE;
+                $currentLocation = $this->parcel->warehouse_id;
+                $notes = 'Parcel received at warehouse: '
+                    . ($this->parcel->warehouse?->name ?? 'warehouse');
+            }
+        } else {
+            $status = Parcel::STATUS_ARRIVED_AT_DESTINATION;
+            $currentLocation = $this->parcel->delivery_pick_up_drop_off_point_id;
+            $notes = 'Parcel arrived at destination: '
+                . ($this->parcel->deliveryStation?->name ?? 'pickup-point');
+        }
+
         $this->parcel->updateParcelStatus(
-            Parcel::STATUS_ARRIVED_AT_DESTINATION,
+            $status,
+            $currentLocation,
             Auth::guard('partner')->user()->id,
-            'pha',
-            'Parcel delivered to pick-up point',
+            current_user_type(),
+            $notes,
             $this->selectedDriver->id,
-            $this->parcel->generateDeliveryOtp(),
+            $parcelCode,
         );
 
-        $this->parcel->current_status = Parcel::STATUS_ARRIVED_AT_DESTINATION;
+        $this->parcel->current_status = $status;
         $this->parcel->driver_id = $this->selectedDriver->id;
         $this->parcel->save();
 
+
+        $this->parcel->parcelPayouts()
+            ->where('type', 'transport')->update([
+                'status' => 'approved'
+            ]);
+
+        DB::commit();
 
         //Send SMS to receiver
         try {
@@ -475,6 +534,7 @@ class ViewParcel extends Component
                 formatKenyaNumber($this->parcel->receiver_phone),
                 $this->parcel->receiver_name,
                 $this->parcel->parcel_id,
+                $parcelCode,
                 $this->parcel->receiverTown->name
             );
             Log::info('Sending SMS to Parcel Sender End');
@@ -484,7 +544,6 @@ class ViewParcel extends Component
                 'stack' => $th->getTraceAsString(),
             ]);
         }
-        DB::commit();
     }
 
     protected function loadParcel()

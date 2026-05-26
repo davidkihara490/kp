@@ -430,7 +430,7 @@ class Marketplace extends Component
 
             $parcelPayout = ParcelPayout::create([
                 'parcel_id' =>  $this->selectedParcel->id,
-                'partner_id' => Auth::guard('partner')->user()->id,
+                'partner_id' => Auth::guard('partner')->user()->partner->id,
                 'type' => 'transport',
                 'destination' => $destination,
                 'destination_id' => $destination_id,
@@ -507,6 +507,7 @@ class Marketplace extends Component
             DB::beginTransaction();
             $this->selectedParcel->updateParcelStatus(
                 Parcel::STATUS_ASSIGNED,
+                $this->selectedParcel->sender_pick_up_drop_off_point_id,
                 Auth::guard('partner')->user()->id,
                 'transport',
                 'Parcel assigned to driver: ' . $driver->first_name . ' ' . $driver->last_name,
@@ -518,15 +519,6 @@ class Marketplace extends Component
             $this->selectedParcel->driver_id = $driver->id;
             $this->selectedParcel->save();
 
-            // $this->selectedParcel->update([
-            //     'driver_id' => $driver->id,
-            //     'current_status' => Parcel::STATUS_ASSIGNED,
-            //     // 'assignment_notes' => $this->assignment_notes,
-            //     // 'delivery_otp' => $parcelCode,
-            // ]);
-
-
-
             DB::commit();
 
 
@@ -535,7 +527,8 @@ class Marketplace extends Component
                 Log::info('START::Sending SMS to driver after Asignment');
                 $smsService->sendDriverAssignmentSMS(
                     formatKenyaNumber($driver->phone_number),
-                    $driver->full_name,
+                    $this->selectedParcel->parcel_id,
+                    $driver->first_name,
                     $this->selectedParcel->senderTown->name,
                     $this->selectedParcel->receiverTown->name,
                     $parcelCode

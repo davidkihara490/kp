@@ -38,6 +38,14 @@ class SMSService
         ]);
     }
 
+    public function sendTransportPartnerAssignmentSMS(string $phoneNumber, string $name)
+    {
+        return $this->sendMessage(
+            $phoneNumber,
+            "Hi {$name}! You have been assinged as a parcel for tramsporting. Log into your portal and assign a driver"
+        );
+    }
+
     public function sendParcelHandlingAssistantWelcomeSMS(string $phoneNumber, string $name)
     {
         return $this->sendMessage(
@@ -73,23 +81,32 @@ class SMSService
     {
         return $this->sendMessage(
             $phoneNumber,
-            "Karibu Parcels, there is a parcel that has been booked from {$origintown} to {$destinationtown}. Login to your portal to see details and assign the driver"
+            "There is a parcel that has been booked from {$origintown} to {$destinationtown}. Login to your portal to see details and assign the driver"
         );
     }
 
-    public function sendDriverAssignmentSMS(string $phoneNumber, string $driverName, string $originTown,  string $destinationTown, string $code)
+    public function sendAdminSMSAfterParcelIsBooked(string $phoneNumber, string $origintown, string $destinationtown)
     {
         return $this->sendMessage(
             $phoneNumber,
-            "Karibu Parcels, Hi {$driverName}! A parcel has been assigned to you from {$originTown} to {$destinationTown}.Parcel code is {$code}."
+            "There is a parcel that has been booked from {$origintown} to {$destinationtown}. Login to admin portal to see details and assign the transport partner"
         );
     }
 
-    public function sendRecipientSMSWhenParcelArrives(string $phoneNumber, string $recipientName, string $parcelId, string $destinationTown)
+    public function sendDriverAssignmentSMS(string $phoneNumber, string $driverName, string $parcelId, string $originTown,  string $destinationTown, string $code)
     {
         return $this->sendMessage(
             $phoneNumber,
-            "Hi {$recipientName}! Your parcel has arrived at {$destinationTown}. Please come with your original ID/passport to collect it. Parcel code is {$parcelId}."
+            "Hi {$driverName}! A parcel no:{$parcelId} been assigned to you from {$originTown} to {$destinationTown}.Parcel code is {$code}."
+        );
+    }
+
+    public function sendRecipientSMSWhenParcelArrives(string $phoneNumber, string $recipientName, string $parcelId, string $parcelCode, string $destinationTown)
+    {
+        return $this->sendMessage(
+            $phoneNumber,
+
+            "Hi {$recipientName}! Your parcel with no:{$parcelId} has arrived at {$destinationTown}. Please come with your original ID/passport to collect it. Parcel code:{$parcelCode}. If you send someone, ask them to come with their ID/Passport"
         );
     }
 

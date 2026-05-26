@@ -566,22 +566,17 @@
                                     <i class="bi bi-truck me-2"></i>
                                     Parcel Receiving
                                 </h5>
-                                @if(!$parcel->driver)
-                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignDriverModal">
-                                    <i class="bi bi-person-plus me-1"></i>
-                                    Receive Parcel
-                                </button>
-                                @endif
                             </div>
                             <div class="card-body">
-                                @if($parcel->driver)
+
+                                @if($parcel->latestStatus->driver)
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="avatar bg-success me-3">
                                         <i class="bi bi-person"></i>
                                     </div>
                                     <div>
-                                        <h6 class="mb-1">{{ $parcel->driver->full_name }}</h6>
-                                        <small class="text-muted">{{ $parcel->driver->phone_number }}</small>
+                                        <h6 class="mb-1">{{ $parcel->latestStatus->driver->full_name }}</h6>
+                                        <small class="text-muted">{{ $parcel->latestStatus->driver->phone_number }}</small>
                                     </div>
                                 </div>
                                 <table class="table table-sm table-borderless">
@@ -592,10 +587,18 @@
                                 </table>
 
 
+                                @if($parcel->latestStatus->status == 'in_transit')
                                 <button type="button" class="btn btn-sm btn-outline-primary" wire:click="receiveParcelFromDriver">
                                     <i class="bi bi-person-plus me-1"></i>
                                     Receive Parcel
                                 </button>
+                                @else
+                                <button type="button" class="btn btn-sm btn-success">
+                                    <i class="bi bi-check me-1"></i>
+                                    Received at: {{ $parcel->latestStatus->updated_at?->format('M d, Y H:i') ?? 'N/A' }}
+                                </button>
+                                @endif
+
 
                                 @else
                                 <div class="text-center py-4 text-muted">

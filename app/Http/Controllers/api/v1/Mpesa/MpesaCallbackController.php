@@ -53,9 +53,9 @@ class MpesaCallbackController extends Controller
 
             if ($response['success']) {
 
-            $payment = $response['payment'];
+                $payment = $response['payment'];
 
-            $parcel = $payment->parcel;
+                $parcel = $payment->parcel;
                 //Sending email to admins
                 try {
                     Log::info('Created Parcel. Sending notification to admin');
@@ -75,6 +75,22 @@ class MpesaCallbackController extends Controller
                     ]);
                 }
 
+                //Send Admin SMS notification
+                try {
+                    Log::info('START::Sending SMS to admin after payment');
+                    $smsService->sendAdminSMSAfterParcelIsBooked(
+                        formatKenyaNumber('254729005789'),
+                        $parcel->senderTown->name,
+                        $parcel->receiverTown->name,
+                    );
+                    Log::info('START::Sending SMS to admin after payment');
+                } catch (\Throwable $th) {
+                    Log::error('Failed to send SMS to admin after payment: ', [
+                        'error' => $th->getMessage(),
+                        'stack' => $th->getTraceAsString(),
+                    ]);
+                }
+
                 //Send SMS to sender
                 try {
                     Log::info('Sending SMS to Parcel Sender Start');
@@ -86,7 +102,7 @@ class MpesaCallbackController extends Controller
                     );
                     Log::info('Sending SMS to Parcel Sender End');
                 } catch (\Throwable $th) {
-                    Log::error('Failed to send SMS to receipient: ', [
+                    Log::error('Failed to send SMS to parcel sender: ', [
                         'error' => $th->getMessage(),
                         'stack' => $th->getTraceAsString(),
                     ]);

@@ -799,7 +799,7 @@
     @if($showTransportPartnerModal)
     <div wire:ignore.self class="modal fade show d-block" tabindex="-1" role="dialog"
         style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-secondary text-white">
                     <h5 class="modal-title">
@@ -844,7 +844,7 @@
                             <option value="">-- Select a transport partner --</option>
                             @foreach($transportPartners as $partner)
                             <option value="{{ $partner->id }}">
-                                {{ $partner->company_name }} -> {{ $partner->towns->count() }}towns(s)
+                                {{ $partner->company_name }} ({{ $partner->towns->count() }} towns)
                             </option>
                             @endforeach
                         </select>
@@ -912,6 +912,103 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Delivery Options -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0 font-weight-bold">
+                                <i class="fas fa-truck-ramp-box mr-2"></i>
+                                Delivery Options
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group mb-3">
+                                <label class="font-weight-bold">Choose Delivery Type:</label>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="custom-control custom-radio">
+                                            <input type="radio" id="deliveryFinalDestination"
+                                                class="custom-control-input"
+                                                wire:model.live="deliveryOption"
+                                                value="final_destination">
+                                            <label class="custom-control-label" for="deliveryFinalDestination">
+                                                <strong>Final Destination</strong>
+                                                <br>
+                                                <small class="text-muted">Deliver directly to the receiver's address</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="custom-control custom-radio">
+                                            <input type="radio" id="deliveryWarehouse"
+                                                class="custom-control-input"
+                                                wire:model.live="deliveryOption"
+                                                value="warehouse">
+                                            <label class="custom-control-label" for="deliveryWarehouse">
+                                                <strong>Warehouse Delivery</strong>
+                                                <br>
+                                                <small class="text-muted">Deliver to a designated warehouse for pickup</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Warehouse Selection (shown when warehouse is selected) -->
+                            @if($deliveryOption === 'warehouse')
+                            <div class="form-group mt-3" id="warehouseSelection">
+                                <label for="warehouseId">
+                                    <i class="fas fa-warehouse mr-1"></i> Select Warehouse
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <select wire:model="warehouseId" id="warehouseId" class="form-control">
+                                    <option value="">-- Select a warehouse --</option>
+                                    @foreach($warehouses as $warehouse)
+                                    <option value="{{ $warehouse->id }}">
+                                        {{ $warehouse->name }}
+                                        @if($warehouse->location)
+                                        - {{ $warehouse->location }}
+                                        @endif
+                                    </option>
+                                    @endforeach
+                                </select>
+                                @error('warehouseId') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                            @endif
+
+                            <!-- Payout Information -->
+                            @if($calculatedPayouts)
+                            <div class="alert alert-success mt-3">
+                                <h6 class="font-weight-bold mb-2">
+                                    <i class="fas fa-money-bill-wave mr-2"></i>
+                                    Payout Information
+                                </h6>
+
+                                @if($deliveryOption === 'final_destination')
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <small class="text-white">Delivery to Final Destination:</small>
+                                        <p class="h5 mb-0 text-white">KES {{ number_format($calculatedPayouts['final_destination'], 2) }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-white">Warehouse Option Available:</small>
+                                        <p class="h5 mb-0 text-white">KES {{ number_format($calculatedPayouts['warehouse'], 2) }}</p>
+                                    </div>
+                                </div>
+                                @elseif($deliveryOption === 'warehouse' && $warehouseId)
+                                <div>
+                                    <small class="text-white">Selected Warehouse Payout:</small>
+                                    <p class="h4 mb-0 text-white">KES {{ number_format($calculatedPayouts['warehouse'], 2) }}</p>
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        This amount will be paid to the transport partner upon successful delivery to the selected warehouse.
+                                    </small>
+                                </div>
+                                @endif
+                            </div>
+                            @endif
+                        </div>
+                    </div>
                     @endif
                     @endif
                 </div>
@@ -920,9 +1017,11 @@
                         wire:click="$set('showTransportPartnerModal', false)">
                         Cancel
                     </button>
-                    <button type="button" class="btn btn-primary"
+                    <!-- <button type="button" class="btn btn-primary"
                         wire:click="saveTransportPartnerAssignment"
-                        {{ !$selectedTransportPartnerId || $transportPartners->count() == 0 ? 'disabled' : '' }}>
+                        {{ !$selectedTransportPartnerId || !$deliveryOption || ($deliveryOption === 'warehouse' && !$warehouseId) || $transportPartners->count() == 0 ? 'disabled' : '' }}> -->
+                    <button type="button" class="btn btn-primary"
+                        wire:click="saveTransportPartnerAssignment">
                         <i class="fas fa-save mr-1"></i> Assign Partner
                     </button>
                 </div>
