@@ -20,29 +20,31 @@ class Payouts extends Component
     public $type = '';
     public $status = '';
     public $destinationType = '';
-    
+
     // Date range filters
     public $dateFrom = '';
     public $dateTo = '';
     public $paidDateFrom = '';
     public $paidDateTo = '';
-    
+
     // Amount range filters
     public $minAmount = '';
     public $maxAmount = '';
-    
+
     // Sorting
     public $sortField = 'created_at';
     public $sortDirection = 'desc';
-    
+
     // Statistics
     public $pendingTotal = 0;
+
+    public $approvedTotal = 0;
     public $completedTotal = 0;
     public $cancelledTotal = 0;
     public $overallTotal = 0;
     public $pendingCount = 0;
     public $completedCount = 0;
-    
+
     // Modal states
     public $showDeleteModal = false;
     public $showViewModal = false;
@@ -53,7 +55,7 @@ class Payouts extends Component
     public $processReference = '';
     public $processNotes = '';
     public $processDate = '';
-    
+
     // Bulk actions
     public $selectedPayouts = [];
     public $selectAll = false;
@@ -87,9 +89,18 @@ class Payouts extends Component
     {
         // Reset pagination when filters change
         if (in_array($property, [
-            'search', 'reference', 'partnerName', 'type', 'status', 
-            'destinationType', 'dateFrom', 'dateTo', 'paidDateFrom', 
-            'paidDateTo', 'minAmount', 'maxAmount'
+            'search',
+            'reference',
+            'partnerName',
+            'type',
+            'status',
+            'destinationType',
+            'dateFrom',
+            'dateTo',
+            'paidDateFrom',
+            'paidDateTo',
+            'minAmount',
+            'maxAmount'
         ])) {
             $this->resetPage();
         }
@@ -107,23 +118,26 @@ class Payouts extends Component
     public function calculateStatistics()
     {
         $this->pendingTotal = ParcelPayout::where('status', 'pending')->sum('amount');
-        $this->completedTotal = ParcelPayout::where('status', 'paid')->sum('amount');
+        $this->approvedTotal = ParcelPayout::where('status', 'approved')->sum('amount');
+
+
+        $this->completedTotal = ParcelPayout::where('status', 'complete')->sum('amount');
         $this->cancelledTotal = ParcelPayout::where('status', 'cancelled')->sum('amount');
         $this->overallTotal = ParcelPayout::sum('amount');
         $this->pendingCount = ParcelPayout::where('status', 'pending')->count();
-        $this->completedCount = ParcelPayout::where('status', 'paid')->count();
+        $this->completedCount = ParcelPayout::where('status', 'complete')->count();
     }
 
     protected function getFilteredQuery()
     {
         return ParcelPayout::query()
-            ->with(['parcel', 'partner', 'origin', 'destination'])
+            ->with(['parcel', 'partner', 'origin', 'parcelDestination'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->whereHas('parcel', function ($pq) {
                         $pq->where('parcel_id', 'like', '%' . $this->search . '%')
-                           ->orWhere('sender_name', 'like', '%' . $this->search . '%')
-                           ->orWhere('receiver_name', 'like', '%' . $this->search . '%');
+                            ->orWhere('sender_name', 'like', '%' . $this->search . '%')
+                            ->orWhere('receiver_name', 'like', '%' . $this->search . '%');
                     })->orWhereHas('partner', function ($ppq) {
                         $ppq->where('company_name', 'like', '%' . $this->search . '%');
                     });
@@ -137,7 +151,7 @@ class Payouts extends Component
             ->when($this->partnerName, function ($query) {
                 $query->whereHas('partner', function ($q) {
                     $q->where('company_name', 'like', '%' . $this->partnerName . '%')
-                      ->orWhere('contact_person', 'like', '%' . $this->partnerName . '%');
+                        ->orWhere('contact_person', 'like', '%' . $this->partnerName . '%');
                 });
             })
             ->when($this->type, function ($query) {
@@ -182,7 +196,7 @@ class Payouts extends Component
 
     public function viewPayout($id)
     {
-        $this->selectedPayout = ParcelPayout::with(['parcel', 'partner', 'origin', 'destination'])->find($id);
+        $this->selectedPayout = ParcelPayout::with(['parcel', 'partner', 'origin', 'parcelDestination'])->find($id);
         $this->showViewModal = true;
     }
 
@@ -207,9 +221,9 @@ class Payouts extends Component
 
         if ($this->selectedPayout) {
             $this->selectedPayout->update([
-                'status' => 'paid',
+                'status' => 'complete',
                 'paid_out_on' => $this->processDate,
-                'notes' => $this->processNotes
+                'notes' => $this->processNotes . $this->processReference,
             ]);
 
             $this->showProcessModal = false;
@@ -255,7 +269,7 @@ class Payouts extends Component
             session()->flash('error', 'Please select at least one payout.');
             return;
         }
-        
+
         $this->bulkAction = $action;
         $this->showBulkActionModal = true;
     }
@@ -263,7 +277,7 @@ class Payouts extends Component
     public function executeBulkAction()
     {
         $payouts = ParcelPayout::whereIn('id', $this->selectedPayouts)->get();
-        
+
         switch ($this->bulkAction) {
             case 'process':
                 foreach ($payouts as $payout) {
@@ -277,7 +291,7 @@ class Payouts extends Component
                 }
                 session()->flash('success', count($this->selectedPayouts) . ' payouts processed successfully.');
                 break;
-                
+
             case 'cancel':
                 foreach ($payouts as $payout) {
                     if ($payout->status === 'pending') {
@@ -289,13 +303,13 @@ class Payouts extends Component
                 }
                 session()->flash('success', count($this->selectedPayouts) . ' payouts cancelled successfully.');
                 break;
-                
+
             case 'delete':
                 ParcelPayout::whereIn('id', $this->selectedPayouts)->delete();
                 session()->flash('success', count($this->selectedPayouts) . ' payouts deleted successfully.');
                 break;
         }
-        
+
         $this->selectedPayouts = [];
         $this->selectAll = false;
         $this->showBulkActionModal = false;
@@ -305,9 +319,18 @@ class Payouts extends Component
     public function resetFilters()
     {
         $this->reset([
-            'search', 'reference', 'partnerName', 'type', 'status', 
-            'destinationType', 'dateFrom', 'dateTo', 'paidDateFrom', 
-            'paidDateTo', 'minAmount', 'maxAmount'
+            'search',
+            'reference',
+            'partnerName',
+            'type',
+            'status',
+            'destinationType',
+            'dateFrom',
+            'dateTo',
+            'paidDateFrom',
+            'paidDateTo',
+            'minAmount',
+            'maxAmount'
         ]);
         $this->resetPage();
     }
@@ -320,21 +343,21 @@ class Payouts extends Component
     public function render()
     {
         $payouts = $this->getFilteredQuery()->paginate(15);
-        
+
         $types = [
             '' => 'All Types',
             'pickup-dropoff' => 'Pickup & Dropoff',
             'transport' => 'Transport',
             'delivery' => 'Delivery',
         ];
-        
+
         $statuses = [
             '' => 'All Statuses',
             'pending' => 'Pending',
             'paid' => 'Paid',
             'cancelled' => 'Cancelled',
         ];
-        
+
         $destinationTypes = [
             '' => 'All Destinations',
             'partner' => 'Partner',

@@ -35,7 +35,7 @@ class ParcelPayout extends Model
     {
         return $this->belongsTo(Partner::class);
     }
-    public function destination(): BelongsTo
+    public function parcelDestination(): BelongsTo
     {
         return $this->belongsTo(PickUpAndDropOffPoint::class, 'destination_id');
     }

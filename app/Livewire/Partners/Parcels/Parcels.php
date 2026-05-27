@@ -254,8 +254,6 @@ class Parcels extends Component
 
     public function render()
     {
-        // dd($this->loggedUser->parcelHandlingAssistant);
-
         $query = Parcel::query();
 
         if ($this->loggedUser->partner && $this->loggedUser->partner->partner_type ==  "transport") {
