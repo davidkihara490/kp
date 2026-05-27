@@ -594,7 +594,7 @@
                                 ->exists();
                                 @endphp
 
-                                @if(!$hasAccepted)
+                                @if(!$hasAccepted && $parcel->payment_status== 'paid')
                                 <button class="btn btn-secondary btn-block" wire:click="assignTransportPartner">
                                     <i class="fas fa-truck mr-2"></i> Assign Transport Partner
                                 </button>
