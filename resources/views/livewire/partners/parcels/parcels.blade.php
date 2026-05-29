@@ -34,7 +34,6 @@
                         @if(auth()->guard('partner')->user()->user_type == 'driver')
                         <span class="stat-value">{{ $statParcels->where('driver_id', auth()->guard('partner')->user()->driver->id)->count() }}</span>
                         @elseif(auth()->guard('partner')->user()->user_type == 'pha')
-
                         {{-- Display sum of parcels sent by this pha and parcels expected by this partner--}}
                         <span class="stat-value">{{ $statParcels->count()}}</span>
                         <!-- <span class="stat-value">{{ $statParcels->where('pha_id', auth()->guard('partner')->user()->parcelHandlingAssistant->id)->count() + $statParcels->where('delivery_partner_id', auth()->guard('partner')->user()->parcelHandlingAssistant->partner->id)->count()}}</span> -->

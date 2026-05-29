@@ -302,16 +302,17 @@ class Parcels extends Component
             ->when($this->paymentStatusFilter, function ($query) {
                 $query->where('payment_status', $this->paymentStatusFilter);
             });
+        $statParcels = clone $query;
 
-        $parcels = $query->orderBy($this->sortField, $this->sortDirection)->paginate(10);
-
-        $statParcels = $query->get();
 
         // Stats calculations
         $totalParcels = $query->count();
         $pendingParcels = Parcel::where('current_status', 'pending')->count();
         $inTransitParcels = Parcel::whereIn('current_status', ['in_transit', 'at_warehouse', 'out_for_delivery'])->count();
         $deliveredParcels = Parcel::where('current_status', 'delivered')->count();
+
+        $parcels = $query->orderBy($this->sortField, $this->sortDirection)->paginate(10);
+
 
         return view('livewire.partners.parcels.parcels', [
             'parcels' => $parcels,
@@ -357,7 +358,7 @@ class Parcels extends Component
             'pendingParcels' => $pendingParcels,
             'inTransitParcels' => $inTransitParcels,
             'deliveredParcels' => $deliveredParcels,
-            'statParcels' => $statParcels
+            'statParcels' => $statParcels->get()
         ]);
     }
 

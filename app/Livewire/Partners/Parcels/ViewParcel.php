@@ -369,6 +369,7 @@ class ViewParcel extends Component
             );
 
             $payout = $this->parcel->calculateParcelPayout((float)($this->parcel->base_price + $this->parcel->tax_amount), 'direct');
+
             ParcelPayout::create([
                 'parcel_id' =>  $this->parcel->id,
                 'partner_id' => Auth::guard('partner')->user()->parcelHandlingAssistant?->partner?->id ?? Auth::guard('partner')->user()->partner?->id,
@@ -376,7 +377,7 @@ class ViewParcel extends Component
                 'destination' => 'final',
                 'destination_id' => $this->selectedParcel->delivery_pick_up_drop_off_point_id,
                 'origin_id' => $this->selectedParcel->sender_pick_up_drop_off_point_id,
-                'amount' => $payout['pick_up_drop_off_partner']['amount'],,
+                'amount' => $payout['pick_up_drop_off_partner']['amount'],
                 'status' => 'approved',
                 'paid_out_on' => null,
                 'cancelation_reason' => null
