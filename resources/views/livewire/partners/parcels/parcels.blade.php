@@ -1356,10 +1356,10 @@
                                     </div>
                                     @else
                                     <span class="unassigned">Not assigned</span>
-                                    <button class="assign-btn" wire:click="showAssignDriver({{ $parcel->id }})">
+                                    <!-- <button class="assign-btn" wire:click="showAssignDriver({{ $parcel->id }})">
                                         <i class="bi bi-person-plus me-1"></i>
                                         Assign Partner
-                                    </button>
+                                    </button> -->
                                     @endif
                                 </div>
                             </td>

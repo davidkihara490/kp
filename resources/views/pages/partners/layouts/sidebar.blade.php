@@ -67,10 +67,10 @@
                 <i class="bi bi-cash"></i>
                 <span>Drivers</span>
             </a>
-            <a href="{{ route('partners.marketplace') }}" class="nav-link">
+            <!-- <a href="{{ route('partners.marketplace') }}" class="nav-link">
                 <i class="bi bi-bank"></i>
                 <span>Marketplace</span>
-            </a>
+            </a> -->
             @endif
         </div>
         @endif

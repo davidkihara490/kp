@@ -309,10 +309,11 @@
                                     {{ $typeBadge['text'] }}
                                 </span>
                             </td>
+
                             <td>
                                 <div class="amount-cell {{ $payout->status === 'cancelled' ? 'cancelled' : '' }}">
                                     <span class="amount-value">KES {{ number_format($payout->amount, 2) }}</span>
-                                    @if($payout->parcel->payment_status === 'paid')
+                                    @if($payout->parcel?->payment_status === 'paid')
                                     <span class="payment-badge">
                                         <i class="bi bi-check-circle"></i> Paid
                                     </span>
