@@ -483,7 +483,7 @@ class ViewParcel extends Component
         $notes = null;
         $currentLocation = null;
         $status = null;
-        $parcelCode = $this->selectedParcelForDriver->generateDeliveryOtp();
+        $parcelCode = $this->parcel->generateDeliveryOtp();
 
 
         if ($this->parcel->delivery_flow == 'warehouse') {
