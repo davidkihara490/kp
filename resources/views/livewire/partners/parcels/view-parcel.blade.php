@@ -633,26 +633,31 @@
                                 </div>
                                 <table class="table table-sm table-borderless">
                                     <tr>
-                                        <th>Picked Up At:</th>
-                                        <td>{{ $parcel->updated_at?->format('M d, Y H:i') ?? 'N/A' }}</td>
+                                        @if($parcel->parcelPickUp)
+                                        <button type="button" class="btn btn-sm btn-success">
+                                            <i class="bi bi-check me-1"></i>
+                                            <th>Picked Up At:</th>
+                                            <td>{{ $parcel->parcelPickUp?->created_at}}</td>
+                                        </button>
+
+                                        @else
+                                        @if(auth()->guard('partner')->user()->user_type == 'pha' || auth()->guard('partner')->user()->user_type == 'pick_up_and_drop_off')
+                                        <button type="button" class="btn btn-sm btn-outline-primary" wire:click="openPickUpModal">
+                                            <i class="bi bi-person-plus me-1"></i>
+                                            Pick Up
+                                        </button>
+                                        @elseif(auth()->guard('partner')->user()->user_type == 'transport')
+                                        <button type="button" class="btn btn-sm btn-outline-warning" >
+                                            <i class="bi bi-person-plus me-1"></i>
+                                            Not yet Picked
+                                        </button>
+                                        @endif
+                                        @endif
                                     </tr>
                                 </table>
 
 
-                                @if($parcel->parcelPickUp)
-                                <button type="button" class="btn btn-sm btn-success">
-                                    <i class="bi bi-check me-1"></i>
-                                    Picked
-                                </button>
 
-                                @else
-                                @if(auth()->guard('partner')->user()->user_type == 'pha' || auth()->guard('partner')->user()->user_type == 'pick_up_and_drop_off')
-                                <button type="button" class="btn btn-sm btn-outline-primary" wire:click="openPickUpModal">
-                                    <i class="bi bi-person-plus me-1"></i>
-                                    Pick Up
-                                </button>
-                                @endif
-                                @endif
                             </div>
                         </div>
 
