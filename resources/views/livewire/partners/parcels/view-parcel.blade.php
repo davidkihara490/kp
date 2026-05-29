@@ -646,11 +646,12 @@
                                 </button>
 
                                 @else
+                                @if(auth()->guard('partner')->user()->user_type == 'pha' || auth()->guard('partner')->user()->user_type == 'pick_up_and_drop_off')
                                 <button type="button" class="btn btn-sm btn-outline-primary" wire:click="openPickUpModal">
                                     <i class="bi bi-person-plus me-1"></i>
                                     Pick Up
                                 </button>
-
+                                @endif
                                 @endif
                             </div>
                         </div>
