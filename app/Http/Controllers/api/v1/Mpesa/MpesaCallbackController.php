@@ -34,7 +34,6 @@ class MpesaCallbackController extends Controller
         Log::info('M-Pesa STK Callback Received', $callbackData);
         Log::info("+++++++++++++++++++++++++++++++++++++");
 
-
         // Check if stkCallback exists
         if (
             !isset($callbackData['Body']) ||
@@ -48,6 +47,8 @@ class MpesaCallbackController extends Controller
         }
 
         try {
+
+            Log::info('Processing M-Pesa STK Callback', ['MerchantRequestID' => $callbackData['Body']['stkCallback']['MerchantRequestID']]);
             // Process the callback
             $response = $this->mpesaService->handleCallback($callbackData);
 

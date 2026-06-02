@@ -338,7 +338,7 @@ class MpesaService
             $payerPhone = null;
             $transactionDate = null;
 
-            if ($resultCode === 0 && !empty($callbackMetadata)) {
+            if ($resultCode === 0) {
                 foreach ($callbackMetadata as $item) {
                     switch ($item['Name']) {
                         case 'Amount':
@@ -359,49 +359,49 @@ class MpesaService
                             break;
                     }
                 }
-            }
 
-            // Step 7: Update transaction
-            $transaction->update($updateData);
+                // Step 7: Update transaction
+                $transaction->update($updateData);
 
-            // Step 8: Handle payment record
-            if ($transaction->parcel_id) {
-                $payment = Payment::where('mpesa_transaction_id', $transaction->id)->first();
+                // Step 8: Handle payment record
+                if ($transaction->parcel_id) {
+                    $payment = Payment::where('mpesa_transaction_id', $transaction->id)->first();
 
-                if ($payment) {
-                    if ($status === MpesaTransaction::STATUS_COMPLETED) {
-                        $payment->update([
-                            'reference_number' => $mpesaReceiptNumber,
-                            'status' => 'completed',
-                            'payment_date' => now(),
-                            'notes' => 'M-Pesa payment completed. Receipt: ' . $mpesaReceiptNumber,
-                        ]);
-                        $this->updateParcelPaymentStatus($transaction->parcel_id);
-                    } elseif (in_array($status, [
-                        MpesaTransaction::STATUS_FAILED,
-                        MpesaTransaction::STATUS_CANCELLED,
-                        MpesaTransaction::STATUS_EXPIRED
-                    ])) {
-                        $payment->update([
-                            'status' => Payment::STATUS_FAILED,
-                            'notes' => 'M-Pesa payment failed: ' . $userMessage,
-                        ]);
-                    }
-                } else {
-                    if ($status === MpesaTransaction::STATUS_COMPLETED) {
-                        $payment = Payment::create([
-                            'reference_number' => $mpesaReceiptNumber,
-                            'parcel_id' => $transaction->parcel_id,
-                            'amount' => $amountPaid ?? $transaction->amount,
-                            'payment_method' => 'mpesa',
-                            'payment_date' => now(),
-                            'status' => Payment::STATUS_COMPLETED,
-                            'phone' => $payerPhone ?? $transaction->phone_number,
-                            'notes' => 'M-Pesa payment completed via callback. Receipt: ' . $mpesaReceiptNumber,
-                            'paid_by' => $transaction->user_id,
-                            'mpesa_transaction_id' => $transaction->id,
-                        ]);
-                        $this->updateParcelPaymentStatus($transaction->parcel_id);
+                    if ($payment) {
+                        if ($status === MpesaTransaction::STATUS_COMPLETED) {
+                            $payment->update([
+                                'reference_number' => $mpesaReceiptNumber,
+                                'status' => 'completed',
+                                'payment_date' => now(),
+                                'notes' => 'M-Pesa payment completed. Receipt: ' . $mpesaReceiptNumber,
+                            ]);
+                            $this->updateParcelPaymentStatus($transaction->parcel_id);
+                        } elseif (in_array($status, [
+                            MpesaTransaction::STATUS_FAILED,
+                            MpesaTransaction::STATUS_CANCELLED,
+                            MpesaTransaction::STATUS_EXPIRED
+                        ])) {
+                            $payment->update([
+                                'status' => Payment::STATUS_FAILED,
+                                'notes' => 'M-Pesa payment failed: ' . $userMessage,
+                            ]);
+                        }
+                    } else {
+                        if ($status === MpesaTransaction::STATUS_COMPLETED) {
+                            $payment = Payment::create([
+                                'reference_number' => $mpesaReceiptNumber,
+                                'parcel_id' => $transaction->parcel_id,
+                                'amount' => $amountPaid ?? $transaction->amount,
+                                'payment_method' => 'mpesa',
+                                'payment_date' => now(),
+                                'status' => Payment::STATUS_COMPLETED,
+                                'phone' => $payerPhone ?? $transaction->phone_number,
+                                'notes' => 'M-Pesa payment completed via callback. Receipt: ' . $mpesaReceiptNumber,
+                                'paid_by' => $transaction->user_id,
+                                'mpesa_transaction_id' => $transaction->id,
+                            ]);
+                            $this->updateParcelPaymentStatus($transaction->parcel_id);
+                        }
                     }
                 }
             }
