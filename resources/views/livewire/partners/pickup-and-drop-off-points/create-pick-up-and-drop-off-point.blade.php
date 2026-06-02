@@ -141,34 +141,6 @@
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                 </div>
-
-                                <!-- <div class="mb-3">
-                                    <label for="longitude" class="form-label">
-                                        <i class="bi bi-globe me-2"></i>
-                                        Longitude <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="number" step="any"
-                                        class="form-control @error('longitude') is-invalid @enderror"
-                                        id="longitude" wire:model="longitude"
-                                        placeholder="Longitude">
-                                    @error('longitude')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="latitude" class="form-label">
-                                        <i class="bi bi-globe me-2"></i>
-                                        Latitude <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="number" step="any"
-                                        class="form-control @error('latitude') is-invalid @enderror"
-                                        id="latitude" wire:model="latitude"
-                                        placeholder="Enter email address">
-                                    @error('latitude')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -235,7 +207,7 @@
                             </div>
                             <div class="form-card-body">
                                 <!-- Capacity -->
-                                <div class="mb-3">
+                                {{--<div class="mb-3">
                                     <label for="capacity" class="form-label">
                                         <i class="bi bi-box-seam me-2"></i>
                                         Storage Capacity
@@ -250,7 +222,7 @@
                                     @error('capacity')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div>
+                                </div> --}}
 
                                 <!-- Notes -->
                                 <div class="mb-3">

@@ -11,7 +11,7 @@
                     </h2>
                     <p class="page-subtitle mb-0">Track your earnings, payouts, and financial performance</p>
                 </div>
-                <div class="header-actions">
+                <!-- <div class="header-actions">
                     <button class="btn btn-modern me-2" wire:click="downloadReport">
                         <i class="bi bi-download me-2"></i>
                         Export Report
@@ -20,7 +20,7 @@
                         <i class="bi bi-cash-stack me-2"></i>
                         Request Payout
                     </button>
-                </div>
+                </div> -->
             </div>
         </div>
 

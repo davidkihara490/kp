@@ -36,12 +36,12 @@ class HomeController extends Controller
             ->get();
         foreach ($counties as $county) {
             $county->points_count = $county->subCounties->sum(function ($subCounty) {
-                return $subCounty->towns->sum(fn($town) => $town->pickUpAndDropOffPoint->count());
+                return $subCounty->towns->sum(fn($town) => $town->pickUpAndDropOffPoint->where('status', 'active')->count());
             });
         }
 
         $countiesCovered = County::count();
-        $totalPickUpPoints = PickUpAndDropOffPoint::count();
+        $totalPickUpPoints = PickUpAndDropOffPoint::where('status', 'active')->count();
 
         return  view('frontend.home', compact('totalPickUpPoints', 'countiesCovered', 'towns', 'pickUpAndDropOffPoints', 'blogPosts', 'faqs', 'counties', 'parcelTypes', 'itemCategories'));
     }
@@ -102,7 +102,7 @@ class HomeController extends Controller
             ->get();
         foreach ($counties as $county) {
             $county->points_count = $county->subCounties->sum(function ($subCounty) {
-                return $subCounty->towns->sum(fn($town) => $town->pickUpAndDropOffPoint->count());
+                return $subCounty->towns->sum(fn($town) => $town->pickUpAndDropOffPoint->where('status', 'active')->count());
             });
         }
         return view('frontend.points', compact('counties'));

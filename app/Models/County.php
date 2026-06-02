@@ -33,7 +33,7 @@ class County extends Model
     {
         return $this->subCounties
             ->flatMap(fn($subCounty) => $subCounty->towns)
-            ->flatMap(fn($town) => $town->pickUpAndDropOffPoint);
+            ->flatMap(fn($town) => $town->pickUpAndDropOffPoint->where('status', 'active'));
     }
 }
 
