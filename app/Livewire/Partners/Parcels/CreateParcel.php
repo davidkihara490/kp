@@ -216,7 +216,7 @@ class CreateParcel extends Component
     public function loadOptions()
     {
         try {
-            $this->items = Item::limit(10)->get();
+            $this->items = Item::where('status', 'active')->get();
 
             $this->weightRanges = WeightRange::all();
             $this->customers = [];

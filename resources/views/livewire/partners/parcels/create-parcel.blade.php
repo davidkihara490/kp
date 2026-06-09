@@ -563,7 +563,7 @@
                                             <div class="col-md-6">
                                                 <div class="bg-success-soft p-3 rounded-3">
                                                     <small class="text-muted fw-medium d-block">Parcel Type</small>
-                                                    <span class="fw-bold fs-6">{{ $parcelTypes[$parcel_type]->name }}</span>
+                                                    <span class="fw-bold fs-6">{{ \App\Models\Item::find($parcel_type)->name }}</span>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
