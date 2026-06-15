@@ -50,6 +50,9 @@
                         <a class="nav-link" href="#stations">PickUp/DropOff Points</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ route('pricing') }}">Pricing</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="#blogs">Blog</a>
                     </li>
                     <li class="nav-item">

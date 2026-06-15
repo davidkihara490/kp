@@ -43,7 +43,6 @@ class Items extends Component
             ->orderBy('name', 'asc')
             ->paginate(10);
 
-
         return view('livewire.admin.settings.items.items', [
             'items' => $items
         ]);

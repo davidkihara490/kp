@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ZoneCounty extends Model
+class ZoneTown extends Model
 {
     protected $fillable = [
         'zone_id',
-        'county_id',
+        'town_id',
     ];
 
     public function zone(): BelongsTo
@@ -17,9 +17,8 @@ class ZoneCounty extends Model
         return $this->belongsTo(Zone::class);
     }
 
-    public function county(): BelongsTo
+    public function town(): BelongsTo
     {
-        return $this->belongsTo(County::class);
+        return $this->belongsTo(Town::class);
     }
 }
-

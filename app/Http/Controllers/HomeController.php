@@ -13,6 +13,7 @@ use App\Models\PrivacyPolicy;
 use App\Models\SubCounty;
 use App\Models\TermsAndCondition;
 use App\Models\Town;
+use App\Models\Zone;
 use App\Models\ZoneCounty;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
@@ -147,5 +148,57 @@ class HomeController extends Controller
             'success' => true,
             'message' => 'Email sent successfully.',
         ]);
+    }
+    public function getPricing(Request $request)
+    {
+        // Get search and filter values from request
+        $search = $request->get('search', '');
+        $itemFilter = $request->get('item_filter', '');
+        $zoneFilter = $request->get('zone_filter', '');
+
+        // Get the pricing record with ID 1
+        $pricing = Pricing::with(['items.sourceZone', 'items.destinationZone'])
+            ->where('id', 1)
+            ->first();
+
+        // Get pricing items query
+        $query = PricingItem::with(['sourceZone', 'destinationZone'])
+            ->where('pricing_id', 1);
+
+        // Apply search filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('sourceZone', function ($zoneQuery) use ($search) {
+                    $zoneQuery->where('name', 'like', '%' . $search . '%');
+                })->orWhereHas('destinationZone', function ($zoneQuery) use ($search) {
+                    $zoneQuery->where('name', 'like', '%' . $search . '%');
+                });
+            });
+        }
+
+        // Apply item filter
+        if ($itemFilter) {
+            $query->where('item_id', $itemFilter);
+        }
+
+        // Apply zone filter
+        if ($zoneFilter) {
+            $query->where(function ($q) use ($zoneFilter) {
+                $q->where('source_zone_id', $zoneFilter)
+                    ->orWhere('destination_zone_id', $zoneFilter);
+            });
+        }
+
+        // Get all results (no pagination)
+        $pricingItems = $query->orderBy('source_zone_id')
+            ->orderBy('destination_zone_id')
+            ->get();
+
+        // Get all items and zones for filters
+        $items = Item::orderBy('name')->get();
+        $zones = Zone::orderBy('name')->get();
+
+        // Return view with data
+        return view('frontend.pricing', compact('pricing', 'pricingItems', 'items', 'zones', 'search', 'itemFilter', 'zoneFilter'));
     }
 }

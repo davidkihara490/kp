@@ -15,6 +15,7 @@ class EditPricing extends Component
 {
     public $items = [];
     public $weightRanges = [];
+    public $status = true;
     public $zones = [];
     public $pricing;
     // Form fields
@@ -25,45 +26,52 @@ class EditPricing extends Component
     protected $rules = [
         'selected_item_id' => 'required|exists:items,id',
         'selected_weight_range_id' => 'required|exists:weight_ranges,id',
+        'status' => 'required',
         'pricing_rows.*.source_zone_id' => 'required|exists:zones,id',
         'pricing_rows.*.destination_zone_id' => 'required|exists:zones,id',
         'pricing_rows.*.cost' => 'required|numeric|min:0',
         'pricing_rows.*.id' => 'nullable|exists:pricing_items,id',
+        'pricing_rows.*.extra' => 'required|numeric|min:0',
     ];
 
     protected $messages = [
+        'status.required' => 'Status is required',
         'pricing_rows.*.source_zone_id.required' => 'The source zone is required.',
         'pricing_rows.*.destination_zone_id.required' => 'The destination zone is required.',
         'pricing_rows.*.cost.required' => 'The cost is required.',
         'pricing_rows.*.cost.numeric' => 'The cost must be a number.',
         'pricing_rows.*.cost.min' => 'The cost must be at least 0.',
+        'pricing_rows.*.extra.required' => 'The cost is required.',
+        'pricing_rows.*.extra.numeric' => 'The cost must be a number.',
+        'pricing_rows.*.extra.min' => 'The cost must be at least 0.',
     ];
 
     public function mount($id)
     {
         $this->pricing = Pricing::with('items')->findOrFail($id);
-        
+
         $this->items = Item::all();
         $this->weightRanges = WeightRange::all();
         $this->zones = Zone::all();
 
         // Set the main pricing fields
         $this->selected_item_id = $this->pricing->item_id;
-        
+
         // Find the weight range ID based on min_weight and max_weight
         $weightRange = WeightRange::where('min_weight', $this->pricing->min_weight)
             ->where('max_weight', $this->pricing->max_weight)
             ->first();
-        
+
         $this->selected_weight_range_id = $weightRange ? $weightRange->id : null;
 
         // Load existing pricing zones
-        $this->pricing_rows = $this->pricing->items->map(function($zone) {
+        $this->pricing_rows = $this->pricing->items->map(function ($zone) {
             return [
                 'id' => $zone->id,
                 'source_zone_id' => $zone->source_zone_id,
                 'destination_zone_id' => $zone->destination_zone_id,
                 'cost' => $zone->cost,
+                'extra' => $zone->extra,
             ];
         })->toArray();
 
@@ -79,6 +87,7 @@ class EditPricing extends Component
             'source_zone_id' => '',
             'destination_zone_id' => '',
             'cost' => '',
+            'extra' => 0,
             'id' => null,
         ];
     }
@@ -86,7 +95,7 @@ class EditPricing extends Component
     public function removePricingRow($index)
     {
         $row = $this->pricing_rows[$index];
-        
+
         // If the row has an ID, mark it for deletion
         if (isset($row['id']) && $row['id']) {
             try {
@@ -96,7 +105,7 @@ class EditPricing extends Component
                 return;
             }
         }
-        
+
         unset($this->pricing_rows[$index]);
         $this->pricing_rows = array_values($this->pricing_rows);
     }
@@ -115,6 +124,7 @@ class EditPricing extends Component
                 'item_id' => $this->selected_item_id,
                 'min_weight' => $weightRange->min_weight,
                 'max_weight' => $weightRange->max_weight,
+                'status' => $this->status,
             ]);
 
             // Get existing zone IDs to track deletions
@@ -138,6 +148,7 @@ class EditPricing extends Component
                         'source_zone_id' => $row['source_zone_id'],
                         'destination_zone_id' => $row['destination_zone_id'],
                         'cost' => $row['cost'],
+                        'extra' => $row['extra'],
                     ]);
                 } else {
                     // Create new zone
@@ -145,6 +156,7 @@ class EditPricing extends Component
                         'source_zone_id' => $row['source_zone_id'],
                         'destination_zone_id' => $row['destination_zone_id'],
                         'cost' => $row['cost'],
+                        'extra' => $row['extra'],
                     ]);
                 }
             }
@@ -153,7 +165,6 @@ class EditPricing extends Component
 
             return redirect()->route('admin.pricing.index')
                 ->with('success', 'Pricing updated successfully!');
-
         } catch (\Exception $e) {
             DB::rollBack();
             session()->flash('error', 'Error updating pricing: ' . $e->getMessage());

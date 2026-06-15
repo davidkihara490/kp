@@ -3,8 +3,10 @@
 namespace App\Livewire\Admin\Settings\Zones;
 
 use App\Models\County;
+use App\Models\Town;
 use App\Models\Zone;
 use App\Models\ZoneCounty;
+use App\Models\ZoneTown;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
@@ -15,12 +17,16 @@ class CreateZone extends Component
     public $name;
 
     public $counties = [];
+    public $towns = [];
 
     public $selectedCounties = [];
+    public $selectedTowns = [];
+
 
     public function mount()
     {
         $this->counties = County::all();
+        $this->towns = Town::all();
     }
     public function save()
     {
@@ -28,19 +34,37 @@ class CreateZone extends Component
             'name' => 'required|unique:zones,name',
             'selectedCounties' => 'array',
             'selectedCounties.*' => 'exists:counties,id',
+
+            'selectedTowns' => 'array',
+            'selectedTowns.*' => 'exists:towns,id',
         ]);
 
-        $assignedCounties = ZoneCounty::whereIn('county_id', $this->selectedCounties)
-            ->pluck('county_id')
-        ->toArray();
+        // $assignedCounties = ZoneCounty::whereIn('county_id', $this->selectedCounties)
+        //     ->pluck('county_id')
+        //     ->toArray();
 
-        if (!empty($assignedCounties)) {
-            $assignedCountyNames = County::whereIn('id', $assignedCounties)
+        // if (!empty($assignedCounties)) {
+        //     $assignedCountyNames = County::whereIn('id', $assignedCounties)
+        //         ->pluck('name')
+        //         ->implode(', ');
+
+        //     throw ValidationException::withMessages([
+        //         'selectedCounties' => "The following counties are already assigned to other zones: {$assignedCountyNames}"
+        //     ]);
+        // }
+
+
+        $assignedTowns = ZoneTown::whereIn('town_id', $this->selectedTowns)
+            ->pluck('town_id')
+            ->toArray();
+
+        if (!empty($assignedTowns)) {
+            $assignedTownNames = Town::whereIn('id', $assignedTowns)
                 ->pluck('name')
                 ->implode(', ');
-            
+
             throw ValidationException::withMessages([
-                'selectedCounties' => "The following counties are already assigned to other zones: {$assignedCountyNames}"
+                'selectedTowns' => "The following towns are already assigned to other zones: {$assignedTownNames}"
             ]);
         }
 
@@ -52,10 +76,10 @@ class CreateZone extends Component
                 'name' => $this->name,
             ]);
 
-            foreach ($this->selectedCounties as $countyId) {
-                ZoneCounty::create([
+            foreach ($this->selectedTowns as $townId) {
+                ZoneTown::create([
                     'zone_id' => $zone->id,
-                    'county_id' => $countyId,
+                    'town_id' => $townId,
                 ]);
             }
             DB::commit();

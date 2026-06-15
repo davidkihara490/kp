@@ -16,7 +16,7 @@
                     <tr>
                         <th>#</th>
                         <th>Zone</th>
-                        <th>Counties</th>
+                        <th>Towns</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -27,10 +27,10 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $zone->name }}</td>
                         <td>
-                            @forelse ($zone->counties as $county)
-                                <span class="badge badge-info">{{ $county->county->name }}</span>
+                            @forelse ($zone->towns as $town)
+                                <span class="badge badge-info">{{ $town->town->name }}</span>
                             @empty
-                                <span class="text-muted">No counties</span>
+                                <span class="text-muted">No towns</span>
                             @endforelse
                         </td>
 
@@ -51,7 +51,7 @@
                     <tr>
                         <th>#</th>
                         <th>Zone</th>
-                        <th>Counties</th>
+                        <th>Towns</th>
                         <th>Actions</th>
                     </tr>
                 </tfoot>

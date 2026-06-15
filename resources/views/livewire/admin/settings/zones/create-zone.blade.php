@@ -23,29 +23,29 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label>Select Counties</label>
+                            <label>Select Towns</label>
                             <div class="border p-3 rounded" style="max-height: 400px; overflow-y: auto;">
                                 <div class="row">
-                                    @foreach ($counties as $county)
+                                    @foreach ($towns as $town)
                                         <div class="col-md-3 mb-2">
                                             <div class="form-check">
                                                 <input type="checkbox" 
                                                        class="form-check-input" 
-                                                       wire:model="selectedCounties" 
-                                                       value="{{ $county->id }}"
-                                                       id="county_{{ $county->id }}">
-                                                <label class="form-check-label" for="county_{{ $county->id }}">
-                                                    {{ $county->name }}
+                                                       wire:model="selectedTowns" 
+                                                       value="{{ $town->id }}"
+                                                       id="town_{{ $town->id }}">
+                                                <label class="form-check-label" for="town_{{ $town->id }}">
+                                                    {{ $town->name }}
                                                 </label>
                                             </div>
                                         </div>
                                     @endforeach
                                 </div>
                             </div>
-                            @error('selectedCounties')
+                            @error('selectedTowns')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
-                            @error('selectedCounties.*')
+                            @error('selectedTowns.*')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>

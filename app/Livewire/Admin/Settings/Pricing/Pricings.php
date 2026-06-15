@@ -260,7 +260,7 @@ class Pricings extends Component
                         ->orWhere('destination_zone_id', $this->zoneFilter);
                 });
             })
-            ->orderBy('created_at', 'desc')
+            ->orderBy('id','ASC')
             ->paginate(10);
 
         $items = Item::orderBy('name')->get();

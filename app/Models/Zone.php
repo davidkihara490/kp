@@ -15,5 +15,9 @@ class Zone extends Model
     {
         return $this->hasMany(ZoneCounty::class);
     }
-}
 
+    public function towns(): HasMany
+    {
+        return $this->hasMany(ZoneTown::class);
+    }
+}
