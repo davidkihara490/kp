@@ -57,6 +57,13 @@
 
                 @foreach($pricing_rows as $index => $row)
                 <div class="row mt-3 pricing-row" wire:key="pricing-row-{{ $index }}">
+                    <div class="col-1">
+                        <div class="form-group">
+                            <label>#</label>
+                            <p>{{ $loop->iteration }}</p>
+                        </div>
+                    </div>
+
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Source Zone @if($loop->first)<span class="text-danger">*</span>@endif</label>
@@ -130,17 +137,14 @@
                             @enderror
                         </div>
                     </div>
-
-
-
-                    <div class="col-md-2">
+                    <div class="col-md-1">
                         <div class="form-group">
                             <label>&nbsp;</label>
                             <button type="button"
                                 class="btn btn-danger d-block w-100"
                                 wire:click="removePricingRow({{ $index }})"
                                 @if(count($pricing_rows) <=1) disabled @endif>
-                                <i class="fas fa-trash"></i> Remove
+                                <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </div>

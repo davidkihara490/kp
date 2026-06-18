@@ -573,9 +573,7 @@
 
         <!-- Download Button - Small at Bottom -->
         <div class="download-section">
-            <button type="button" id="downloadPDF" class="btn-download-small">
-                <i class="fas fa-file-pdf me-1"></i> Download Tariff PDF
-            </button>
+            <a  target="_blank" class="btn btn-success" href="{{ route('pricing.download') }}">Download Tariff PDF</a>
         </div>
     </div>
 
@@ -675,43 +673,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <!-- html2pdf Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
-    <script>
-        // PDF Download functionality
-        document.getElementById('downloadPDF').addEventListener('click', function() {
-            const element = document.getElementById('tariffContent');
-            const zonesElement = document.getElementById('zonesContent');
-            
-            // Create a temporary div to combine both sections
-            const printContent = document.createElement('div');
-            printContent.appendChild(element.cloneNode(true));
-            printContent.appendChild(zonesElement.cloneNode(true));
-            
-            // Add title header
-            const header = document.createElement('div');
-            header.style.textAlign = 'center';
-            header.style.marginBottom = '15px';
-            header.style.padding = '15px';
-            header.innerHTML = `
-                <img src="{{ asset('logo.jpeg') }}" style="height: 50px;" onerror="this.style.display='none'">
-                <h2 style="color: #008f40; margin-top: 10px; margin-bottom: 5px;">Karibu Parcels - Delivery Tariff</h2>
-                <p style="color: #6c757d; margin: 0;">Generated on ${new Date().toLocaleDateString()}</p>
-                <hr>
-            `;
-            printContent.insertBefore(header, printContent.firstChild);
-            
-            // PDF options
-            const opt = {
-                margin: [0.5, 0.5, 0.5, 0.5],
-                filename: `Karibu_Parcels_Tariff_${new Date().toISOString().split('T')[0]}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, letterRendering: true },
-                jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' }
-            };
-            
-            // Generate PDF
-            html2pdf().set(opt).from(printContent).save();
-        });
-    </script>
+
 </body>
 </html>

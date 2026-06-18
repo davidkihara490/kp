@@ -18,6 +18,7 @@ use App\Models\ZoneCounty;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class HomeController extends Controller
 {
@@ -200,5 +201,40 @@ class HomeController extends Controller
 
         // Return view with data
         return view('frontend.pricing', compact('pricing', 'pricingItems', 'items', 'zones', 'search', 'itemFilter', 'zoneFilter'));
+    }
+
+    public function downloadPDF(Request $request)
+    {
+        // Fetch data
+        $zones = Zone::with('towns')->orderBy('name')->get();
+        
+        $pricingItems = PricingItem::with(['sourceZone', 'destinationZone'])
+            ->where('pricing_id', 1)
+            ->where('status', 'active')
+            ->orderBy('source_zone_id')
+            ->orderBy('destination_zone_id')
+            ->get();
+        
+        // Prepare data for view
+        $data = [
+            'zones' => $zones,
+            'pricingItems' => $pricingItems,
+            'generated_date' => now()->format('F d, Y'),
+            'company_name' => 'Karibu Parcels',
+            'logo' => public_path('logo.jpeg')
+        ];
+        
+        // Load view and generate PDF in landscape
+        $pdf = Pdf::loadView('pdfs.tariffs', $data)
+            ->setPaper('a4', 'landscape')
+            ->setOptions([
+                'defaultFont' => 'sans-serif',
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true
+            ]);
+        
+        // Download PDF
+        return $pdf->stream('Karibu_Parcels_Tariffs_' . now()->format('Y-m-d') . '.pdf');
+        
     }
 }
