@@ -45,7 +45,7 @@ return new class extends Migration
             $table->date('date')->nullable();
 
             // ==================== PARCEL DETAILS ====================
-            $table->enum('parcel_type', ['document', 'package', 'envelope', 'box', 'pallet', 'other'])->default('package');
+            $table->string('parcel_type')->nullable();
             $table->enum('package_type', ['regular', 'fragile', 'perishable', 'valuable', 'hazardous', 'oversized'])->default('regular');
             $table->decimal('weight', 8, 2)->nullable();
             $table->decimal('length', 8, 2)->nullable();

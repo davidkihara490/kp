@@ -9,10 +9,9 @@ class EditPaymentStructure extends Component
 {
     public string $delivery_type;
     public  float $tax_percentage;
-    public float $pick_up_drop_off_partner_percentage;
+    public float $pick_up_drop_off_partner_amount;
     public float $transport_partner_percentage;
     public float $platform_percentage;
-    public float $platform_deduction;
     public PaymentStructure $paymentStructure;
 
 
@@ -21,10 +20,9 @@ class EditPaymentStructure extends Component
         $this->paymentStructure = PaymentStructure::findOrFail($id);
         $this->delivery_type = $this->paymentStructure->delivery_type;
         $this->tax_percentage = $this->paymentStructure->tax_percentage;
-        $this->pick_up_drop_off_partner_percentage = $this->paymentStructure->pick_up_drop_off_partner_percentage;
+        $this->pick_up_drop_off_partner_amount = $this->paymentStructure->pick_up_drop_off_partner_amount;
         $this->transport_partner_percentage = $this->paymentStructure->transport_partner_percentage;
         $this->platform_percentage = $this->paymentStructure->platform_percentage;
-        $this->platform_deduction = $this->paymentStructure->platform_deduction;
     }
 
     public function submit()
@@ -32,10 +30,9 @@ class EditPaymentStructure extends Component
         $this->validate([
             'delivery_type' => 'required|string|in:direct,warehouse_split',
             'tax_percentage' => 'required',
-            'pick_up_drop_off_partner_percentage' => 'required',
+            'pick_up_drop_off_partner_amount' => 'required',
             'transport_partner_percentage' => 'required',
             'platform_percentage' => 'required',
-            'platform_deduction' => 'required',
 
         ]);
 
@@ -43,10 +40,9 @@ class EditPaymentStructure extends Component
             $this->paymentStructure->update([
                 'delivery_type' => $this->delivery_type,
                 'tax_percentage' => $this->tax_percentage,
-                'pick_up_drop_off_partner_percentage ' => $this->pick_up_drop_off_partner_percentage,
+                'pick_up_drop_off_partner_amount ' => $this->pick_up_drop_off_partner_amount,
                 'transport_partner_percentage' => $this->transport_partner_percentage,
                 'platform_percentage' => $this->platform_percentage,
-                'platform_deduction' => $this->platform_deduction,
             ]);
 
             return redirect()->route('admin.payment-structure.index')->with('success', 'Payment structure updated successfully.');

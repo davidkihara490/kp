@@ -987,54 +987,66 @@ class Parcel extends Model
     public function calculateParcelPayout(
         float $amount,
         string $deliveryType,
-        string $taxType = 'inclusive' // or 'exclusive'
+        string $taxType = 'inclusive'
     ) {
         $structure = PaymentStructure::where('delivery_type', $deliveryType)->first();
 
         if (!$structure) {
-            throw new \Exception("Payment structure not found for delivery type: {$deliveryType}");
+            throw new \Exception(
+                "Payment structure not found for delivery type: {$deliveryType}"
+            );
         }
 
         /*
     |--------------------------------------------------------------------------
-    | VAT Calculation (Inclusive / Exclusive)
+    | VAT Calculation
     |--------------------------------------------------------------------------
     */
 
         $vatPercentage = $structure->tax_percentage ?? 0;
 
         if ($taxType === 'inclusive') {
-            // amount already includes VAT
             $amountAfterVat = $amount / (1 + ($vatPercentage / 100));
             $vatAmount = $amount - $amountAfterVat;
         } else {
-            // VAT not included
             $vatAmount = ($amount * $vatPercentage) / 100;
             $amountAfterVat = $amount - $vatAmount;
         }
 
         /*
     |--------------------------------------------------------------------------
-    | Platform Deduction
+    | Fixed Pickup / Dropoff Payouts (Sender + Receiver)
     |--------------------------------------------------------------------------
     */
 
-        $platformDeductionPercentage = $structure->platform_deduction ?? 0;
+        $pickupDropoffFixed = $structure->pick_up_drop_off_partner_amount ?? 0;
 
-        $platformDeductionAmount =
-            ($amountAfterVat * $platformDeductionPercentage) / 100;
+        $senderPickupDropoff = $pickupDropoffFixed;
+        $receiverPickupDropoff = $pickupDropoffFixed;
 
-        $distributableAmount =
-            $amountAfterVat - $platformDeductionAmount;
+        $totalPickupDropoffAmount =
+            $senderPickupDropoff + $receiverPickupDropoff;
 
         /*
     |--------------------------------------------------------------------------
-    | Distribution
+    | Remaining After Fixed Payouts
     |--------------------------------------------------------------------------
     */
 
-        $pickUpDropOffPercentage =
-            $structure->pick_up_drop_off_partner_percentage ?? 0;
+        $remainingAfterFixed =
+            $amountAfterVat - $totalPickupDropoffAmount;
+
+        if ($remainingAfterFixed < 0) {
+            throw new \Exception(
+                'Pickup/Dropoff payouts exceed available parcel revenue.'
+            );
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | Percentage Split (Transport + Platform)
+    |--------------------------------------------------------------------------
+    */
 
         $transportPercentage =
             $structure->transport_partner_percentage ?? 0;
@@ -1042,28 +1054,31 @@ class Parcel extends Model
         $platformPercentage =
             $structure->platform_percentage ?? 0;
 
-        $pickUpDropOffAmount =
-            ($distributableAmount * $pickUpDropOffPercentage) / 100;
-
         $transportAmount =
-            ($distributableAmount * $transportPercentage) / 100;
+            ($remainingAfterFixed * $transportPercentage) / 100;
 
         $platformAmount =
-            ($distributableAmount * $platformPercentage) / 100;
+            ($remainingAfterFixed * $platformPercentage) / 100;
 
         /*
     |--------------------------------------------------------------------------
-    | Remaining Balance
+    | Remaining Balance (Rounding Difference)
     |--------------------------------------------------------------------------
     */
 
         $totalDistributed =
-            $pickUpDropOffAmount +
+            $totalPickupDropoffAmount +
             $transportAmount +
             $platformAmount;
 
         $remainingBalance =
-            $distributableAmount - $totalDistributed;
+            $amountAfterVat - $totalDistributed;
+
+        /*
+    |--------------------------------------------------------------------------
+    | Return (same structure as old function)
+    |--------------------------------------------------------------------------
+    */
 
         return [
             'original_amount' => round($amount, 2),
@@ -1078,16 +1093,27 @@ class Parcel extends Model
             'amount_after_vat' => round($amountAfterVat, 2),
 
             'platform_deduction' => [
-                'percentage' => $platformDeductionPercentage,
-                'amount' => round($platformDeductionAmount, 2),
+                'percentage' => 0,
+                'amount' => 0,
             ],
 
-            'distributable_amount' => round($distributableAmount, 2),
+            'distributable_amount' => round($remainingAfterFixed, 2),
 
             'pick_up_drop_off_partner' => [
-                'percentage' => $pickUpDropOffPercentage,
-                'amount' => round($pickUpDropOffAmount, 2),
+                'amount' => round($pickupDropoffFixed, 2),
             ],
+
+            'sender_pick_up_dropoff_partner' => [
+                'amount' => round($senderPickupDropoff, 2),
+            ],
+
+            'receiver_pick_up_dropoff_partner' => [
+                'amount' => round($receiverPickupDropoff, 2),
+            ],
+
+            'total_pick_up_dropoff_amount' => round($totalPickupDropoffAmount, 2),
+
+            'remaining_after_pickup_dropoff' => round($remainingAfterFixed, 2),
 
             'transport_partner' => [
                 'percentage' => $transportPercentage,
@@ -1102,6 +1128,125 @@ class Parcel extends Model
             'remaining_balance' => round($remainingBalance, 2),
         ];
     }
+
+    // public function calculateParcelPayout(
+    //     float $amount,
+    //     string $deliveryType,
+    //     string $taxType = 'inclusive' // or 'exclusive'
+    // ) {
+    //     $structure = PaymentStructure::where('delivery_type', $deliveryType)->first();
+
+    //     if (!$structure) {
+    //         throw new \Exception("Payment structure not found for delivery type: {$deliveryType}");
+    //     }
+
+    //     /*
+    // |--------------------------------------------------------------------------
+    // | VAT Calculation (Inclusive / Exclusive)
+    // |--------------------------------------------------------------------------
+    // */
+
+    //     $vatPercentage = $structure->tax_percentage ?? 0;
+
+    //     if ($taxType === 'inclusive') {
+    //         // amount already includes VAT
+    //         $amountAfterVat = $amount / (1 + ($vatPercentage / 100));
+    //         $vatAmount = $amount - $amountAfterVat;
+    //     } else {
+    //         // VAT not included
+    //         $vatAmount = ($amount * $vatPercentage) / 100;
+    //         $amountAfterVat = $amount - $vatAmount;
+    //     }
+
+    //     /*
+    // |--------------------------------------------------------------------------
+    // | Platform Deduction
+    // |--------------------------------------------------------------------------
+    // */
+
+    //     $platformDeductionPercentage = $structure->platform_deduction ?? 0;
+
+    //     $platformDeductionAmount =
+    //         ($amountAfterVat * $platformDeductionPercentage) / 100;
+
+    //     $distributableAmount =
+    //         $amountAfterVat - $platformDeductionAmount;
+
+    //     /*
+    // |--------------------------------------------------------------------------
+    // | Distribution
+    // |--------------------------------------------------------------------------
+    // */
+
+    //     $pickUpDropOffPercentage =
+    //         $structure->pick_up_drop_off_partner_percentage ?? 0;
+
+    //     $transportPercentage =
+    //         $structure->transport_partner_percentage ?? 0;
+
+    //     $platformPercentage =
+    //         $structure->platform_percentage ?? 0;
+
+    //     $pickUpDropOffAmount =
+    //         ($distributableAmount * $pickUpDropOffPercentage) / 100;
+
+    //     $transportAmount =
+    //         ($distributableAmount * $transportPercentage) / 100;
+
+    //     $platformAmount =
+    //         ($distributableAmount * $platformPercentage) / 100;
+
+    //     /*
+    // |--------------------------------------------------------------------------
+    // | Remaining Balance
+    // |--------------------------------------------------------------------------
+    // */
+
+    //     $totalDistributed =
+    //         $pickUpDropOffAmount +
+    //         $transportAmount +
+    //         $platformAmount;
+
+    //     $remainingBalance =
+    //         $distributableAmount - $totalDistributed;
+
+    //     return [
+    //         'original_amount' => round($amount, 2),
+
+    //         'tax_type' => $taxType,
+
+    //         'vat' => [
+    //             'percentage' => $vatPercentage,
+    //             'amount' => round($vatAmount, 2),
+    //         ],
+
+    //         'amount_after_vat' => round($amountAfterVat, 2),
+
+    //         'platform_deduction' => [
+    //             'percentage' => $platformDeductionPercentage,
+    //             'amount' => round($platformDeductionAmount, 2),
+    //         ],
+
+    //         'distributable_amount' => round($distributableAmount, 2),
+
+    //         'pick_up_drop_off_partner' => [
+    //             'percentage' => $pickUpDropOffPercentage,
+    //             'amount' => round($pickUpDropOffAmount, 2),
+    //         ],
+
+    //         'transport_partner' => [
+    //             'percentage' => $transportPercentage,
+    //             'amount' => round($transportAmount, 2),
+    //         ],
+
+    //         'platform' => [
+    //             'percentage' => $platformPercentage,
+    //             'amount' => round($platformAmount, 2),
+    //         ],
+
+    //         'remaining_balance' => round($remainingBalance, 2),
+    //     ];
+    // }
 
     public function calculateParcelPayoutMM(float $amount, string $deliveryType)
     {

@@ -15,8 +15,10 @@ use App\Models\ParcelPayout;
 use App\Models\Partner;
 use App\Models\PickUpAndDropOffPoint;
 use App\Models\Pricing;
+use App\Models\PricingItem;
 use App\Models\WeightRange;
 use App\Models\ZoneCounty;
+use App\Models\ZoneTown;
 use App\Services\SMSService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -131,7 +133,7 @@ class CreateParcel extends Component
             'delivery_pick_up_drop_off_point_id' => 'required|exists:pick_up_and_drop_off_points,id',
 
             // Step 2 Rules
-            'parcel_type' => 'required|exists:items,id',
+            'parcel_type' => 'required',
             'package_type' => 'required|in:regular,fragile,perishable,valuable,hazardous,oversized',
             'weight' => 'required|numeric|min:0.1|max:1000',
             'content_description' => 'required|string|max:1000',
@@ -193,12 +195,19 @@ class CreateParcel extends Component
 
         $points = PickUpAndDropOffPoint::where('partner_id', $partner->id)
             ->where('status', true)
-            ->with('town') // important
+            ->with('town')
             ->orderBy('name')
             ->get();
 
         $this->senderTowns = $points->pluck('town')->unique('id')->values();
 
+        // $this->counties = County::orderBy('name')->get();
+
+        $this->counties = County::whereHas('towns.pickUpAndDropOffPoint', function ($query) {
+            $query->where('status', true);
+        })
+            ->orderBy('name')
+            ->get();
 
         $this->parcel_number = Parcel::generateParcelNumber();
         $this->loadOptions();
@@ -209,7 +218,8 @@ class CreateParcel extends Component
 
         // Initial price calculation if default values exist
         if ($this->parcel_type && $this->weight) {
-            $this->calculatePriceByTypeAndWeight();
+            // $this->calculatePriceByTypeAndWeight();
+            $this->calculatePriceByWeight();
         }
     }
 
@@ -220,7 +230,6 @@ class CreateParcel extends Component
 
             $this->weightRanges = WeightRange::all();
             $this->customers = [];
-            $this->counties = County::orderBy('name')->get();
             $this->towns = Town::where('status', true)->orderBy('name')->get();
             $this->pickUpAndDropOffPoints = PickUpAndDropOffPoint::where('status', true)
                 ->orderBy('name')
@@ -284,14 +293,15 @@ class CreateParcel extends Component
         }
     }
 
-    public function updatedParcelType()
-    {
-        $this->calculatePriceByTypeAndWeight();
-    }
+    // public function updatedParcelType()
+    // {
+    //     $this->calculatePriceByTypeAndWeight();
+    // }
 
     public function updatedWeight()
     {
-        $this->calculatePriceByTypeAndWeight();
+        $this->calculatePriceByWeight();
+        // $this->calculatePriceByTypeAndWeight();
     }
 
     /**
@@ -312,7 +322,8 @@ class CreateParcel extends Component
     public function updatedDeclaredValue()
     {
         $this->calculateInsurance();
-        $this->calculatePriceByTypeAndWeight();
+        $this->calculatePriceByWeight();
+        // $this->calculatePriceByTypeAndWeight();
     }
 
     /**
@@ -321,7 +332,105 @@ class CreateParcel extends Component
     public function updatedInsuranceRequired()
     {
         $this->calculateInsurance();
-        $this->calculatePriceByTypeAndWeight();
+        $this->calculatePriceByWeight();
+        // $this->calculatePriceByTypeAndWeight();
+    }
+
+    public function calculatePriceByWeight()
+    {
+        $this->base_price = 0;
+        $this->tax_amount = 0;
+        $this->total_amount = 0;
+        $this->calculatedPrice = 0;
+
+        $this->calculateInsurance();
+
+        if (
+            !$this->weight ||
+            $this->weight <= 0 ||
+            !$this->sender_town_id ||
+            !$this->receiver_town_id
+        ) {
+            return;
+        }
+
+        try {
+            $senderTown = Town::with('subCounty.county')
+                ->find($this->sender_town_id);
+
+            $receiverTown = Town::with('subCounty.county')
+                ->find($this->receiver_town_id);
+
+            if (!$senderTown || !$receiverTown) {
+                return;
+            }
+
+
+            $senderZone = ZoneTown::where('town_id', $senderTown->id)->first();
+            $receiverZone = ZoneTown::where('town_id', $receiverTown->id)->first();
+
+            if (!$senderZone || !$receiverZone) {
+                return;
+            }
+
+            $pricing = PricingItem::where('source_zone_id', $senderZone->zone_id)
+                ->where('destination_zone_id', $receiverZone->zone_id)->first();
+
+            if (!$pricing) {
+                $this->calculateFallbackPrice();
+                return;
+            }
+
+            $basePrice = (float) ($pricing->cost ?? 0);
+            $extraKgCost = (float) ($pricing->extra ?? 0);
+
+            if ($this->weight <= 5) {
+
+                $this->base_price = round($basePrice, 2);
+            } else {
+
+                $extraWeight = $this->weight - 5;
+
+                $this->base_price = round(
+                    $basePrice + ($extraWeight * $extraKgCost),
+                    2
+                );
+            }
+
+            $this->tax_amount = round(
+                $this->base_price * 0.16,
+                2
+            );
+
+            $this->total_amount = round(
+                $this->base_price +
+                    $this->insurance_charge +
+                    $this->tax_amount,
+                2
+            );
+
+            $this->calculatedPrice = $this->total_amount;
+
+            Log::info('Parcel price calculated', [
+                'parcel_type' => $this->parcel_type,
+                'weight' => $this->weight,
+                'base_price' => $this->base_price,
+                'extra_kg_cost' => $extraKgCost,
+                'insurance_charge' => $this->insurance_charge,
+                'tax_amount' => $this->tax_amount,
+                'total_amount' => $this->total_amount,
+                'sender_zone' => $senderZone->zone_id,
+                'receiver_zone' => $receiverZone->zone_id,
+            ]);
+        } catch (\Throwable $e) {
+
+            Log::error('Price calculation failed', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            $this->calculateFallbackPrice();
+        }
     }
 
     public function calculatePriceByTypeAndWeight()
@@ -464,7 +573,8 @@ class CreateParcel extends Component
         ];
 
         if (in_array($propertyName, $priceRelatedFields)) {
-            $this->calculatePriceByTypeAndWeight();
+            // $this->calculatePriceByTypeAndWeight();
+            $this->calculatePriceByWeight();
         }
     }
 
@@ -473,7 +583,9 @@ class CreateParcel extends Component
      */
     public function getCalculatedPriceProperty()
     {
-        $this->calculatePriceByTypeAndWeight();
+        // $this->calculatePriceByTypeAndWeight();
+        $this->calculatePriceByWeight();
+
         return $this->total_amount;
     }
 
@@ -503,7 +615,12 @@ class CreateParcel extends Component
         try {
             if ($value) {
                 $county = County::where('id', (int)$value)->first();
-                $this->countyTowns = $county->towns()->where('status', true)->get();
+                // $this->countyTowns = $county->towns()->where('status', true)->get();
+                $this->countyTowns = $county->towns()
+                    ->whereHas('pickUpAndDropOffPoint', function ($query) {
+                        $query->where('status', true);
+                    })
+                    ->get();
             } else {
                 $this->countyTowns = Town::where('status', true)->orderBy('name')->get();
             }
@@ -569,7 +686,7 @@ class CreateParcel extends Component
 
             case 2:
                 $rules = [
-                    'parcel_type' => 'required|exists:items,id',
+                    'parcel_type' => 'required',
                     'package_type' => 'required|in:regular,fragile,perishable,valuable,hazardous,oversized',
                     'weight' => 'required|numeric|min:0.1|max:1000',
                     'content_description' => 'required|string|max:1000',
@@ -744,7 +861,8 @@ class CreateParcel extends Component
     public function render()
     {
         if ($this->parcel_type && $this->weight > 0) {
-            $this->calculatePriceByTypeAndWeight();
+            // $this->calculatePriceByTypeAndWeight();
+            $this->calculatePriceByWeight();
         }
 
         return view('livewire.partners.parcels.create-parcel', [
@@ -757,7 +875,15 @@ class CreateParcel extends Component
             'drivers' => $this->drivers,
             'transportPartners' => $this->transportPartners,
             'pickUpAndDropOffPoints' => $this->pickUpAndDropOffPoints,
-            'parcelTypes' => $this->items,
+            // 'parcelTypes' => $this->items,
+            'parcelTypes' => [
+                'document' => 'Document',
+                'package' => 'Package',
+                'envelope' => 'Envelope',
+                'box' => 'Box',
+                'pallet' => 'Pallet',
+                'other' => 'Other',
+            ],
             'packageTypes' => [
                 'regular' => 'Regular',
                 'fragile' => 'Fragile',

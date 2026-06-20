@@ -31,25 +31,13 @@
                                 @enderror
                             </div>
                         </div>
-
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label>Platform Deduction(%)</label>
-                                <input type="text" class="form-control" wire:model="platform_deduction" placeholder="" min="0">
-                                @error('platform_deduction')
-                                <span class="text-danger">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
                     </div>
-                        <label><i>To be shared between partners and platform</i></label>
-                        <br>
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label>Pick up/ Drop Off Partner Percentage</label>
-                                <input type="text" class="form-control" wire:model="pick_up_drop_off_partner_percentage" placeholder="" min="0">
-                                @error('pick_up_drop_off_partner_percentage')
+                                <label>Pick up/ Drop Off Partner Amount</label>
+                                <input type="text" class="form-control" wire:model="pick_up_drop_off_partner_amount" placeholder="" min="0">
+                                @error('pick_up_drop_off_partner_amount')
                                 <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>

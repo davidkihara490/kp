@@ -275,10 +275,10 @@
                                     <div class="row g-4">
                                         <div class="col-md-6">
                                             <label class="form-label required">Parcel Type</label>
-                                            <select class="form-select form-select-lg @error('parcel_type') is-invalid @enderror" wire:model.live.debounce.750ms="parcel_type">
+                                            <select class="form-select form-select-lg @error('parcel_type') is-invalid @enderror" wire:model="parcel_type">
                                                 <option value="">Select parcel type</option>
-                                                @foreach($parcelTypes as $value => $label)
-                                                <option value="{{ $label->id }}">{{ $label->name }}</option>
+                                                @foreach($parcelTypes as $label)
+                                                <option value="{{ $label }}">{{ $label }}</option>
                                                 @endforeach
                                             </select>
                                             @error('parcel_type') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -563,7 +563,7 @@
                                             <div class="col-md-6">
                                                 <div class="bg-success-soft p-3 rounded-3">
                                                     <small class="text-muted fw-medium d-block">Parcel Type</small>
-                                                    <span class="fw-bold fs-6">{{ \App\Models\Item::find($parcel_type)->name }}</span>
+                                                    <span class="fw-bold fs-6">{{ ucfirst($parcel_type) }}</span>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
