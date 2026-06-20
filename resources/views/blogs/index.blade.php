@@ -1030,6 +1030,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('points') }}">PickUp/DropOff Points</a>
                     </li>
+                                        <li class="nav-item">
+                        <a class="nav-link" href="{{ route('pricing') }}">Pricing</a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link active" href="{{ route('blogs.index') }}">Blog</a>
                     </li>

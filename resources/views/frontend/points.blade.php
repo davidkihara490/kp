@@ -548,6 +548,9 @@
                     <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#home">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#tracking">Tracking</a></li>
                     <li class="nav-item"><a class="nav-link active" href="{{ route('points') }}">PickUp/DropOff Points</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('pricing') }}">Pricing</a>
+                    </li>
                     <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#blogs">Blog</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#faq">FAQ</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#contact">Contact</a></li>
@@ -726,11 +729,11 @@
                     </div>
                     <div class="col-lg-5">
                         <div class="business-buttons d-flex gap-3 flex-wrap justify-content-lg-end">
-                            
+
                             <a href="{{ route('partners.login') }}" class="business-btn partner-btn">
                                 <span class="btn-icon"><i class="bi bi-briefcase"></i></span>
                                 <span class="btn-text"><small>Partner Portal</small><br>
-                                <strong>Login</strong></span>
+                                    <strong>Login</strong></span>
                                 <span class="btn-arrow"><i class="bi bi-box-arrow-in-right"></i></span>
                             </a>
                         </div>

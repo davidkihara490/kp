@@ -1026,9 +1026,10 @@
             background: var(--primary-color);
             transform: translateY(-3px);
         }
-                /* Business Solutions Section */
+
+        /* Business Solutions Section */
         .business-solutions {
-            background:  white;
+            background: white;
             border-radius: 20px;
             padding: 30px;
             border: 1px solid rgba(0, 143, 64, 0.2);
@@ -1074,7 +1075,7 @@
             .business-solutions {
                 padding: 20px;
             }
-            
+
             .business-buttons {
                 margin-top: 15px;
                 justify-content: flex-start !important;
@@ -1198,6 +1199,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/#stations">PickUp/DropOff Points</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('pricing') }}">Pricing</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active" href="{{ route('blogs.index') }}">Blog</a>
@@ -1620,7 +1624,7 @@
                             <a href="{{ route('partners.login') }}" class="business-btn partner-btn">
                                 <span class="btn-icon"><i class="bi bi-briefcase"></i></span>
                                 <span class="btn-text"><small>Partner Portal</small><br>
-                                <strong>Login</strong></span>
+                                    <strong>Login</strong></span>
                                 <span class="btn-arrow"><i class="bi bi-box-arrow-in-right"></i></span>
                             </a>
                         </div>

@@ -292,6 +292,9 @@
                     <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#home">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#tracking">Tracking</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#stations">PickUp/DropOff Points</a></li>
+                                        <li class="nav-item">
+                        <a class="nav-link" href="{{ route('pricing') }}">Pricing</a>
+                    </li>
                     <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#blogs">Blog</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#faq">FAQ</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#contact">Contact</a></li>
