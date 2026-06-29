@@ -898,7 +898,7 @@
                         method: 'POST',
                         data: formData,
                         success: function(response) {
-                            cosnole.log(response);
+                            console.log(response);
                             displayTownQuoteResult(response);
                         },
                         error: function(xhr) {
