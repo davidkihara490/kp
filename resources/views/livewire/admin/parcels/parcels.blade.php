@@ -347,6 +347,7 @@
                                     @endif
                                 </a>
                             </th>
+                            <th>Source</th>
                             <th>
                                 <a href="#" wire:click.prevent="sortBy('created_at')">
                                     Created
@@ -414,6 +415,7 @@
                                     {{ ucfirst(str_replace('_', ' ', $parcel->current_status)) }}
                                 </span>
                             </td>
+                            <td><strong>{{ $parcel->booking_source }}</strong></td>
                             <td>
                                 {{ $parcel->created_at->format('d/m/Y') }}
                                 <br>

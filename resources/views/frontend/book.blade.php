@@ -429,6 +429,7 @@
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">From Town <span class="text-danger">*</span></label>
+              <input type="number" name="sender_town_id" value="{{ $fromTownId }}" class="d-none">
               <select class="form-select" name="sender_town_id" id="fromTown" disabled required>
                 <option value="">Select pickup town</option>
                 @foreach($towns as $town)
@@ -440,6 +441,7 @@
             </div>
             <div class="col-md-6">
               <label class="form-label">To Town <span class="text-danger">*</span></label>
+              <input type="number" name="receiver_town_id" value="{{ $toTownId }}" class="d-none">
               <select class="form-select" name="receiver_town_id" id="toTown" disabled required>
                 <option value="">Select delivery town</option>
                 @foreach($towns as $town)
@@ -786,47 +788,20 @@
       // ============================================
       // AUTH STATE MANAGEMENT
       // ============================================
+      let isLoggedIn = false;
       let currentUser = null;
-
-      // Check if user is already logged in (from sessionStorage)
-      function loadUserFromStorage() {
-        const userData = sessionStorage.getItem('karibu_user');
-        if (userData) {
-          try {
-            currentUser = JSON.parse(userData);
-            updateUIForLoggedInUser();
-            return true;
-          } catch (e) {
-            sessionStorage.removeItem('karibu_user');
-            return false;
-          }
-        }
-        return false;
-      }
-
-      function saveUserToStorage(user) {
-        sessionStorage.setItem('karibu_user', JSON.stringify(user));
-        currentUser = user;
-        updateUIForLoggedInUser();
-      }
-
-      function clearUserStorage() {
-        sessionStorage.removeItem('karibu_user');
-        currentUser = null;
-        updateUIForLoggedOutUser();
-      }
 
       // ============================================
       // UI UPDATES
       // ============================================
-      function updateUIForLoggedInUser() {
-        if (!currentUser) return;
+      function updateUIForLoggedInUser(user) {
+        if (!user) return;
 
         // Update top user bar
         const userInfoDisplay = document.getElementById('userInfoDisplay');
         userInfoDisplay.innerHTML = `
-          <span class="user-name"><i class="bi bi-person-check-fill me-2 text-primary"></i>Welcome, ${currentUser.name}!</span>
-          <span class="text-muted ms-2 small">(${currentUser.email})</span>
+          <span class="user-name"><i class="bi bi-person-check-fill me-2 text-primary"></i>Welcome, ${user.name}!</span>
+          <span class="text-muted ms-2 small">(${user.email})</span>
         `;
 
         // Replace buttons with logout
@@ -840,29 +815,32 @@
         document.getElementById('logoutBtnTop').addEventListener('click', handleLogout);
 
         // Update auth prompt in step 3
-        document.getElementById('authStatusText').textContent = `You are logged in as ${currentUser.name}`;
+        document.getElementById('authStatusText').textContent = `You are logged in as ${user.name}`;
         document.getElementById('authActionText').textContent = '';
         document.getElementById('authButtons').style.display = 'none';
         document.getElementById('loggedInActions').style.display = 'inline-block';
-        document.getElementById('loggedInName').textContent = currentUser.name;
+        document.getElementById('loggedInName').textContent = user.name;
 
         // Enable booking button
         document.getElementById('saveParcelBtn').disabled = false;
         document.getElementById('saveParcelBtn').innerHTML = '<i class="bi bi-check-circle me-1"></i> Confirm & Book';
 
         // Set customer_id hidden field
-        document.getElementById('customerId').value = currentUser.id;
+        document.getElementById('customerId').value = user.id;
 
         // Pre-fill sender details if available
-        if (currentUser.name) {
-          document.getElementById('senderName').value = currentUser.name;
+        if (user.name) {
+          document.getElementById('senderName').value = user.name;
         }
-        if (currentUser.email) {
-          document.getElementById('senderEmail').value = currentUser.email;
+        if (user.email) {
+          document.getElementById('senderEmail').value = user.email;
         }
-        if (currentUser.phone) {
-          document.getElementById('senderPhone').value = currentUser.phone;
+        if (user.phone) {
+          document.getElementById('senderPhone').value = user.phone;
         }
+
+        isLoggedIn = true;
+        currentUser = user;
       }
 
       function updateUIForLoggedOutUser() {
@@ -895,12 +873,10 @@
 
         // Clear customer_id
         document.getElementById('customerId').value = '';
+
+        isLoggedIn = false;
+        currentUser = null;
       }
-
-      // ============================================
-      // AUTH FUNCTIONS
-      // ============================================
-
 
       // ============================================
       // AUTH FUNCTIONS WITH REAL API CALLS
@@ -936,6 +912,7 @@
               'X-CSRF-TOKEN': csrfToken,
               'X-Requested-With': 'XMLHttpRequest'
             },
+            credentials: 'same-origin',
             body: JSON.stringify({
               email: email,
               password: password,
@@ -952,16 +929,8 @@
           })
           .then(data => {
             if (data.success) {
-              // Save user data
-              const user = {
-                id: data.user.id,
-                name: data.user.name,
-                email: data.user.email,
-                phone: data.user.phone || '',
-                token: data.token || ''
-              };
-
-              saveUserToStorage(user);
+              // Update UI with user data from server
+              updateUIForLoggedInUser(data.user);
               showMessage(messageDiv, data.message || 'Login successful!', 'success');
 
               // Close modal after delay
@@ -1018,7 +987,7 @@
           return;
         }
 
-        if (!phone) {
+        if (!phone.match(/^(0|254|\+254)[0-9]{9}$/)) {
           showMessage(messageDiv, 'Please enter a valid phone number (e.g. 0712345678).', 'warning');
           return;
         }
@@ -1046,6 +1015,7 @@
               'X-CSRF-TOKEN': csrfToken,
               'X-Requested-With': 'XMLHttpRequest'
             },
+            credentials: 'same-origin',
             body: JSON.stringify({
               name: name,
               email: email,
@@ -1070,18 +1040,8 @@
           })
           .then(data => {
             if (data.success) {
-              // Save user data
-              const user = {
-                id: data.customer.id || data.user.id,
-                name: data.customer.name || data.user.name,
-                email: data.customer.email || data.user.email,
-                phone: data.customer.phone || data.user.phone || '',
-                token: data.token || ''
-              };
-
-              console.log(user);
-
-              saveUserToStorage(user);
+              // Update UI with user data from server
+              updateUIForLoggedInUser(data.customer);
               showMessage(messageDiv, data.message || 'Registration successful!', 'success');
 
               // Close modal after delay
@@ -1129,31 +1089,42 @@
           .then(response => response.json())
           .then(data => {
             if (data.authenticated && data.customer) {
-              const user = {
-                id: data.customer.id,
-                name: data.customer.name,
-                email: data.customer.email,
-                phone: data.customer.phone || ''
-              };
-              saveUserToStorage(user);
+              updateUIForLoggedInUser(data.customer);
             } else {
-              // User is not logged in
-              clearUserStorage();
+              updateUIForLoggedOutUser();
             }
           })
           .catch(error => {
             console.error('Auth check error:', error);
-            // Silent fail - user stays as guest
+            updateUIForLoggedOutUser();
           });
       }
 
       function handleLogout() {
-        clearUserStorage();
-        // Reset forms
-        document.getElementById('loginForm').reset();
-        document.getElementById('registerForm').reset();
-        // Show message
-        alert('You have been logged out successfully.');
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+        fetch('/customer/logout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-CSRF-TOKEN': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+          })
+          .then(response => response.json())
+          .then(data => {
+            updateUIForLoggedOutUser();
+            document.getElementById('loginForm').reset();
+            document.getElementById('registerForm').reset();
+            alert(data.message || 'You have been logged out successfully.');
+          })
+          .catch(error => {
+            console.error('Logout error:', error);
+            updateUIForLoggedOutUser();
+            alert('You have been logged out.');
+          });
       }
 
       function showMessage(container, message, type) {
@@ -1163,7 +1134,7 @@
       }
 
       // ============================================
-      // STEP NAVIGATION (unchanged)
+      // STEP NAVIGATION
       // ============================================
       let currentStep = 1;
       const stepPanels = {
@@ -1191,11 +1162,11 @@
       }
 
       // ============================================
-      // CALCULATIONS (unchanged)
+      // CALCULATIONS
       // ============================================
       function calculateTotal() {
         const weight = parseFloat(document.getElementById('weight').value) || 1;
-        const basePrice = {{ $price }};
+        const basePrice = {{$price }};
         const weightCharge = (weight - 1) * 150;
         const declaredValue = parseFloat(document.getElementById('declaredValue').value) || 0;
         const insuranceRequired = document.getElementById('insuranceRequired').checked;
@@ -1350,23 +1321,23 @@
 
       // Form submit - check authentication before submitting
       document.getElementById('bookingForm').addEventListener('submit', function(e) {
-        if (!currentUser) {
+        if (!isLoggedIn) {
           e.preventDefault();
           alert('Please login or register to book a parcel.');
           return;
         }
         // Ensure customer_id is set
-        document.getElementById('customerId').value = currentUser.id;
+        if (currentUser) {
+          document.getElementById('customerId').value = currentUser.id;
+        }
         // Form will submit normally
       });
 
       // ============================================
       // INITIALIZE
       // ============================================
-      const userLoaded = loadUserFromStorage();
-      if (!userLoaded) {
-        updateUIForLoggedOutUser();
-      }
+      // Check login status with server
+      checkLoginStatus();
       updateStep(1);
       calculateTotal();
     })();

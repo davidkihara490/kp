@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class ParcelController extends Controller
 {
@@ -39,7 +40,8 @@ class ParcelController extends Controller
     public function store(Request $request)
     {
         // Validate the request
-        $validated = $request->validate([
+        $validated =  Validator::make($request->all(), [
+
             // Sender Information
             'sender_name' => 'required|string|max:255',
             'sender_phone' => 'required|string',
@@ -76,130 +78,138 @@ class ParcelController extends Controller
 
             // Payment
             'insuarance_amount' => 'nullable|numeric',
-            'payment_method' => 'nullable|in:mpesa,cash,card,bank_transfer',
-            'payment_status' => 'nullable|in:pending,paid,failed,refunded',
             'total_amount' => 'nullable|numeric|min:0',
 
             // Terms
             'terms' => 'required|accepted',
         ]);
 
-        // Begin transaction
-        DB::beginTransaction();
 
-        try {
-            // Prepare parcel data
-            $parcelData = [
-                // Basic Information
-                'customer_id' => Auth::guard('customer')->user()->id,
-                'booking_type' => $validated['booking_type'] ?? 'instant',
-                'booking_source' => $validated['booking_source'] ?? 'web',
-
-                // Sender Information
-                'sender_name' => $validated['sender_name'],
-                'sender_phone' => $validated['sender_phone'],
-                'sender_email' => $validated['sender_email'] ?? null,
-                'sender_town_id' => $validated['sender_town_id'],
-                'sender_address' => $validated['sender_address'] ?? null,
-                'sender_notes' => $validated['sender_notes'] ?? null,
-
-                // Receiver Information
-                'receiver_name' => $validated['receiver_name'],
-                'receiver_phone' => $validated['receiver_phone'],
-                'receiver_email' => $validated['receiver_email'] ?? null,
-                'receiver_town_id' => $validated['receiver_town_id'],
-                'receiver_address' => $validated['receiver_address'] ?? null,
-                'receiver_notes' => $validated['receiver_notes'] ?? null,
-
-                // Pickup Information (default values)
-                'pha_id' => null,
-                'sender_partner_id' => null,
-                'sender_pick_up_drop_off_point_id' => null,
-                'date' => now(),
-
-                // Parcel Details
-                'parcel_id' => Parcel::generateParcelNumber(),
-                'parcel_type' => $validated['parcel_type'],
-                'package_type' => $validated['package_type'],
-                'weight' => $validated['weight'],
-                'length' => $validated['length'] ?? null,
-                'width' => $validated['width'] ?? null,
-                'height' => $validated['height'] ?? null,
-                'dimension_unit' => $validated['dimension_unit'] ?? 'cm',
-                'weight_unit' => $validated['weight_unit'] ?? 'kg',
-                'declared_value' => $validated['declared_value'] ?? null,
-                'insurance_amount' => $validated['insurance_required'] ? ($validated['declared_value'] * 0.02) : null,
-                'insurance_required' => $validated['insurance_required'] ?? false,
-                'content_description' => $validated['content_description'],
-                'special_instructions' => $validated['special_instructions'] ?? null,
-
-                // Delivery Information (default values)
-                'delivery_partner_id' => null,
-                'delivery_pick_up_drop_off_point_id' => null,
-                'delivery_flow' => 'standard',
-                'warehouse_id' => null,
-
-                // Pricing
-                'base_price' => round($validated['total_amount'] * 0.84),
-                'insurance_charge' => $validated['insuarance_amount'],
-                'tax_amount' => round($validated['total_amount'] * 0.16),
-                'discount_amount' => $charges['discount_amount'] ?? 0,
-                'total_amount' => $validated['total_amount'],
-                'payment_method' => $validated['payment_method'] ?? 'cash',
-                'payment_status' => $validated['payment_status'] ?? 'pending',
-
-                // Creator
-                'creator_id' => Auth::guard('customer')->user()->id,
-                'creator_type' => Customer::class,
-            ];
-
-            // Create the parcel
-            $parcel = Parcel::create($parcelData);
-
-            dd($parcel);
-            // Add initial tracking status
-            // $parcel->addTracking(
-            //     Parcel::STATUS_CREATED,
-            //     auth()->id() ?? null,
-            //     'Parcel booked via online booking form'
-            // );
-
-
-            // $parcel->updateParcelStatus(
-            //     Parcel::STATUS_CREATED,
-            //     $this->sender_pick_up_drop_off_point_id,
-            //     Auth::guard('partner')->user()->id,
-            //     current_user_type(),
-            //     'Parcel created',
-            //     null,
-            //     null,
-            // );
-
-            DB::commit();
-
-            // Redirect with success message
-            return redirect()
-                ->route('booking.success', $parcel->parcel_id)
-                ->with('success', 'Parcel booked successfully! Your tracking ID is: ' . $parcel->parcel_id);
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            // Log the error
-            \Log::error('Parcel booking failed: ' . $e->getMessage(), [
-                'request' => $request->all(),
-                'error' => $e
-            ]);
-
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'An error occurred while processing your booking. Please try again.');
+        if ($validated->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validated->errors()
+            ], 422);
         }
+        // // Begin transaction
+        // DB::beginTransaction();
+
+        // try {
+        // Prepare parcel data
+        $parcelData = [
+            // Basic Information
+            'customer_id' => Auth::guard('customer')->user()->id,
+            'booking_type' => $request->booking_type ?? 'instant',
+            'booking_source' => $request->booking_source ?? 'web',
+
+            // Sender Information
+            'sender_name' => $request->sender_name,
+            'sender_phone' => $request->sender_phone,
+            'sender_email' => $request->sender_email ?? null,
+            'sender_town_id' => $request->sender_town_id,
+            'sender_address' => $request->sender_address ?? null,
+            'sender_notes' => $request->sender_notes ?? null,
+
+            // Receiver Information
+            'receiver_name' => $request->receiver_name,
+            'receiver_phone' => $request->receiver_phone,
+            'receiver_email' => $request->receiver_email ?? null,
+            'receiver_town_id' => $request->receiver_town_id,
+            'receiver_address' => $request->receiver_address ?? null,
+            'receiver_notes' => $request->receiver_notes ?? null,
+
+            // Pickup Information (default values)
+            'pha_id' => null,
+            'sender_partner_id' => null,
+            'sender_pick_up_drop_off_point_id' => null,
+            'date' => now(),
+
+            // Parcel Details
+            'parcel_id' => Parcel::generateParcelNumber(),
+            'parcel_type' => $request->parcel_type,
+            'package_type' => $request->package_type,
+            'weight' => $request->weight,
+            'length' => $request->length ?? null,
+            'width' => $request->width ?? null,
+            'height' => $request->height ?? null,
+            'dimension_unit' => $request->dimension_unit ?? 'cm',
+            'weight_unit' => $request->weight_unit ?? 'kg',
+            'declared_value' => $request->declared_value ?? null,
+            'insurance_amount' => $request->insurance_required ? ($request->declared_value * 0.02) : 0,
+            'insurance_required' => $request->insurance_required ?? false,
+            'content_description' => $request->content_description,
+            'special_instructions' => $request->special_instructions ?? null,
+
+            // Delivery Information (default values)
+            'delivery_partner_id' => null,
+            'delivery_pick_up_drop_off_point_id' => null,
+            'delivery_flow' => null,
+            'warehouse_id' => null,
+
+            // Pricing
+            'base_price' => round($request->total_amount * 0.84),
+            'insurance_charge' => $request->insuarance_amount ?? 0,
+            'tax_amount' => round($request->total_amount * 0.16),
+            'total_amount' => $request->total_amount,
+            'payment_method' => 'mpesa',
+            'payment_status' => 'pending',
+
+            // Creator
+            'creator_id' => Auth::guard('customer')->user()->id,
+            'creator_type' => Customer::class,
+        ];
+
+        // Create the parcel
+        $parcel = Parcel::create($parcelData);
+
+
+        // TODO::Update Status
+        // Add initial tracking status
+        // $parcel->addTracking(
+        //     Parcel::STATUS_CREATED,
+        //     auth()->id() ?? null,
+        //     'Parcel booked via online booking form'
+        // );
+
+
+        // $parcel->updateParcelStatus(
+        //     Parcel::STATUS_CREATED,
+        //     $this->sender_pick_up_drop_off_point_id,
+        //     Auth::guard('partner')->user()->id,
+        //     current_user_type(),
+        //     'Parcel created',
+        //     null,
+        //     null,
+        // );
+
+        // DB::commit();
+
+        // Redirect with success message
+        return redirect()
+            ->route('booking.success', $parcel->parcel_id)
+            ->with('success', 'Parcel booked successfully! Your tracking ID is: ' . $parcel->parcel_id);
+        // } catch (\Exception $e) {
+        //     DB::rollBack();
+
+        //     dd($e->getMessage());
+
+        //     // Log the error
+        //     Log::info('Parcel booking failed: ' . $e->getMessage(), [
+        //         'request' => $request->all(),
+        //         'error' => $e
+        //     ]);
+
+        //     return redirect()
+        //         ->back()
+        //         ->withInput()
+        //         ->with('error', 'An error occurred while processing your booking. Please try again.');
+        // }
     }
 
     public function success($parcelId)
     {
         $parcel = Parcel::with(['senderTown', 'receiverTown'])->where('parcel_id', $parcelId)->firstOrFail();
-        return view('booking.success', compact('parcel'));
+        return view('frontend.success', compact('parcel'));
     }
 }

@@ -119,6 +119,7 @@ class Parcels extends Component
     {
         return Parcel::query()
             ->with(['senderTown', 'receiverTown', 'transportPartner', 'driver', 'payments'])
+            ->orderBy('id', 'DESC')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('parcel_id', 'like', '%' . $this->search . '%')

@@ -29,6 +29,7 @@ class HomeController extends Controller
             ->where('status', true)
             ->orderBy('name', 'ASC')
             ->get();
+
         $pickUpAndDropOffPoints = PickUpAndDropOffPoint::where('type', 'pickup-dropoff')->where('status', 'active')->get();
         $blogPosts = BlogPost::where('status', 'published')->limit(4)->get();
         $faqs = FAQ::where('status', true)->get();
