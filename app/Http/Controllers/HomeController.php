@@ -15,6 +15,7 @@ use App\Models\TermsAndCondition;
 use App\Models\Town;
 use App\Models\Zone;
 use App\Models\ZoneCounty;
+use App\Models\ZoneTown;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -24,7 +25,10 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $towns = Town::where('status', true)->orderBy('name', 'ASC')->get();
+        $towns = Town::whereHas('pickUpAndDropOffPoint')
+            ->where('status', true)
+            ->orderBy('name', 'ASC')
+            ->get();
         $pickUpAndDropOffPoints = PickUpAndDropOffPoint::where('type', 'pickup-dropoff')->where('status', 'active')->get();
         $blogPosts = BlogPost::where('status', 'published')->limit(4)->get();
         $faqs = FAQ::where('status', true)->get();
@@ -48,45 +52,69 @@ class HomeController extends Controller
         return  view('frontend.home', compact('totalPickUpPoints', 'countiesCovered', 'towns', 'pickUpAndDropOffPoints', 'blogPosts', 'faqs', 'counties', 'parcelTypes', 'itemCategories'));
     }
 
+
     public function calculate(Request $request)
     {
+        // TODO::Add insuarance
         $request->validate([
             'from_town_id' => 'required|exists:towns,id',
             'to_town_id' => 'required|exists:towns,id|different:from_town_id',
-            // 'weight' => 'required|numeric|min:0.1',
-            'item_category' => 'required|integer'
+            'parcel_weight' => 'required|numeric|min:0.1',
         ]);
 
         try {
-            $item = Item::where('id', $request->item_category)->first();
-
             $fromTown = Town::findOrFail($request->from_town_id);
             $toTown = Town::findOrFail($request->to_town_id);
 
-            $fromZone = ZoneCounty::where('county_id', $fromTown->subCounty->county->id)->first();
+            $fromZone = ZoneTown::where('town_id', $fromTown->id)->first();
             $fromZoneId = $fromZone->zone_id;
 
-            $toZone = ZoneCounty::where('county_id', $toTown->subCounty->county->id)->first();
+            $toZone = ZoneTown::where('town_id', $toTown->id)->first();
             $toZoneId = $toZone->zone_id;
 
-            $pricing = Pricing::where('item_id', $item->id)
-                // ->where('min_weight', '<=', $request->weight)
-                // ->where('max_weight', '>=', $request->weight)
-                ->first();
 
-            $quote = PricingItem::where('pricing_id', $pricing->id)
-                ->where('source_zone_id', $fromZoneId)
-                ->where('destination_zone_id', $toZoneId)
-                ->first();
+            $pricing = PricingItem::where('source_zone_id', $fromZoneId)
+                ->where('destination_zone_id', $toZoneId)->first();
+
+            if (!$pricing) {
+                return;
+            }
+
+            $basePrice = (float) ($pricing->cost ?? 0);
+            $extraKgCost = (float) ($pricing->extra ?? 0);
+
+            if ($request->weight <= 5) {
+                $base_price = round($basePrice, 2);
+            } else {
+                $extraWeight = $request->weight - 5;
+                $base_price = round(
+                    $basePrice + ($extraWeight * $extraKgCost),
+                    2
+                );
+            }
+
+            $tax_amount = round(
+                $base_price * 0.16,
+                2
+            );
+
+            $total_amount = round(
+                $base_price +
+                    $tax_amount,
+                2
+            );
+
+            $calculatedPrice = $total_amount;
 
             return response()->json([
                 'success' => true,
-                'quote_id' => uniqid(), // Generate or get from DB
                 'from_town' => $fromTown->name,
                 'to_town' => $toTown->name,
-                // 'weight' => $request->weight,
-                'item_category' => $item->name,
-                'total' => $quote->cost,
+                'from_town_id' => $fromTown->id,
+                'to_town_id' => $toTown->id,
+                'weight' => $request->parcel_weight,
+                // 'item_category' => $item->name,
+                'total' => $calculatedPrice,
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -207,14 +235,14 @@ class HomeController extends Controller
     {
         // Fetch data
         $zones = Zone::with('towns')->orderBy('name')->get();
-        
+
         $pricingItems = PricingItem::with(['sourceZone', 'destinationZone'])
             ->where('pricing_id', 1)
             ->where('status', 'active')
             ->orderBy('source_zone_id')
             ->orderBy('destination_zone_id')
             ->get();
-        
+
         // Prepare data for view
         $data = [
             'zones' => $zones,
@@ -223,7 +251,7 @@ class HomeController extends Controller
             'company_name' => 'Karibu Parcels',
             'logo' => public_path('logo.jpeg')
         ];
-        
+
         // Load view and generate PDF in landscape
         $pdf = Pdf::loadView('pdfs.tariffs', $data)
             ->setPaper('a4', 'landscape')
@@ -232,9 +260,8 @@ class HomeController extends Controller
                 'isHtml5ParserEnabled' => true,
                 'isRemoteEnabled' => true
             ]);
-        
+
         // Download PDF
         return $pdf->stream('Karibu_Parcels_Tariffs_' . now()->format('Y-m-d') . '.pdf');
-        
     }
 }

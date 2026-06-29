@@ -163,22 +163,24 @@
                                 </div>
                                 <!-- Parcel Type -->
                                 <div class="booking-field">
-                                    <label><i class="bi bi-box me-1"></i> Parcel Type</label>
+                                    <label><i class="bi bi-box me-1"></i> Parcel Weight (KGS)</label>
                                     <div class="parcel-type-selector">
-                                        <select class="form-select compact-select" id="parcelType" required>
+                                        <input type="number" class="form-select compact-select" id="parcelWeight" required>
+                                        <!-- <select class="form-select compact-select" id="parcelType" required>
                                             @foreach($itemCategories as $itemCategory)
                                             <option value="{{ $itemCategory->id }}">{{ $itemCategory->name }}</option>
                                             @endforeach
-                                        </select>
+                                        </select> -->
                                     </div>
                                 </div>
 
                                 <div class="booking-action">
-                                    <button type="submit" class="btn btn-primary quote-btn">
-                                        <i class="bi bi-calculator me-2"></i> Get Quote
+                                    <!-- <a class="btn btn-primary quote-btn" href="{{ route('online-booking') }}">Book Online</a> -->
+                                    <button class="btn btn-primary quote-btn" type="submit">
+                                        Book
                                     </button>
                                     <button type="button" class="btn btn-outline-secondary clear-btn" id="clearForm">
-                                        <i class="bi bi-arrow-clockwise me-2"></i> Clear
+                                        Clear
                                     </button>
                                 </div>
                             </div>
@@ -886,8 +888,8 @@
                     const formData = {
                         from_town_id: $('#fromTown').val(),
                         to_town_id: $('#toTown').val(),
-                        // weight: $('#weight').val(),
-                        item_category: $('#parcelType').val(),
+                        parcel_weight: $('#parcelWeight').val(),
+                        // item_category: $('#parcelType').val(),
                         _token: $('meta[name="csrf-token"]').attr('content')
                     };
 
@@ -923,8 +925,8 @@
             function validateTownForm() {
                 const fromTown = $('#fromTown').val();
                 const toTown = $('#toTown').val();
-                // const weight = $('#weight').val();
-                const parcelType = $('#parcelType').val();
+                const parcelWeight = $('#parcelWeight').val();
+                // const parcelType = $('#parcelType').val();
 
                 if (!fromTown) {
                     showAlert('Please select from town', 'warning');
@@ -938,22 +940,22 @@
                     return false;
                 }
 
-                if (!parcelType) {
-                    showAlert('Please select a parcel category', 'warning');
-                    $('#parcelType').focus();
-                    return false;
-                }
-
-                // if (!weight || weight <= 0) {
-                //     showAlert('Please enter a valid weight', 'warning');
-                //     $('#weight').focus();
+                // if (!parcelType) {
+                //     showAlert('Please select a parcel category', 'warning');
+                //     $('#parcelType').focus();
                 //     return false;
                 // }
 
-                if (fromTown === toTown) {
-                    showAlert('Pickup and delivery towns cannot be the same', 'warning');
+                if (!parcelWeight || parcelWeight <= 0) {
+                    showAlert('Please enter a valid weight', 'warning');
+                    $('#parcelWeight').focus();
                     return false;
                 }
+
+                // if (fromTown === toTown) {
+                //     showAlert('Pickup and delivery towns cannot be the same', 'warning');
+                //     return false;
+                // }
 
                 return true;
             }
@@ -978,6 +980,13 @@
             function displayTownQuoteResult(quoteData) {
                 const fromTownText = $('#fromTownSelect .selected-text').text();
                 const toTownText = $('#toTownSelect .selected-text').text();
+
+                const bookingUrl = `{{ route('online-booking') }}?${new URLSearchParams({
+                    from_town_id: quoteData.from_town_id,
+                    to_town_id: quoteData.to_town_id,
+                    parcel_weight: quoteData.weight,
+                    price: quoteData.total
+                })}`;
 
                 const quoteHTML = `
                     <div class="quote-result-card">
@@ -1004,8 +1013,8 @@
                             <div class="quote-details">
 
                                 <div class="detail-item">
-                                    <span class="detail-label">Parcel Type</span>
-                                    <span class="detail-value">${quoteData.item_category}</span>
+                                    <span class="detail-label">Parcel Weight</span>
+                                    <span class="detail-value">${quoteData.weight} KGS</span>
                                 </div>
                             </div>
                             
@@ -1018,16 +1027,16 @@
                             
                             <div class="quote-message">
                                 <i class="bi bi-info-circle-fill text-primary"></i>
-                                <p>Please proceed to the nearest Karibu Parcels station with KES <strong>${quoteData.total}</strong> to send your parcel. Our station agents will assist you with the booking process.</p>
+                                <p>Please proceed to the nearest Karibu Parcels station to send your parcel. Our station partners will assist you.</p>
                             </div>
                             
                             <div class="quote-actions">
                                 <a href="{{ route('points') }}" class="btn btn-outline-primary">
-                                    <i class="bi bi-geo-alt me-2"></i>Find Nearest Station
+                                    Find Nearest Station
                                 </a>
-                                <button class="btn btn-primary" id="newQuote">
-                                    <i class="bi bi-arrow-repeat me-2"></i>New Quote
-                                </button>
+                               <a href="${bookingUrl}" class="btn btn-primary quote-btn">
+                                Continue to Book Online
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -1289,14 +1298,14 @@
                     // }, 1500);
 
                     // Uncomment for actual AJAX
-                    
+
                     $.ajax({
                         url: '/send-contact-email',
                         method: 'POST',
                         data: formData,
                         success: function(response) {
                             submitBtn.prop('disabled', false).html(originalText);
-                            
+
                             const successMessage = $(`
                                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                                     <i class="bi bi-check-circle-fill me-2"></i>
@@ -1304,17 +1313,17 @@
                                     <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
                                 </div>
                             `);
-                            
+
                             $('#contactFormMessage').html(successMessage).slideDown();
                             $('#contactForm')[0].reset();
-                            
+
                             setTimeout(() => {
                                 $('#contactFormMessage').slideUp();
                             }, 5000);
                         },
                         error: function(xhr) {
                             submitBtn.prop('disabled', false).html(originalText);
-                            
+
                             const errorMessage = $(`
                                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
@@ -1322,15 +1331,15 @@
                                     <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
                                 </div>
                             `);
-                            
+
                             $('#contactFormMessage').html(errorMessage).slideDown();
-                            
+
                             setTimeout(() => {
                                 $('#contactFormMessage').slideUp();
                             }, 5000);
                         }
                     });
-                
+
                 });
             }
         });

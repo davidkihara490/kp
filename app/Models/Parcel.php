@@ -199,6 +199,10 @@ class Parcel extends Model
         return $this->belongsTo(User::class, 'customer_id');
     }
 
+    //  public function customer()
+    // {
+    //     return $this->belongsTo(Customer::class, 'customer_id');
+    // }
     public function transportPartner()
     {
         return $this->belongsTo(Partner::class, 'transport_partner_id');

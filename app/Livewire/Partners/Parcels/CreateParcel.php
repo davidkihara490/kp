@@ -459,6 +459,7 @@ class CreateParcel extends Component
         }
 
         try {
+            // TODO::check the correct pricing
             $pricing = Pricing::where('item_id', $this->parcel_type)
                 ->where('min_weight', '<=', $this->weight)
                 ->where('max_weight', '>=', $this->weight)

@@ -13,6 +13,17 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->string('phone')->unique();
+            $table->string('password');
+            $table->string('address')->nullable();
+            $table->foreignId('town_id')->nullable()->constrained('towns')->onDelete('set null');
+            $table->boolean('is_active')->default(true);
+            $table->timestamp('email_verified_at')->nullable();
+            $table->timestamp('phone_verified_at')->nullable();
+            $table->timestamp('last_login_at')->nullable();
+            $table->rememberToken();
             $table->timestamps();
         });
     }
