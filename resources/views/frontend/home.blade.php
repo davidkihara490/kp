@@ -898,6 +898,7 @@
                         method: 'POST',
                         data: formData,
                         success: function(response) {
+                            cosnole.log(response);
                             displayTownQuoteResult(response);
                         },
                         error: function(xhr) {
