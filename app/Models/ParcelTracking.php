@@ -11,6 +11,7 @@ class ParcelTracking extends Model
         'status',
         'notes',
         'updated_by',
+        'updated_by_type'
     ];
 
     public function parcel()

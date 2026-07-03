@@ -106,7 +106,7 @@ class SMSService
         return $this->sendMessage(
             $phoneNumber,
 
-            "Hi {$recipientName}! Your parcel with no:{$parcelId} has arrived at {$destinationTown}. Please come with your original ID/passport to collect it. Parcel code:{$parcelCode}. If you send someone, ask them to come with their ID/Passport"
+            "Hi {$recipientName}! Your parcel with no:{$parcelId} has arrived at {$destinationTown}. Please come with your original ID/passport to collect it. Parcel code:{$parcelCode}. If you send someone, ask them to come with their ID/Passport. Please collect within 24hrs."
         );
     }
 

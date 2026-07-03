@@ -274,7 +274,7 @@
         </div>
     </section>
 
-    <!-- Tracking Section - Improved Alignment -->
+    <!-- Tracking Section - Updated with Parcel Statuses -->
     <section id="tracking" class="tracking-section">
         <div class="container">
             <div class="section-title">
@@ -1066,12 +1066,352 @@
                         return;
                     }
 
-                    displayTrackingResult(phone, trackingId);
+                    // Show loading state
+                    const btn = $(this);
+                    const originalText = btn.html();
+                    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status"></span> Searching...');
+
+                    // Make AJAX request to fetch tracking data
+                    $.ajax({
+                        url: '/api/track-parcel',
+                        method: 'GET',
+                        data: {
+                            phone: phone,
+                            tracking_id: trackingId
+                        },
+                        success: function(response) {
+                            console.log(response.data);
+                            if (response.success && response.data) {
+                                displayTrackingResult(response.data);
+                            } else {
+                                showTrackingAlert(response.message || 'No parcel found with the provided details');
+                            }
+                        },
+                        error: function(xhr) {
+                            let errorMessage = 'An error occurred while tracking your parcel.';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                            showTrackingAlert(errorMessage);
+                        },
+                        complete: function() {
+                            btn.prop('disabled', false).html(originalText);
+                        }
+                    });
                 });
 
                 $('.tracking-example').on('click', function() {
                     $('#senderPhone').val($(this).data('phone'));
                     $('#trackingId').val($(this).data('id'));
+                    // Auto-trigger tracking
+                    $('#trackPackage').trigger('click');
+                });
+            }
+
+            function showTrackingAlert(message) {
+                const alert = $(`
+        <div class="alert alert-warning alert-dismissible fade show py-2" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            ${message}
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+        </div>
+    `);
+
+                $('#trackingResult').html(alert).slideDown();
+
+                setTimeout(() => {
+                    alert.alert('close');
+                }, 5000);
+            }
+
+            function displayTrackingResult(parcelData) {
+                const statusConfig = getStatusConfig(parcelData.current_status);
+                const statusHistory = parcelData.status_history || [];
+
+                // Build timeline from status history
+                let timelineHTML = '';
+                if (statusHistory.length > 0) {
+                    statusHistory.forEach((item, index) => {
+                        const isCompleted = index === 0 || item.status !== 'pending';
+                        const statusConfigItem = getStatusConfig(item.status);
+
+                        timelineHTML += `
+                <div class="timeline-item ${isCompleted ? 'completed' : 'pending'}">
+                    <div class="timeline-marker">
+                        ${isCompleted ? '<i class="bi bi-check-circle-fill"></i>' : '<i class="bi bi-circle"></i>'}
+                    </div>
+                    <div class="timeline-content">
+                        <div class="timeline-header">
+                            <span class="timeline-status">${statusConfigItem.label}</span>
+                            <span class="timeline-date">${formatDate(item.created_at)}</span>
+                        </div>
+                        <div class="timeline-location">
+                            <i class="bi bi-geo-alt"></i>
+                            ${item.location || 'N/A'}
+                        </div>
+                        ${item.notes ? `<div class="timeline-notes small text-muted mt-1">${item.notes}</div>` : ''}
+                    </div>
+                </div>
+            `;
+                    });
+                }
+
+                // Get progress steps based on current status
+                const progressSteps = getProgressSteps(parcelData.current_status);
+
+                let progressHTML = '';
+                progressSteps.forEach((step, index) => {
+                    const isActive = step.active;
+                    progressHTML += `
+            <div class="step ${isActive ? 'active' : ''}">
+                <i class="bi ${step.icon}"></i>
+                <span>${step.label}</span>
+            </div>
+        `;
+                });
+
+                const resultHTML = `
+        <div class="tracking-result-card">
+            <div class="tracking-header">
+                <div class="tracking-title">
+                    <i class="bi bi-box-seam"></i>
+                    <div>
+                        <h6>Parcel #${parcelData.parcel_id || parcelData.tracking_id}</h6>
+                        <p>Phone: ${parcelData.sender_phone || parcelData.phone}</p>
+                    </div>
+                </div>
+                <div class="tracking-status">
+                    <span class="badge ${statusConfig.badgeClass}">
+                        <i class="bi ${statusConfig.icon} me-1"></i>
+                        ${statusConfig.label}
+                    </span>
+                </div>
+                <button class="btn-close" id="closeTracking"></button>
+            </div>
+            
+            <div class="tracking-progress">
+                <div class="progress-steps">
+                    ${progressHTML}
+                </div>
+            </div>
+            
+            <div class="tracking-details">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="label">From</span>
+                        <span class="value">${parcelData.from_location || parcelData.sender_town || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">To</span>
+                        <span class="value">${parcelData.to_location || parcelData.receiver_town || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Current Location</span>
+                        <span class="value">${parcelData.current_location || parcelData.delivery_point || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Est. Delivery</span>
+                        <span class="value">${parcelData.estimated_delivery || 'Pending'}</span>
+                    </div>
+                </div>
+            </div>
+            
+            ${parcelData.driver ? `
+            <div class="tracking-driver">
+                <div class="driver-info">
+                    <i class="bi bi-person-badge"></i>
+                    <div>
+                        <span class="label">Driver</span>
+                        <span class="value">${parcelData.driver.name || 'N/A'}</span>
+                        <span class="small text-muted">${parcelData.driver.phone || ''}</span>
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+            
+            ${timelineHTML ? `
+            <div class="tracking-timeline">
+                <h6><i class="bi bi-clock-history me-2"></i>Tracking History</h6>
+                <div class="timeline">
+                    ${timelineHTML}
+                </div>
+            </div>
+            ` : ''}
+            
+            <div class="tracking-footer">
+                <p class="small text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    ${parcelData.last_updated ? `Last updated: ${formatDate(parcelData.last_updated)}` : 'Updates available in real-time'}
+                    ${parcelData.payment_status ? ` | Payment: ${parcelData.payment_status}` : ''}
+                </p>
+            </div>
+        </div>
+    `;
+
+                $('#trackingResult').html(resultHTML).slideDown();
+
+                $('#closeTracking').on('click', function() {
+                    $('#trackingResult').slideUp(function() {
+                        $(this).empty();
+                    });
+                });
+            }
+
+            function getStatusConfig(status) {
+                const statusMap = {
+                    'created': {
+                        label: 'Created',
+                        icon: 'bi-file-earmark',
+                        badgeClass: 'bg-secondary'
+                    },
+                    'booked': {
+                        label: 'Booked',
+                        icon: 'bi-calendar-check',
+                        badgeClass: 'bg-info'
+                    },
+                    'accepted': {
+                        label: 'Accepted',
+                        icon: 'bi-check-circle',
+                        badgeClass: 'bg-primary'
+                    },
+                    'assigned': {
+                        label: 'Assigned',
+                        icon: 'bi-person-check',
+                        badgeClass: 'bg-primary'
+                    },
+                    'in_transit': {
+                        label: 'In Transit',
+                        icon: 'bi-truck',
+                        badgeClass: 'bg-warning text-dark'
+                    },
+                    'pending': {
+                        label: 'Pending',
+                        icon: 'bi-clock',
+                        badgeClass: 'bg-warning text-dark'
+                    },
+                    'warehouse': {
+                        label: 'At Warehouse',
+                        icon: 'bi-building-warehouse',
+                        badgeClass: 'bg-info'
+                    },
+                    'arrived_at_destination': {
+                        label: 'Arrived at Destination',
+                        icon: 'bi-geo-alt-fill',
+                        badgeClass: 'bg-success'
+                    },
+                    'picked': {
+                        label: 'Picked Up',
+                        icon: 'bi-box-seam',
+                        badgeClass: 'bg-primary'
+                    },
+                    'delivered': {
+                        label: 'Delivered',
+                        icon: 'bi-check-circle-fill',
+                        badgeClass: 'bg-success'
+                    },
+                    'failed': {
+                        label: 'Failed',
+                        icon: 'bi-x-circle',
+                        badgeClass: 'bg-danger'
+                    },
+                    'returned': {
+                        label: 'Returned',
+                        icon: 'bi-arrow-return-left',
+                        badgeClass: 'bg-warning text-dark'
+                    }
+                };
+
+                return statusMap[status] || {
+                    label: status || 'Unknown',
+                    icon: 'bi-question-circle',
+                    badgeClass: 'bg-secondary'
+                };
+            }
+
+            function getProgressSteps(currentStatus) {
+                const allSteps = [{
+                        key: 'created',
+                        label: 'Created',
+                        icon: 'bi-file-earmark'
+                    },
+                    {
+                        key: 'booked',
+                        label: 'Booked',
+                        icon: 'bi-calendar-check'
+                    },
+                    {
+                        key: 'accepted',
+                        label: 'Accepted',
+                        icon: 'bi-check-circle'
+                    },
+                    {
+                        key: 'assigned',
+                        label: 'Assigned',
+                        icon: 'bi-person-check'
+                    },
+                    {
+                        key: 'in_transit',
+                        label: 'In Transit',
+                        icon: 'bi-truck'
+                    },
+                    {
+                        key: 'warehouse',
+                        label: 'At Warehouse',
+                        icon: 'bi-building-warehouse'
+                    },
+                    {
+                        key: 'arrived_at_destination',
+                        label: 'Arrived',
+                        icon: 'bi-geo-alt-fill'
+                    },
+                    {
+                        key: 'picked',
+                        label: 'Picked Up',
+                        icon: 'bi-box-seam'
+                    },
+                    {
+                        key: 'delivered',
+                        label: 'Delivered',
+                        icon: 'bi-check-circle-fill'
+                    }
+                ];
+
+                // If delivered, show all steps up to delivered
+                if (currentStatus === 'delivered' || currentStatus === 'arrived_at_destination') {
+                    return allSteps.map(step => ({
+                        ...step,
+                        active: true
+                    }));
+                }
+
+                // Find the index of the current status
+                const statusOrder = ['created', 'booked', 'accepted', 'assigned', 'in_transit', 'warehouse', 'arrived_at_destination', 'picked', 'delivered'];
+                const currentIndex = statusOrder.indexOf(currentStatus);
+
+                // If status is not found in the order, show all as inactive
+                if (currentIndex === -1) {
+                    return allSteps.map(step => ({
+                        ...step,
+                        active: false
+                    }));
+                }
+
+                // Show steps up to current status as active
+                return allSteps.map((step, index) => ({
+                    ...step,
+                    active: index <= currentIndex
+                }));
+            }
+
+            function formatDate(dateString) {
+                if (!dateString) return 'N/A';
+                const date = new Date(dateString);
+                return date.toLocaleString('en-KE', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
                 });
             }
 
@@ -1091,73 +1431,98 @@
                 }, 3000);
             }
 
-            function displayTrackingResult(phone, trackingId) {
-                const trackingData = {
-                    status: 'in_transit',
-                    estimated: 'Tomorrow, 5:00 PM',
-                    origin: 'Nairobi Westlands',
-                    destination: 'Mombasa Island',
-                    current: 'Mombasa Hub',
-                    timeline: [{
-                            date: 'Today, 08:30 AM',
-                            status: 'Package picked up',
-                            location: 'Nairobi Westlands',
-                            completed: true
-                        },
-                        {
-                            date: 'Today, 12:15 PM',
-                            status: 'Arrived at sorting facility',
-                            location: 'Nairobi Hub',
-                            completed: true
-                        },
-                        {
-                            date: 'Today, 02:45 PM',
-                            status: 'Departed for destination',
-                            location: 'En route to Mombasa',
-                            completed: true
-                        },
-                        {
-                            date: 'Tomorrow, 10:00 AM',
-                            status: 'Arrived at destination hub',
-                            location: 'Mombasa Port',
-                            completed: false
-                        },
-                        {
-                            date: 'Tomorrow, 02:30 PM',
-                            status: 'Out for delivery',
-                            location: 'Mombasa Island',
-                            completed: false
-                        }
-                    ]
+            function displayTrackingResult(parcelData) {
+                const statusFlow = [{
+                        key: 'booked',
+                        label: 'Booked'
+                    },
+                    {
+                        key: 'in_transit',
+                        label: 'In Transit'
+                    },
+                    {
+                        key: 'picked',
+                        label: 'Ready for Pickup'
+                    },
+                    {
+                        key: 'delivered',
+                        label: 'Delivered'
+                    }
+                ];
+
+                // Map every internal status to one of the four milestones
+                const statusMap = {
+                    pending: 'booked',
+                    created: 'booked',
+                    booked: 'booked',
+                    accepted: 'booked',
+                    assigned: 'in_transit',
+                    in_transit: 'in_transit',
+                    warehouse: 'in_transit',
+                    arrived_at_destination: 'picked',
+                    picked: 'picked',
+                    delivered: 'delivered'
                 };
 
-                let timelineHTML = '';
-                trackingData.timeline.forEach((item, index) => {
-                    const isCompleted = item.completed;
-                    const statusClass = isCompleted ? 'completed' : 'pending';
+                const currentMilestone = statusMap[parcelData.current_status] || 'booked';
+                const currentIndex = statusFlow.findIndex(
+                    step => step.key === currentMilestone
+                );
 
-                    timelineHTML += `
-                        <div class="timeline-item ${statusClass}">
-                            <div class="timeline-marker">
-                                ${isCompleted ? '<i class="bi bi-check-circle-fill"></i>' : '<i class="bi bi-circle"></i>'}
-                            </div>
-                            <div class="timeline-content">
-                                <div class="timeline-header">
-                                    <span class="timeline-status">${item.status}</span>
-                                    <span class="timeline-date">${item.date}</span>
-                                </div>
-                                <div class="timeline-location">
-                                    <i class="bi bi-geo-alt"></i>
-                                    ${item.location}
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                // Create history lookup
+                const historyMap = {};
+                (parcelData.status_history || []).forEach(item => {
+                    const milestone = statusMap[item.status];
+                    if (milestone && !historyMap[milestone]) {
+                        historyMap[milestone] = item;
+                    }
                 });
 
-                const statusBadge = trackingData.status === 'in_transit' ?
-                    '<span class="badge bg-warning text-dark">In Transit</span>' :
-                    '<span class="badge bg-success">Delivered</span>';
+                let timelineHTML = '';
+
+                statusFlow.forEach((step, index) => {
+                    const completed = index <= currentIndex;
+                    const history = historyMap[step.key];
+
+                    timelineHTML += `
+        <div class="timeline-item ${completed ? 'completed' : 'pending'}">
+            <div class="timeline-marker">
+                ${
+                    completed
+                        ? '<i class="bi bi-check-circle-fill text-success"></i>'
+                        : '<i class="bi bi-circle text-secondary"></i>'
+                }
+            </div>
+
+            <div class="timeline-content">
+                <div class="timeline-header">
+                    <span class="timeline-status">${step.label}</span>
+                    <span class="timeline-date">${history?.created_at ?? '-'}</span>
+                </div>
+
+                ${
+                    history?.location
+                        ? `
+                            <div class="timeline-location">
+                                <i class="bi bi-geo-alt"></i>
+                                ${history.location}
+                            </div>
+                        `
+                        : ''
+                }
+            </div>
+        </div>
+    `;
+                });
+
+
+
+
+                const badgeClass = parcelData.current_status === 'picked' ?
+                    'bg-success' :
+                    'bg-warning text-dark';
+
+                const statusBadge = `<span class="badge ${badgeClass}">${parcelData.current_status}</span>`;
 
                 const resultHTML = `
                     <div class="tracking-result-card">
@@ -1165,8 +1530,8 @@
                             <div class="tracking-title">
                                 <i class="bi bi-box-seam"></i>
                                 <div>
-                                    <h6>Tracking #${trackingId}</h6>
-                                    <p>Phone: ${phone}</p>
+                                    <h6>Tracking #${parcelData.tracking_id}</h6>
+                                    <p>Phone: ${parcelData.sender_phone}</p>
                                 </div>
                             </div>
                             <div class="tracking-status">
@@ -1174,45 +1539,20 @@
                             </div>
                             <button class="btn-close" id="closeTracking"></button>
                         </div>
-                        
-                        <div class="tracking-progress">
-                            <div class="progress-steps">
-                                <div class="step active">
-                                    <i class="bi bi-check-circle-fill"></i>
-                                    <span>Picked Up</span>
-                                </div>
-                                <div class="step active">
-                                    <i class="bi bi-check-circle-fill"></i>
-                                    <span>In Transit</span>
-                                </div>
-                                <div class="step">
-                                    <i class="bi bi-circle"></i>
-                                    <span>Out for Delivery</span>
-                                </div>
-                                <div class="step">
-                                    <i class="bi bi-circle"></i>
-                                    <span>Delivered</span>
-                                </div>
-                            </div>
-                        </div>
-                        
+                                                
                         <div class="tracking-details">
                             <div class="detail-grid">
                                 <div class="detail-item">
                                     <span class="label">Origin</span>
-                                    <span class="value">${trackingData.origin}</span>
+                                    <span class="value">${parcelData.sender_town}</span>
                                 </div>
                                 <div class="detail-item">
                                     <span class="label">Destination</span>
-                                    <span class="value">${trackingData.destination}</span>
+                                    <span class="value">${parcelData.receiver_town}</span>
                                 </div>
                                 <div class="detail-item">
                                     <span class="label">Current Location</span>
-                                    <span class="value">${trackingData.current}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="label">Est. Delivery</span>
-                                    <span class="value">${trackingData.estimated}</span>
+                                    <span class="value">${parcelData.current_location}</span>
                                 </div>
                             </div>
                         </div>
@@ -1223,13 +1563,7 @@
                                 ${timelineHTML}
                             </div>
                         </div>
-                        
-                        <div class="tracking-footer">
-                            <p class="small text-muted">
-                                <i class="bi bi-info-circle"></i>
-                                Updates every 30 minutes. Contact support for more details.
-                            </p>
-                        </div>
+                    
                     </div>
                 `;
 
@@ -2273,6 +2607,65 @@
             padding: 15px 25px;
             background: var(--light-bg);
             border-top: 1px solid var(--border-color);
+        }
+
+        /* Tracking Status Badges */
+        .badge.bg-primary {
+            background-color: #0d6efd !important;
+        }
+
+        .badge.bg-success {
+            background-color: #198754 !important;
+        }
+
+        .badge.bg-warning {
+            background-color: #ffc107 !important;
+        }
+
+        .badge.bg-danger {
+            background-color: #dc3545 !important;
+        }
+
+        .badge.bg-info {
+            background-color: #0dcaf0 !important;
+        }
+
+        .badge.bg-secondary {
+            background-color: #6c757d !important;
+        }
+
+        /* Driver Info in Tracking */
+        .tracking-driver {
+            padding: 15px 25px;
+            background: var(--light-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .driver-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .driver-info i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .driver-info .label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .driver-info .value {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .timeline-notes {
+            font-style: italic;
+            color: var(--text-light);
         }
 
         /* Trusted By Section - Modern & Professional */

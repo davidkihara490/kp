@@ -148,6 +148,7 @@ class Parcel extends Model
     ];
 
     const STATUS_CREATED = 'created';
+    const STATUS_BOOKED = 'booked';
     const STATUS_ACCEPTED = 'accepted';
     const STATUS_ASSIGNED = 'assigned';
     const STATUS_IN_TRANSIT = 'in_transit';
@@ -172,6 +173,13 @@ class Parcel extends Model
                 $parcel->parcel_id = static::generateParcelNumber();
             }
         });
+    }
+
+    public function canBeAccepted(): bool
+    {
+        return $this->creator_type == Customer::class  &&
+        $this->latestStatus?->status == Parcel::STATUS_CREATED &&
+            $this->booking_source == 'web';
     }
 
     /**
@@ -334,13 +342,14 @@ class Parcel extends Model
         return $this->hasOne(ParcelTracking::class)->latestOfMany();
     }
 
-    public function addTracking($status, $userId,  $notes = null)
+    public function addTracking($status, $userId, $updatedByType = null,  $notes = null)
     {
         $this->update(['status' => $status]);
 
         return $this->trackings()->create([
             'status' => $status,
             'updated_by' => $userId,
+            'updated_by_type' => $updatedByType,
             'notes' => $notes
         ]);
     }

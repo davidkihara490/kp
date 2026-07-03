@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -62,17 +63,6 @@ class PaymentController extends Controller
             // Generate transaction ID
             $transactionId = 'TRX' . date('Ymd') . strtoupper(substr(uniqid(), -6));
 
-            // Create payment record
-            // $payment = Payment::create([
-            //     'parcel_id' => $parcel->id,
-            //     'amount' => $request->amount,
-            //     'payment_method' => $request->payment_method,
-            //     'payment_status' => 'pending',
-            //     'transaction_id' => $transactionId,
-            //     'mpesa_phone' => $request->phone,
-            //     'payment_date' => now(),
-            // ]);
-
             // Try to process M-PESA payment
             $accountReference = $parcel->parcel_id;
             $transactionDesc = 'Payment for parcel No:' . $parcel->parcel_id;
@@ -87,12 +77,6 @@ class PaymentController extends Controller
             );
 
             if ($result['success']) {
-                // Payment initiated successfully
-                // $payment->update([
-                //     'payment_status' => 'pending',
-                //     'checkout_request_id' => $result['checkout_request_id'] ?? null,
-                //     'mpesa_receipt' => $result['transaction_id'] ?? null,
-                // ]);
 
                 DB::commit();
 
@@ -123,7 +107,7 @@ class PaymentController extends Controller
             DB::rollBack();
 
             // Log the error
-            \Log::error('Payment processing failed: ' . $e->getMessage(), [
+            Log::error('Payment processing failed: ' . $e->getMessage(), [
                 'parcel_id' => $request->parcel_id,
                 'request' => $request->all()
             ]);
@@ -292,7 +276,7 @@ class PaymentController extends Controller
                 ]);
             }
         } catch (Exception $e) {
-            \Log::error('Payment status check failed: ' . $e->getMessage(), [
+            Log::error('Payment status check failed: ' . $e->getMessage(), [
                 'parcel_id' => $request->parcel_id,
                 'checkout_request_id' => $request->checkout_request_id
             ]);

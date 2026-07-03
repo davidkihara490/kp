@@ -275,6 +275,7 @@ class CustomerAuthController extends Controller
      */
     public function loginApi(Request $request)
     {
+        $type = $request->query('type'); // Default to 'customer' if not provided
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|max:255',
             'password' => 'required|string|min:8',
@@ -300,7 +301,6 @@ class CustomerAuthController extends Controller
                 'message' => 'Login successful',
                 'customer' => $customer,
                 'token' => $token,
-                'redirect' => route('customer.dashboard')
             ]);
         }
 

@@ -42,83 +42,12 @@
                         <i class="bi bi-arrow-left me-2"></i>
                         Back to Parcels
                     </a>
-                    <a href="{{ route('partners.parcels.edit', $parcelId) }}" class="btn btn-primary me-2">
-                        <i class="bi bi-pencil me-2"></i>
-                        Edit
-                    </a>
-                    <div class="dropdown">
-                        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-gear me-2"></i>
-                            Actions
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <button class="dropdown-item" onclick="window.print()">
-                                    <i class="bi bi-printer text-secondary me-2"></i>
-                                    Print Label
-                                </button>
-                            </li>
-                            <li>
-                                <button class="dropdown-item" wire:click="generateReceipt">
-                                    <i class="bi bi-receipt text-info me-2"></i>
-                                    Generate Receipt
-                                </button>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            @if($parcel->current_status !== 'assigned' && !$parcel->driver_id)
-                            <li>
-                                <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#assignDriverModal">
-                                    <i class="bi bi-person-plus text-success me-2"></i>
-                                    Assign Driver
-                                </button>
-                            </li>
-                            @endif
-                            @if($parcel->current_status !== 'picked_up')
-                            <li>
-                                <button class="dropdown-item" wire:click="updateStatus('picked_up')">
-                                    <i class="bi bi-box-seam text-primary me-2"></i>
-                                    Mark as Picked Up
-                                </button>
-                            </li>
-                            @endif
-                            @if($parcel->current_status !== 'in_transit')
-                            <li>
-                                <button class="dropdown-item" wire:click="updateStatus('in_transit')">
-                                    <i class="bi bi-truck text-warning me-2"></i>
-                                    Mark as In Transit
-                                </button>
-                            </li>
-                            @endif
-                            @if($parcel->current_status !== 'out_for_delivery')
-                            <li>
-                                <button class="dropdown-item" wire:click="updateStatus('out_for_delivery')">
-                                    <i class="bi bi-bicycle text-info me-2"></i>
-                                    Out for Delivery
-                                </button>
-                            </li>
-                            @endif
-                            @if($parcel->current_status !== 'delivered')
-                            <li>
-                                <button class="dropdown-item" wire:click="updateStatus('delivered')">
-                                    <i class="bi bi-check-circle text-success me-2"></i>
-                                    Mark as Delivered
-                                </button>
-                            </li>
-                            @endif
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <button class="dropdown-item text-danger"
-                                    onclick="confirmCancel('{{ $parcel->parcel_number }}')">
-                                    <i class="bi bi-x-circle me-2"></i>
-                                    Cancel Parcel
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
+                    @if($parcel->canBeAccepted())
+                    <button class="btn btn-primary me-2" wire:click="acceptParcel">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Accept Parcel
+                    </button>
+                    @endif
                 </div>
             </div>
 
@@ -519,12 +448,12 @@
                                     <i class="bi bi-truck me-2"></i>
                                     Driver Information
                                 </h5>
-                                @if(!$parcel->driver)
+                                {{--@if(!$parcel->driver)
                                 <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignDriverModal">
                                     <i class="bi bi-person-plus me-1"></i>
                                     Assign
                                 </button>
-                                @endif
+                                @endif --}}
                             </div>
                             <div class="card-body">
                                 @if($parcel->driver)
@@ -1195,8 +1124,95 @@
         </div>
         @endif
 
+
         @if($pollingEnabled)
         <div wire:poll.5s="checkMpesaStatus" class="d-none"></div>
+        @endif
+
+
+        <!-- Error Modal -->
+        @if($showErrorModal)
+        <div class="modal fade show d-block" id="errorModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5); display: block;" wire:ignore.self>
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            Error
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" wire:click="$set('showErrorModal', false)"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0 me-3">
+                                <i class="bi bi-exclamation-circle text-danger" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-2 text-danger">Action Failed</h6>
+                                <p class="mb-0">{{ $errorMessage }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" wire:click="$set('showErrorModal', false)">
+                            <i class="bi bi-x me-2"></i>
+                            Close
+                        </button>
+                        @if(str_contains($errorMessage, 'not fully paid'))
+                        <button type="button" class="btn btn-primary" wire:click="openPaymentModal">
+                            <i class="bi bi-cash me-2"></i>
+                            Make Payment
+                        </button>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- Optional: Click outside to close -->
+        @if($showErrorModal)
+        <script>
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal') && e.target.id === 'errorModal') {
+                    @this.set('showErrorModal', false);
+                }
+            });
+        </script>
+        @endif
+
+
+        <!-- Success Modal -->
+        @if($showSuccessModal)
+        <div class="modal fade show d-block" id="successModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5); display: block;" wire:ignore.self>
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            Success
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" wire:click="closeSuccessModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0 me-3">
+                                <i class="bi bi-check-circle text-success" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <p class="mb-0">{{ $successMessage }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" wire:click="closeSuccessModal">
+                            <i class="bi bi-check me-2"></i>
+                            OK
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
         @endif
 
         @if($showDriverVerificationModal)
@@ -1568,348 +1584,348 @@
         @endif
 
         <!-- Receipt Modal -->
-<!-- Receipt Modal -->
-@if($showReceiptModal && $selectedPayment)
-<div class="modal fade show d-block" id="receiptModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" wire:ignore.self>
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-receipt me-2"></i>
-                    Payment Receipt
-                </h5>
-                <button type="button" class="btn-close btn-close-white" wire:click="closeReceiptModal"></button>
-            </div>
-            <div class="modal-body p-0">
-                <!-- Receipt Content -->
-                <div id="receipt-content" class="receipt-container p-4">
-                    <!-- Header -->
-                    <div class="text-center mb-4">
-                        <div class="company-logo mb-3">
-                            <i class="bi bi-box-seam fs-1 text-primary"></i>
-                        </div>
-                        <h3 class="mb-1">{{ $receiptData['company_details']['name'] }}</h3>
-                        <p class="text-muted mb-0">{{ $receiptData['company_details']['address'] }}</p>
-                        <p class="text-muted small mb-0">
-                            Tel: {{ $receiptData['company_details']['phone'] }} |
-                            Email: {{ $receiptData['company_details']['email'] }}
-                        </p>
-                        <p class="text-muted small">PIN: {{ $receiptData['company_details']['pin'] }}</p>
-                        <hr class="my-3">
-                        <h4 class="mb-0">PAYMENT RECEIPT</h4>
-                        <p class="text-muted small">Receipt No: <strong>{{ $receiptData['receipt_number'] }}</strong></p>
+        <!-- Receipt Modal -->
+        @if($showReceiptModal && $selectedPayment)
+        <div class="modal fade show d-block" id="receiptModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" wire:ignore.self>
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-receipt me-2"></i>
+                            Payment Receipt
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" wire:click="closeReceiptModal"></button>
                     </div>
+                    <div class="modal-body p-0">
+                        <!-- Receipt Content -->
+                        <div id="receipt-content" class="receipt-container p-4">
+                            <!-- Header -->
+                            <div class="text-center mb-4">
+                                <div class="company-logo mb-3">
+                                    <i class="bi bi-box-seam fs-1 text-primary"></i>
+                                </div>
+                                <h3 class="mb-1">{{ $receiptData['company_details']['name'] }}</h3>
+                                <p class="text-muted mb-0">{{ $receiptData['company_details']['address'] }}</p>
+                                <p class="text-muted small mb-0">
+                                    Tel: {{ $receiptData['company_details']['phone'] }} |
+                                    Email: {{ $receiptData['company_details']['email'] }}
+                                </p>
+                                <p class="text-muted small">PIN: {{ $receiptData['company_details']['pin'] }}</p>
+                                <hr class="my-3">
+                                <h4 class="mb-0">PAYMENT RECEIPT</h4>
+                                <p class="text-muted small">Receipt No: <strong>{{ $receiptData['receipt_number'] }}</strong></p>
+                            </div>
 
-                    <!-- Receipt Body -->
-                    <div class="row mb-4">
-                        <div class="col-6">
-                            <table class="table table-sm table-borderless">
-                                <tr>
-                                    <td class="fw-bold">Date:</td>
-                                    <td>{{ $selectedPayment->created_at->format('F d, Y H:i:s') }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Parcel #:</td>
-                                    <td>{{ $selectedPayment->parcel->parcel_id }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Payment Method:</td>
-                                    <td>{{ ucfirst($selectedPayment->payment_method) }}</td>
-                                </tr>
-                                @if($selectedPayment->reference_number)
-                                <tr>
-                                    <td class="fw-bold">Reference:</td>
-                                    <td><code>{{ $selectedPayment->reference_number }}</code></td>
-                                </tr>
-                                @endif
-                            </table>
-                        </div>
-                        <div class="col-6">
-                            <table class="table table-sm table-borderless">
-                                <tr>
-                                    <td class="fw-bold">Customer Name:</td>
-                                    <td>{{ $selectedPayment->parcel->sender_name }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Customer Phone:</td>
-                                    <td>{{ $selectedPayment->parcel->sender_phone }}</td>
-                                </tr>
-                                @if($selectedPayment->parcel->sender_email)
-                                <tr>
-                                    <td class="fw-bold">Customer Email:</td>
-                                    <td>{{ $selectedPayment->parcel->sender_email }}</td>
-                                </tr>
-                                @endif
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Parcel Details Section -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <strong><i class="bi bi-box-seam me-2"></i>Parcel Details</strong>
-                        </div>
-                        <div class="card-body p-0">
-                            <table class="table table-bordered mb-0">
-                                <tbody>
-                                    <tr>
-                                        <td class="bg-light" style="width: 40%;"><strong>Parcel Type:</strong></td>
-                                        <td>{{ ucfirst($selectedPayment->parcel->parcel_type) }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="bg-light"><strong>Weight:</strong></td>
-                                        <td>{{ number_format($selectedPayment->parcel->weight, 2) }} {{ $selectedPayment->parcel->weight_unit }}</td>
-                                    </tr>
-                                    @if($selectedPayment->parcel->length && $selectedPayment->parcel->width && $selectedPayment->parcel->height)
-                                    <tr>
-                                        <td class="bg-light"><strong>Dimensions:</strong></td>
-                                        <td>{{ $selectedPayment->parcel->length }} × {{ $selectedPayment->parcel->width }} × {{ $selectedPayment->parcel->height }} {{ $selectedPayment->parcel->dimension_unit }}</td>
-                                    </tr>
-                                    @endif
-                                    <tr>
-                                        <td class="bg-light"><strong>From:</strong></td>
-                                        <td>{{ $selectedPayment->parcel->senderTown->name ?? 'N/A' }} → {{ $selectedPayment->parcel->receiverTown->name ?? 'N/A' }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="bg-light"><strong>Sender:</strong></td>
-                                        <td>{{ $selectedPayment->parcel->sender_name }} ({{ $selectedPayment->parcel->sender_phone }})</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="bg-light"><strong>Receiver:</strong></td>
-                                        <td>{{ $selectedPayment->parcel->receiver_name }} ({{ $selectedPayment->parcel->receiver_phone }})</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Price Breakdown Section -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <strong><i class="bi bi-calculator me-2"></i>Price Breakdown</strong>
-                        </div>
-                        <div class="card-body p-0">
-                            <table class="table table-bordered mb-0">
-                                <tbody>
-                                    <tr>
-                                        <td class="bg-light" style="width: 60%;"><strong>Base Price:</strong></td>
-                                        <td class="text-end">KES {{ number_format($selectedPayment->parcel->base_price, 2) }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="bg-light"><strong>Weight Charge:</strong></td>
-                                        <td class="text-end">KES {{ number_format($selectedPayment->parcel->weight_charge, 2) }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="bg-light"><strong>Distance Charge:</strong></td>
-                                        <td class="text-end">KES {{ number_format($selectedPayment->parcel->distance_charge, 2) }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="bg-light"><strong>Special Handling Charge:</strong></td>
-                                        <td class="text-end">KES {{ number_format($selectedPayment->parcel->special_handling_charge, 2) }}</td>
-                                    </tr>
-                                    @if($selectedPayment->parcel->insurance_required)
-                                    <tr>
-                                        <td class="bg-light"><strong>Insurance Charge:</strong></td>
-                                        <td class="text-end">KES {{ number_format($selectedPayment->parcel->insurance_charge, 2) }}</td>
-                                    </tr>
-                                    @endif
-                                    <tr>
-                                        <td class="bg-light"><strong>Tax (16%):</strong></td>
-                                        <td class="text-end">KES {{ number_format($selectedPayment->parcel->tax_amount, 2) }}</td>
-                                    </tr>
-                                    @if($selectedPayment->parcel->discount_amount > 0)
-                                    <tr>
-                                        <td class="bg-light text-success"><strong>Discount:</strong></td>
-                                        <td class="text-end text-success">-KES {{ number_format($selectedPayment->parcel->discount_amount, 2) }}</td>
-                                    </tr>
-                                    @endif
-                                    <tr class="table-primary">
-                                        <td class="bg-primary text-white"><strong>Subtotal:</strong></td>
-                                        <td class="text-end fw-bold text-primary">KES {{ number_format($selectedPayment->parcel->total_amount, 2) }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Payment Details Section -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <strong><i class="bi bi-cash-stack me-2"></i>Payment Details</strong>
-                        </div>
-                        <div class="card-body p-0">
-                            <table class="table table-bordered mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Description</th>
-                                        <th class="text-end">Amount (KES)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Payment for Parcel #{{ $selectedPayment->parcel->parcel_id }}</td>
-                                        <td class="text-end fw-bold text-success">{{ number_format($selectedPayment->amount, 2) }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Payment Summary -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <strong><i class="bi bi-pie-chart me-2"></i>Payment Summary</strong>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
+                            <!-- Receipt Body -->
+                            <div class="row mb-4">
+                                <div class="col-6">
                                     <table class="table table-sm table-borderless">
                                         <tr>
-                                            <td>Total Parcel Amount:</td>
-                                            <td class="text-end">KES {{ number_format($selectedPayment->parcel->total_amount, 2) }}</td>
+                                            <td class="fw-bold">Date:</td>
+                                            <td>{{ $selectedPayment->created_at->format('F d, Y H:i:s') }}</td>
                                         </tr>
-                                        @if($receiptData['previous_payments_total'] > 0)
                                         <tr>
-                                            <td>Previous Payments:</td>
-                                            <td class="text-end">KES {{ number_format($receiptData['previous_payments_total'], 2) }}</td>
+                                            <td class="fw-bold">Parcel #:</td>
+                                            <td>{{ $selectedPayment->parcel->parcel_id }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Payment Method:</td>
+                                            <td>{{ ucfirst($selectedPayment->payment_method) }}</td>
+                                        </tr>
+                                        @if($selectedPayment->reference_number)
+                                        <tr>
+                                            <td class="fw-bold">Reference:</td>
+                                            <td><code>{{ $selectedPayment->reference_number }}</code></td>
                                         </tr>
                                         @endif
                                     </table>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-6">
                                     <table class="table table-sm table-borderless">
-                                        <tr class="border-top">
-                                            <td class="fw-bold">Current Payment:</td>
-                                            <td class="text-end fw-bold text-success">KES {{ number_format($selectedPayment->amount, 2) }}</td>
-                                        </tr>
-                                        <tr class="border-top">
-                                            <td class="fw-bold">Total Paid:</td>
-                                            <td class="text-end fw-bold">KES {{ number_format($receiptData['total_paid'], 2) }}</td>
+                                        <tr>
+                                            <td class="fw-bold">Customer Name:</td>
+                                            <td>{{ $selectedPayment->parcel->sender_name }}</td>
                                         </tr>
                                         <tr>
-                                            <td class="fw-bold">Remaining Balance:</td>
-                                            <td class="text-end fw-bold {{ ($selectedPayment->parcel->total_amount - $receiptData['total_paid']) > 0 ? 'text-danger' : 'text-success' }}">
-                                                KES {{ number_format($selectedPayment->parcel->total_amount - $receiptData['total_paid'], 2) }}
-                                            </td>
+                                            <td class="fw-bold">Customer Phone:</td>
+                                            <td>{{ $selectedPayment->parcel->sender_phone }}</td>
                                         </tr>
+                                        @if($selectedPayment->parcel->sender_email)
+                                        <tr>
+                                            <td class="fw-bold">Customer Email:</td>
+                                            <td>{{ $selectedPayment->parcel->sender_email }}</td>
+                                        </tr>
+                                        @endif
                                     </table>
                                 </div>
                             </div>
-                            
-                            <!-- Progress Bar -->
-                            @php
-                            $percentagePaid = ($receiptData['total_paid'] / $selectedPayment->parcel->total_amount) * 100;
-                            @endphp
-                            <div class="mt-3">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <small>Payment Progress</small>
-                                    <small>{{ number_format($percentagePaid, 1) }}% Paid</small>
+
+                            <!-- Parcel Details Section -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <strong><i class="bi bi-box-seam me-2"></i>Parcel Details</strong>
                                 </div>
-                                <div class="progress" style="height: 8px;">
-                                    <div class="progress-bar bg-success" 
-                                        role="progressbar" 
-                                        style="width: {{ $percentagePaid }}%" 
-                                        aria-valuenow="{{ $percentagePaid }}" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="100">
+                                <div class="card-body p-0">
+                                    <table class="table table-bordered mb-0">
+                                        <tbody>
+                                            <tr>
+                                                <td class="bg-light" style="width: 40%;"><strong>Parcel Type:</strong></td>
+                                                <td>{{ ucfirst($selectedPayment->parcel->parcel_type) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="bg-light"><strong>Weight:</strong></td>
+                                                <td>{{ number_format($selectedPayment->parcel->weight, 2) }} {{ $selectedPayment->parcel->weight_unit }}</td>
+                                            </tr>
+                                            @if($selectedPayment->parcel->length && $selectedPayment->parcel->width && $selectedPayment->parcel->height)
+                                            <tr>
+                                                <td class="bg-light"><strong>Dimensions:</strong></td>
+                                                <td>{{ $selectedPayment->parcel->length }} × {{ $selectedPayment->parcel->width }} × {{ $selectedPayment->parcel->height }} {{ $selectedPayment->parcel->dimension_unit }}</td>
+                                            </tr>
+                                            @endif
+                                            <tr>
+                                                <td class="bg-light"><strong>From:</strong></td>
+                                                <td>{{ $selectedPayment->parcel->senderTown->name ?? 'N/A' }} → {{ $selectedPayment->parcel->receiverTown->name ?? 'N/A' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="bg-light"><strong>Sender:</strong></td>
+                                                <td>{{ $selectedPayment->parcel->sender_name }} ({{ $selectedPayment->parcel->sender_phone }})</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="bg-light"><strong>Receiver:</strong></td>
+                                                <td>{{ $selectedPayment->parcel->receiver_name }} ({{ $selectedPayment->parcel->receiver_phone }})</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Price Breakdown Section -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <strong><i class="bi bi-calculator me-2"></i>Price Breakdown</strong>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-bordered mb-0">
+                                        <tbody>
+                                            <tr>
+                                                <td class="bg-light" style="width: 60%;"><strong>Base Price:</strong></td>
+                                                <td class="text-end">KES {{ number_format($selectedPayment->parcel->base_price, 2) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="bg-light"><strong>Weight Charge:</strong></td>
+                                                <td class="text-end">KES {{ number_format($selectedPayment->parcel->weight_charge, 2) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="bg-light"><strong>Distance Charge:</strong></td>
+                                                <td class="text-end">KES {{ number_format($selectedPayment->parcel->distance_charge, 2) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="bg-light"><strong>Special Handling Charge:</strong></td>
+                                                <td class="text-end">KES {{ number_format($selectedPayment->parcel->special_handling_charge, 2) }}</td>
+                                            </tr>
+                                            @if($selectedPayment->parcel->insurance_required)
+                                            <tr>
+                                                <td class="bg-light"><strong>Insurance Charge:</strong></td>
+                                                <td class="text-end">KES {{ number_format($selectedPayment->parcel->insurance_charge, 2) }}</td>
+                                            </tr>
+                                            @endif
+                                            <tr>
+                                                <td class="bg-light"><strong>Tax (16%):</strong></td>
+                                                <td class="text-end">KES {{ number_format($selectedPayment->parcel->tax_amount, 2) }}</td>
+                                            </tr>
+                                            @if($selectedPayment->parcel->discount_amount > 0)
+                                            <tr>
+                                                <td class="bg-light text-success"><strong>Discount:</strong></td>
+                                                <td class="text-end text-success">-KES {{ number_format($selectedPayment->parcel->discount_amount, 2) }}</td>
+                                            </tr>
+                                            @endif
+                                            <tr class="table-primary">
+                                                <td class="bg-primary text-white"><strong>Subtotal:</strong></td>
+                                                <td class="text-end fw-bold text-primary">KES {{ number_format($selectedPayment->parcel->total_amount, 2) }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Payment Details Section -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <strong><i class="bi bi-cash-stack me-2"></i>Payment Details</strong>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-bordered mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Description</th>
+                                                <th class="text-end">Amount (KES)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Payment for Parcel #{{ $selectedPayment->parcel->parcel_id }}</td>
+                                                <td class="text-end fw-bold text-success">{{ number_format($selectedPayment->amount, 2) }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Payment Summary -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <strong><i class="bi bi-pie-chart me-2"></i>Payment Summary</strong>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless">
+                                                <tr>
+                                                    <td>Total Parcel Amount:</td>
+                                                    <td class="text-end">KES {{ number_format($selectedPayment->parcel->total_amount, 2) }}</td>
+                                                </tr>
+                                                @if($receiptData['previous_payments_total'] > 0)
+                                                <tr>
+                                                    <td>Previous Payments:</td>
+                                                    <td class="text-end">KES {{ number_format($receiptData['previous_payments_total'], 2) }}</td>
+                                                </tr>
+                                                @endif
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless">
+                                                <tr class="border-top">
+                                                    <td class="fw-bold">Current Payment:</td>
+                                                    <td class="text-end fw-bold text-success">KES {{ number_format($selectedPayment->amount, 2) }}</td>
+                                                </tr>
+                                                <tr class="border-top">
+                                                    <td class="fw-bold">Total Paid:</td>
+                                                    <td class="text-end fw-bold">KES {{ number_format($receiptData['total_paid'], 2) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fw-bold">Remaining Balance:</td>
+                                                    <td class="text-end fw-bold {{ ($selectedPayment->parcel->total_amount - $receiptData['total_paid']) > 0 ? 'text-danger' : 'text-success' }}">
+                                                        KES {{ number_format($selectedPayment->parcel->total_amount - $receiptData['total_paid'], 2) }}
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Progress Bar -->
+                                    @php
+                                    $percentagePaid = ($receiptData['total_paid'] / $selectedPayment->parcel->total_amount) * 100;
+                                    @endphp
+                                    <div class="mt-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <small>Payment Progress</small>
+                                            <small>{{ number_format($percentagePaid, 1) }}% Paid</small>
+                                        </div>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-success"
+                                                role="progressbar"
+                                                style="width: {{ $percentagePaid }}%"
+                                                aria-valuenow="{{ $percentagePaid }}"
+                                                aria-valuemin="0"
+                                                aria-valuemax="100">
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <!-- Payment History (if multiple payments) -->
-                    @if($receiptData['payment_breakdown']->count() > 1)
-                    <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <strong><i class="bi bi-clock-history me-2"></i>Payment History</strong>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-sm mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Receipt No</th>
-                                            <th>Method</th>
-                                            <th class="text-end">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($receiptData['payment_breakdown'] as $payment)
-                                        <tr>
-                                            <td>{{ $payment->created_at->format('Y-m-d H:i') }}</td>
-                                            <td><small class="text-muted">{{ $payment->reference_number ?? 'N/A' }}</small></td>
-                                            <td>
-                                                @if($payment->payment_method === 'mpesa')
-                                                <i class="bi bi-phone text-success"></i>
-                                                @elseif($payment->payment_method === 'cash')
-                                                <i class="bi bi-cash text-success"></i>
-                                                @else
-                                                <i class="bi bi-credit-card"></i>
-                                                @endif
-                                                {{ ucfirst($payment->payment_method) }}
-                                            </td>
-                                            <td class="text-end">KES {{ number_format($payment->amount, 2) }}</td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                    <tfoot class="table-light">
-                                        <tr>
-                                            <th colspan="3" class="text-end">Total Paid:</th>
-                                            <th class="text-end">KES {{ number_format($receiptData['total_paid'], 2) }}</th>
-                                        </tr>
-                                    </tfoot>
-                                </table>
+                            <!-- Payment History (if multiple payments) -->
+                            @if($receiptData['payment_breakdown']->count() > 1)
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <strong><i class="bi bi-clock-history me-2"></i>Payment History</strong>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Receipt No</th>
+                                                    <th>Method</th>
+                                                    <th class="text-end">Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($receiptData['payment_breakdown'] as $payment)
+                                                <tr>
+                                                    <td>{{ $payment->created_at->format('Y-m-d H:i') }}</td>
+                                                    <td><small class="text-muted">{{ $payment->reference_number ?? 'N/A' }}</small></td>
+                                                    <td>
+                                                        @if($payment->payment_method === 'mpesa')
+                                                        <i class="bi bi-phone text-success"></i>
+                                                        @elseif($payment->payment_method === 'cash')
+                                                        <i class="bi bi-cash text-success"></i>
+                                                        @else
+                                                        <i class="bi bi-credit-card"></i>
+                                                        @endif
+                                                        {{ ucfirst($payment->payment_method) }}
+                                                    </td>
+                                                    <td class="text-end">KES {{ number_format($payment->amount, 2) }}</td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                            <tfoot class="table-light">
+                                                <tr>
+                                                    <th colspan="3" class="text-end">Total Paid:</th>
+                                                    <th class="text-end">KES {{ number_format($receiptData['total_paid'], 2) }}</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
+                            <!-- QR Code (if available) -->
+                            @if($receiptData['qr_code_url'])
+                            <div class="text-center mb-4">
+                                <img src="{{ $receiptData['qr_code_url'] }}" alt="QR Code" style="width: 100px; height: 100px;">
+                                <p class="text-muted small mt-2">Scan to verify receipt</p>
+                            </div>
+                            @endif
+
+                            <!-- Footer -->
+                            <div class="text-center mt-4">
+                                <div class="border-top pt-3">
+                                    <p class="mb-0"><strong>Thank you for choosing {{ $receiptData['company_details']['name'] }}!</strong></p>
+                                    <p class="text-muted small mb-0">This is a computer generated receipt and does not require a signature.</p>
+                                    <p class="text-muted small">For inquiries, please contact us at {{ $receiptData['company_details']['phone'] }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    @endif
-
-                    <!-- QR Code (if available) -->
-                    @if($receiptData['qr_code_url'])
-                    <div class="text-center mb-4">
-                        <img src="{{ $receiptData['qr_code_url'] }}" alt="QR Code" style="width: 100px; height: 100px;">
-                        <p class="text-muted small mt-2">Scan to verify receipt</p>
-                    </div>
-                    @endif
-
-                    <!-- Footer -->
-                    <div class="text-center mt-4">
-                        <div class="border-top pt-3">
-                            <p class="mb-0"><strong>Thank you for choosing {{ $receiptData['company_details']['name'] }}!</strong></p>
-                            <p class="text-muted small mb-0">This is a computer generated receipt and does not require a signature.</p>
-                            <p class="text-muted small">For inquiries, please contact us at {{ $receiptData['company_details']['phone'] }}</p>
-                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" wire:click="closeReceiptModal">
+                            <i class="bi bi-x me-2"></i>
+                            Close
+                        </button>
+                        <button type="button" class="btn btn-success" wire:click="sendReceiptWhatsApp">
+                            <i class="bi bi-whatsapp me-2"></i>
+                            WhatsApp
+                        </button>
+                        <button type="button" class="btn btn-info text-white" wire:click="sendReceiptEmail">
+                            <i class="bi bi-envelope me-2"></i>
+                            Email
+                        </button>
+                        <button type="button" class="btn btn-primary" wire:click="sendReceiptSMS">
+                            <i class="bi bi-chat-dots me-2"></i>
+                            SMS
+                        </button>
+                        <button type="button" class="btn btn-secondary" wire:click="printReceipt">
+                            <i class="bi bi-printer me-2"></i>
+                            Print
+                        </button>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" wire:click="closeReceiptModal">
-                    <i class="bi bi-x me-2"></i>
-                    Close
-                </button>
-                <button type="button" class="btn btn-success" wire:click="sendReceiptWhatsApp">
-                    <i class="bi bi-whatsapp me-2"></i>
-                    WhatsApp
-                </button>
-                <button type="button" class="btn btn-info text-white" wire:click="sendReceiptEmail">
-                    <i class="bi bi-envelope me-2"></i>
-                    Email
-                </button>
-                <button type="button" class="btn btn-primary" wire:click="sendReceiptSMS">
-                    <i class="bi bi-chat-dots me-2"></i>
-                    SMS
-                </button>
-                <button type="button" class="btn btn-secondary" wire:click="printReceipt">
-                    <i class="bi bi-printer me-2"></i>
-                    Print
-                </button>
-            </div>
         </div>
-    </div>
-</div>
-@endif
+        @endif
 
         <style>
             .dashboard-section {

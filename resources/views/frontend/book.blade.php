@@ -904,7 +904,7 @@
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
         // Make API call to login endpoint
-        fetch('/customer/login', {
+        fetch('/customer/login?type=api', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

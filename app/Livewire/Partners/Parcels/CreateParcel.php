@@ -38,7 +38,7 @@ class CreateParcel extends Component
     public $sender_id;
     public $receiver_id;
     public $booking_type = 'instant';
-    public $booking_source = 'admin';
+    public $booking_source = 'partner';
 
     // Sender Information
     public $sender_name = '';
@@ -794,6 +794,7 @@ class CreateParcel extends Component
 
                 // Pricing
                 'base_price' => $this->base_price,
+                'booking_source' => $this->booking_source,
                 'weight_charge' => $this->weight_charge,
                 'distance_charge' => $this->distance_charge,
                 'special_handling_charge' => $this->special_handling_charge,
@@ -804,7 +805,7 @@ class CreateParcel extends Component
                 'payment_method' => $this->payment_method,
                 'payment_status' => $this->payment_status ?? 'pending',
 
-                'current_status' => Parcel::STATUS_CREATED,
+                'current_status' => Parcel::STATUS_BOOKED,
                 // System fields
                 'created_by' => Auth::guard('partner')->user()->id,
 
@@ -831,7 +832,7 @@ class CreateParcel extends Component
             ]);
 
             $parcel->updateParcelStatus(
-                Parcel::STATUS_CREATED,
+                Parcel::STATUS_BOOKED,
                 $this->sender_pick_up_drop_off_point_id,
                 Auth::guard('partner')->user()->id,
                 current_user_type(),
@@ -842,7 +843,7 @@ class CreateParcel extends Component
 
             // Create initial tracking record
             if ($parcel) {
-                $parcel->addTracking(Parcel::STATUS_PENDING, Auth::guard('partner')->user()->id);
+                $parcel->addTracking(Parcel::STATUS_BOOKED, Auth::guard('partner')->user()->id);
             }
 
             DB::commit();

@@ -78,17 +78,27 @@ class ViewParcel extends Component
     public $receiptData = [];
     public $pollingEnabled = false;
 
-public function startPolling()
-{
-    $this->pollingEnabled = true;
-    $this->dispatch('start-mpesa-polling');
-}
+    public $loggedUser;
+    public $loggedUserType;
 
-public function stopPolling()
-{
-    $this->pollingEnabled = false;
-    $this->dispatch('stop-mpesa-polling');
-}
+    public $showErrorModal = false;
+    public $errorMessage = null;
+
+    public $showSuccessModal = false;
+    public $successMessage = null;
+
+
+    public function startPolling()
+    {
+        $this->pollingEnabled = true;
+        $this->dispatch('start-mpesa-polling');
+    }
+
+    public function stopPolling()
+    {
+        $this->pollingEnabled = false;
+        $this->dispatch('stop-mpesa-polling');
+    }
     public function showReceipt($paymentId)
     {
         $this->selectedPayment = Payment::with('parcel')->findOrFail($paymentId);
@@ -103,57 +113,57 @@ public function stopPolling()
         $this->receiptData = [];
     }
 
-protected function prepareReceiptData()
-{
-    $payment = $this->selectedPayment;
-    $parcel = $payment->parcel;
+    protected function prepareReceiptData()
+    {
+        $payment = $this->selectedPayment;
+        $parcel = $payment->parcel;
 
-    // Get all completed payments for this parcel
-    $allPayments = Payment::where('parcel_id', $parcel->id)
-        ->where('status', 'completed')
-        ->orderBy('created_at', 'asc')
-        ->get();
+        // Get all completed payments for this parcel
+        $allPayments = Payment::where('parcel_id', $parcel->id)
+            ->where('status', 'completed')
+            ->orderBy('created_at', 'asc')
+            ->get();
 
-    $totalPaid = $allPayments->sum('amount');
-    $previousPaymentsTotal = $allPayments->where('created_at', '<', $payment->created_at)->sum('amount');
+        $totalPaid = $allPayments->sum('amount');
+        $previousPaymentsTotal = $allPayments->where('created_at', '<', $payment->created_at)->sum('amount');
 
-    $this->receiptData = [
-        'receipt_number' => $this->generateReceiptNumber($payment),
-        'payment' => $payment,
-        'parcel' => $parcel,
-        'total_paid' => $totalPaid,
-        'previous_payments_total' => $previousPaymentsTotal,
-        'payment_breakdown' => $allPayments,
-        'company_details' => $this->getCompanyDetails(),
-        'qr_code_url' => $this->generateQRCode($payment),
-        // Add price breakdown data
-        'price_breakdown' => [
-            'base_price' => $parcel->base_price,
-            'weight_charge' => $parcel->weight_charge,
-            'distance_charge' => $parcel->distance_charge,
-            'special_handling_charge' => $parcel->special_handling_charge,
-            'insurance_charge' => $parcel->insurance_charge ?? 0,
-            'tax_amount' => $parcel->tax_amount,
-            'discount_amount' => $parcel->discount_amount,
-            'total_amount' => $parcel->total_amount,
-        ],
-        'parcel_details' => [
-            'parcel_type' => $parcel->parcel_type,
-            'weight' => $parcel->weight,
-            'weight_unit' => $parcel->weight_unit,
-            'length' => $parcel->length,
-            'width' => $parcel->width,
-            'height' => $parcel->height,
-            'dimension_unit' => $parcel->dimension_unit,
-            'from_town' => $parcel->senderTown->name ?? 'N/A',
-            'to_town' => $parcel->receiverTown->name ?? 'N/A',
-            'sender_name' => $parcel->sender_name,
-            'sender_phone' => $parcel->sender_phone,
-            'receiver_name' => $parcel->receiver_name,
-            'receiver_phone' => $parcel->receiver_phone,
-        ]
-    ];
-}
+        $this->receiptData = [
+            'receipt_number' => $this->generateReceiptNumber($payment),
+            'payment' => $payment,
+            'parcel' => $parcel,
+            'total_paid' => $totalPaid,
+            'previous_payments_total' => $previousPaymentsTotal,
+            'payment_breakdown' => $allPayments,
+            'company_details' => $this->getCompanyDetails(),
+            'qr_code_url' => $this->generateQRCode($payment),
+            // Add price breakdown data
+            'price_breakdown' => [
+                'base_price' => $parcel->base_price,
+                'weight_charge' => $parcel->weight_charge,
+                'distance_charge' => $parcel->distance_charge,
+                'special_handling_charge' => $parcel->special_handling_charge,
+                'insurance_charge' => $parcel->insurance_charge ?? 0,
+                'tax_amount' => $parcel->tax_amount,
+                'discount_amount' => $parcel->discount_amount,
+                'total_amount' => $parcel->total_amount,
+            ],
+            'parcel_details' => [
+                'parcel_type' => $parcel->parcel_type,
+                'weight' => $parcel->weight,
+                'weight_unit' => $parcel->weight_unit,
+                'length' => $parcel->length,
+                'width' => $parcel->width,
+                'height' => $parcel->height,
+                'dimension_unit' => $parcel->dimension_unit,
+                'from_town' => $parcel->senderTown->name ?? 'N/A',
+                'to_town' => $parcel->receiverTown->name ?? 'N/A',
+                'sender_name' => $parcel->sender_name,
+                'sender_phone' => $parcel->sender_phone,
+                'receiver_name' => $parcel->receiver_name,
+                'receiver_phone' => $parcel->receiver_phone,
+            ]
+        ];
+    }
 
     protected function generateReceiptNumber($payment)
     {
@@ -258,57 +268,57 @@ protected function prepareReceiptData()
         $this->dispatch('print-receipt');
     }
 
-protected function generateReceiptMessage($type = 'sms')
-{
-    $payment = $this->selectedPayment;
-    $parcel = $payment->parcel;
-    
-    $priceBreakdown = "Price Breakdown:\n" .
-        "Base Price: KES " . number_format($parcel->base_price, 2) . "\n" .
-        "Weight Charge: KES " . number_format($parcel->weight_charge, 2) . "\n" .
-        "Distance Charge: KES " . number_format($parcel->distance_charge, 2) . "\n" .
-        "Special Handling: KES " . number_format($parcel->special_handling_charge, 2) . "\n" .
-        "Tax (16%): KES " . number_format($parcel->tax_amount, 2);
+    protected function generateReceiptMessage($type = 'sms')
+    {
+        $payment = $this->selectedPayment;
+        $parcel = $payment->parcel;
 
-    if ($parcel->insurance_required) {
-        $priceBreakdown .= "\nInsurance: KES " . number_format($parcel->insurance_charge, 2);
-    }
-    
-    if ($parcel->discount_amount > 0) {
-        $priceBreakdown .= "\nDiscount: -KES " . number_format($parcel->discount_amount, 2);
-    }
-    
-    $priceBreakdown .= "\nTOTAL: KES " . number_format($parcel->total_amount, 2);
+        $priceBreakdown = "Price Breakdown:\n" .
+            "Base Price: KES " . number_format($parcel->base_price, 2) . "\n" .
+            "Weight Charge: KES " . number_format($parcel->weight_charge, 2) . "\n" .
+            "Distance Charge: KES " . number_format($parcel->distance_charge, 2) . "\n" .
+            "Special Handling: KES " . number_format($parcel->special_handling_charge, 2) . "\n" .
+            "Tax (16%): KES " . number_format($parcel->tax_amount, 2);
 
-    if ($type === 'sms') {
-        return "RECEIPT: Payment of KES " . number_format($payment->amount, 2) .
-            " received for parcel #{$parcel->parcel_id}. " .
-            "Receipt No: {$this->receiptData['receipt_number']}. " .
-            "Total paid: KES " . number_format($this->receiptData['total_paid'], 2) . ". " .
-            "Balance: KES " . number_format($parcel->total_amount - $this->receiptData['total_paid'], 2);
-    } else {
-        return "*COURIER SERVICE RECEIPT*\n\n" .
-            "Receipt No: {$this->receiptData['receipt_number']}\n" .
-            "Date: {$payment->created_at->format('Y-m-d H:i:s')}\n" .
-            "Parcel #: {$parcel->parcel_id}\n\n" .
-            "*Parcel Details*\n" .
-            "Type: " . ucfirst($parcel->parcel_type) . "\n" .
-            "Weight: {$parcel->weight} {$parcel->weight_unit}\n" .
-            "From: {$parcel->senderTown->name}\n" .
-            "To: {$parcel->receiverTown->name}\n\n" .
-            "*Price Breakdown*\n" .
-            $priceBreakdown . "\n\n" .
-            "*Payment Details*\n" .
-            "Amount Paid: KES " . number_format($payment->amount, 2) . "\n" .
-            "Method: " . ucfirst($payment->payment_method) . "\n" .
-            "Reference: {$payment->reference_number}\n\n" .
-            "*Payment Summary*\n" .
-            "Total Amount: KES " . number_format($parcel->total_amount, 2) . "\n" .
-            "Total Paid: KES " . number_format($this->receiptData['total_paid'], 2) . "\n" .
-            "Balance: KES " . number_format($parcel->total_amount - $this->receiptData['total_paid'], 2) . "\n\n" .
-            "Thank you for choosing " . config('app.name') . "!";
+        if ($parcel->insurance_required) {
+            $priceBreakdown .= "\nInsurance: KES " . number_format($parcel->insurance_charge, 2);
+        }
+
+        if ($parcel->discount_amount > 0) {
+            $priceBreakdown .= "\nDiscount: -KES " . number_format($parcel->discount_amount, 2);
+        }
+
+        $priceBreakdown .= "\nTOTAL: KES " . number_format($parcel->total_amount, 2);
+
+        if ($type === 'sms') {
+            return "RECEIPT: Payment of KES " . number_format($payment->amount, 2) .
+                " received for parcel #{$parcel->parcel_id}. " .
+                "Receipt No: {$this->receiptData['receipt_number']}. " .
+                "Total paid: KES " . number_format($this->receiptData['total_paid'], 2) . ". " .
+                "Balance: KES " . number_format($parcel->total_amount - $this->receiptData['total_paid'], 2);
+        } else {
+            return "*COURIER SERVICE RECEIPT*\n\n" .
+                "Receipt No: {$this->receiptData['receipt_number']}\n" .
+                "Date: {$payment->created_at->format('Y-m-d H:i:s')}\n" .
+                "Parcel #: {$parcel->parcel_id}\n\n" .
+                "*Parcel Details*\n" .
+                "Type: " . ucfirst($parcel->parcel_type) . "\n" .
+                "Weight: {$parcel->weight} {$parcel->weight_unit}\n" .
+                "From: {$parcel->senderTown->name}\n" .
+                "To: {$parcel->receiverTown->name}\n\n" .
+                "*Price Breakdown*\n" .
+                $priceBreakdown . "\n\n" .
+                "*Payment Details*\n" .
+                "Amount Paid: KES " . number_format($payment->amount, 2) . "\n" .
+                "Method: " . ucfirst($payment->payment_method) . "\n" .
+                "Reference: {$payment->reference_number}\n\n" .
+                "*Payment Summary*\n" .
+                "Total Amount: KES " . number_format($parcel->total_amount, 2) . "\n" .
+                "Total Paid: KES " . number_format($this->receiptData['total_paid'], 2) . "\n" .
+                "Balance: KES " . number_format($parcel->total_amount - $this->receiptData['total_paid'], 2) . "\n\n" .
+                "Thank you for choosing " . config('app.name') . "!";
+        }
     }
-}
 
     protected SMSService $smsService;
 
@@ -835,200 +845,200 @@ protected function generateReceiptMessage($type = 'sms')
     //     }
     // }
 
-public function checkMpesaStatus()
-{
-    if (!$this->pollingEnabled) {
-        Log::info('Polling is disabled, skipping status check');
-        return;
-    }
-
-    Log::info("Polling for payment status", ['checkout_request_id' => $this->checkoutRequestId]);
-
-    if (!$this->checkoutRequestId) {
-        Log::warning('No checkout request ID for status check');
-        $this->stopPolling();
-        return;
-    }
-
-    $this->statusCheckCount++;
-
-    Log::info('Checking M-Pesa payment status', [
-        'checkout_request_id' => $this->checkoutRequestId,
-        'attempt' => $this->statusCheckCount
-    ]);
-
-    try {
-        $result = $this->mpesaService->checkStkStatus($this->checkoutRequestId);
-
-        if (isset($result['result_code'])) {
-            $resultCode = $result['result_code'];
-
-            switch ($resultCode) {
-                case 0:
-                    $this->handlePaymentSuccess($result);
-                    $this->stopPolling(); // Stop polling on success
-                    break;
-
-                case 1032:
-                    $this->handlePaymentCancelled($result);
-                    $this->stopPolling(); // Stop polling on cancellation
-                    break;
-
-                case 1037:
-                    if ($this->statusCheckCount >= $this->maxStatusChecks) {
-                        $this->handlePaymentTimeout($result);
-                        $this->stopPolling(); // Stop polling on timeout
-                    }
-                    break;
-
-                case 1:
-                    $this->handlePaymentFailed($result, 'insufficient_funds');
-                    $this->stopPolling(); // Stop polling on failure
-                    break;
-
-                case 1019:
-                    $this->handlePaymentFailed($result, 'wrong_pin');
-                    $this->stopPolling(); // Stop polling on failure
-                    break;
-
-                case 1036:
-                case 2001:
-                case 1031:
-                case 1026:
-                    $this->handlePaymentFailed($result, 'failed');
-                    $this->stopPolling(); // Stop polling on failure
-                    break;
-
-                default:
-                    if ($this->statusCheckCount >= $this->maxStatusChecks) {
-                        $this->handlePaymentUnknown($result);
-                        $this->stopPolling(); // Stop polling on unknown status after max attempts
-                    }
-                    break;
-            }
+    public function checkMpesaStatus()
+    {
+        if (!$this->pollingEnabled) {
+            Log::info('Polling is disabled, skipping status check');
+            return;
         }
-    } catch (Exception $e) {
-        Log::error('M-Pesa status check error', [
-            'error' => $e->getMessage(),
-            'checkout_request_id' => $this->checkoutRequestId
+
+        Log::info("Polling for payment status", ['checkout_request_id' => $this->checkoutRequestId]);
+
+        if (!$this->checkoutRequestId) {
+            Log::warning('No checkout request ID for status check');
+            $this->stopPolling();
+            return;
+        }
+
+        $this->statusCheckCount++;
+
+        Log::info('Checking M-Pesa payment status', [
+            'checkout_request_id' => $this->checkoutRequestId,
+            'attempt' => $this->statusCheckCount
         ]);
 
-        if ($this->statusCheckCount >= $this->maxStatusChecks) {
-            $this->paymentStatus = 'check_failed';
-            $this->paymentStatusType = 'warning';
-            $this->paymentStatusIcon = 'bi-exclamation-triangle';
-            $this->paymentStatusMessage = 'Unable to verify payment status. Please check transaction history or contact support.';
-            $this->stopPolling(); // Stop polling on error after max attempts
-        }
-    }
-}
+        try {
+            $result = $this->mpesaService->checkStkStatus($this->checkoutRequestId);
 
-// Modify handlePaymentSuccess to ensure polling stops
-private function handlePaymentSuccess($result)
-{
-    $this->paymentStatus = 'success';
-    $this->paymentStatusType = 'success';
-    $this->paymentStatusIcon = 'bi-check-circle-fill';
-    $this->paymentStatusMessage = $result['user_message'] ?? 'Payment completed successfully!';
+            if (isset($result['result_code'])) {
+                $resultCode = $result['result_code'];
 
-    if (isset($result['response']['CallbackMetadata']['Item'])) {
-        foreach ($result['response']['CallbackMetadata']['Item'] as $item) {
-            if ($item['Name'] === 'MpesaReceiptNumber') {
-                $this->mpesaReceiptNumber = $item['Value'];
-                break;
+                switch ($resultCode) {
+                    case 0:
+                        $this->handlePaymentSuccess($result);
+                        $this->stopPolling(); // Stop polling on success
+                        break;
+
+                    case 1032:
+                        $this->handlePaymentCancelled($result);
+                        $this->stopPolling(); // Stop polling on cancellation
+                        break;
+
+                    case 1037:
+                        if ($this->statusCheckCount >= $this->maxStatusChecks) {
+                            $this->handlePaymentTimeout($result);
+                            $this->stopPolling(); // Stop polling on timeout
+                        }
+                        break;
+
+                    case 1:
+                        $this->handlePaymentFailed($result, 'insufficient_funds');
+                        $this->stopPolling(); // Stop polling on failure
+                        break;
+
+                    case 1019:
+                        $this->handlePaymentFailed($result, 'wrong_pin');
+                        $this->stopPolling(); // Stop polling on failure
+                        break;
+
+                    case 1036:
+                    case 2001:
+                    case 1031:
+                    case 1026:
+                        $this->handlePaymentFailed($result, 'failed');
+                        $this->stopPolling(); // Stop polling on failure
+                        break;
+
+                    default:
+                        if ($this->statusCheckCount >= $this->maxStatusChecks) {
+                            $this->handlePaymentUnknown($result);
+                            $this->stopPolling(); // Stop polling on unknown status after max attempts
+                        }
+                        break;
+                }
+            }
+        } catch (Exception $e) {
+            Log::error('M-Pesa status check error', [
+                'error' => $e->getMessage(),
+                'checkout_request_id' => $this->checkoutRequestId
+            ]);
+
+            if ($this->statusCheckCount >= $this->maxStatusChecks) {
+                $this->paymentStatus = 'check_failed';
+                $this->paymentStatusType = 'warning';
+                $this->paymentStatusIcon = 'bi-exclamation-triangle';
+                $this->paymentStatusMessage = 'Unable to verify payment status. Please check transaction history or contact support.';
+                $this->stopPolling(); // Stop polling on error after max attempts
             }
         }
     }
 
-    $this->loadParcel();
-    $this->dispatch('notify', [
-        'type' => 'success',
-        'message' => 'Payment completed successfully!'
-    ]);
-}
+    // Modify handlePaymentSuccess to ensure polling stops
+    private function handlePaymentSuccess($result)
+    {
+        $this->paymentStatus = 'success';
+        $this->paymentStatusType = 'success';
+        $this->paymentStatusIcon = 'bi-check-circle-fill';
+        $this->paymentStatusMessage = $result['user_message'] ?? 'Payment completed successfully!';
 
-// Modify processMpesaPayment to start polling properly
-protected function processMpesaPayment()
-{
-    DB::beginTransaction();
-
-    try {
-        $accountReference = $this->parcel->parcel_id;
-        $transactionDesc = 'Payment for parcel No:' . $this->parcel->parcel_id;
-
-        $result = $this->mpesaService->stkPush(
-            $this->paymentPhone,
-            $this->paymentAmount,
-            $accountReference,
-            $transactionDesc,
-            $this->parcelId,
-            Auth::guard('partner')->id()
-        );
-
-        Log::info('M-Pesa STK Push result', $result);
-
-        if ($result['success']) {
-            $this->checkoutRequestId = $result['checkout_request_id'];
-            $this->mpesaTransactionId = $result['transaction_id'];
-
-            DB::commit();
-
-            $this->paymentStatus = 'waiting_pin';
-            $this->paymentStatusType = 'info';
-            $this->paymentStatusIcon = 'bi-phone';
-            $this->paymentStatusMessage = 'STK Push sent! Please check your phone and enter your M-Pesa PIN to complete payment.';
-            $this->showMpesaStatus = true;
-            $this->statusCheckCount = 0;
-            
-            // Start polling properly
-            $this->startPolling();
-
-            Log::info('M-Pesa payment initiated successfully', [
-                'checkout_request_id' => $this->checkoutRequestId,
-                'transaction_id' => $result['transaction_id']
-            ]);
-        } else {
-            DB::rollBack();
-
-            Log::error('M-Pesa initiation failed', [
-                'message' => $result['message'],
-                'error_code' => $result['error_code'] ?? null
-            ]);
-
-            $this->paymentStatus = 'initiation_failed';
-            $this->paymentStatusType = 'danger';
-            $this->paymentStatusIcon = 'bi-exclamation-circle';
-            $this->paymentStatusMessage = $result['message'];
-            $this->showMpesaStatus = true;
-            $this->stopPolling(); // Stop polling on initiation failure
+        if (isset($result['response']['CallbackMetadata']['Item'])) {
+            foreach ($result['response']['CallbackMetadata']['Item'] as $item) {
+                if ($item['Name'] === 'MpesaReceiptNumber') {
+                    $this->mpesaReceiptNumber = $item['Value'];
+                    break;
+                }
+            }
         }
-    } catch (Exception $e) {
-        DB::rollBack();
-        $this->stopPolling(); // Stop polling on exception
-        throw $e;
-    }
-}
 
-// Modify resetPaymentModal to stop polling
-protected function resetPaymentModal()
-{
-    $this->stopPolling(); // Stop any ongoing polling
-    $this->reset([
-        'paymentMethod',
-        'paymentNotes',
-        'isProcessing',
-        'checkoutRequestId',
-        'paymentStatus',
-        'paymentStatusMessage',
-        'paymentStatusType',
-        'showMpesaStatus',
-        'paymentStatusIcon',
-        'mpesaReceiptNumber',
-        'mpesaTransactionId',
-        'statusCheckCount',
-        'pollingEnabled',
-    ]);
-}
+        $this->loadParcel();
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => 'Payment completed successfully!'
+        ]);
+    }
+
+    // Modify processMpesaPayment to start polling properly
+    protected function processMpesaPayment()
+    {
+        DB::beginTransaction();
+
+        try {
+            $accountReference = $this->parcel->parcel_id;
+            $transactionDesc = 'Payment for parcel No:' . $this->parcel->parcel_id;
+
+            $result = $this->mpesaService->stkPush(
+                $this->paymentPhone,
+                $this->paymentAmount,
+                $accountReference,
+                $transactionDesc,
+                $this->parcelId,
+                Auth::guard('partner')->id()
+            );
+
+            Log::info('M-Pesa STK Push result', $result);
+
+            if ($result['success']) {
+                $this->checkoutRequestId = $result['checkout_request_id'];
+                $this->mpesaTransactionId = $result['transaction_id'];
+
+                DB::commit();
+
+                $this->paymentStatus = 'waiting_pin';
+                $this->paymentStatusType = 'info';
+                $this->paymentStatusIcon = 'bi-phone';
+                $this->paymentStatusMessage = 'STK Push sent! Please check your phone and enter your M-Pesa PIN to complete payment.';
+                $this->showMpesaStatus = true;
+                $this->statusCheckCount = 0;
+
+                // Start polling properly
+                $this->startPolling();
+
+                Log::info('M-Pesa payment initiated successfully', [
+                    'checkout_request_id' => $this->checkoutRequestId,
+                    'transaction_id' => $result['transaction_id']
+                ]);
+            } else {
+                DB::rollBack();
+
+                Log::error('M-Pesa initiation failed', [
+                    'message' => $result['message'],
+                    'error_code' => $result['error_code'] ?? null
+                ]);
+
+                $this->paymentStatus = 'initiation_failed';
+                $this->paymentStatusType = 'danger';
+                $this->paymentStatusIcon = 'bi-exclamation-circle';
+                $this->paymentStatusMessage = $result['message'];
+                $this->showMpesaStatus = true;
+                $this->stopPolling(); // Stop polling on initiation failure
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            $this->stopPolling(); // Stop polling on exception
+            throw $e;
+        }
+    }
+
+    // Modify resetPaymentModal to stop polling
+    protected function resetPaymentModal()
+    {
+        $this->stopPolling(); // Stop any ongoing polling
+        $this->reset([
+            'paymentMethod',
+            'paymentNotes',
+            'isProcessing',
+            'checkoutRequestId',
+            'paymentStatus',
+            'paymentStatusMessage',
+            'paymentStatusType',
+            'showMpesaStatus',
+            'paymentStatusIcon',
+            'mpesaReceiptNumber',
+            'mpesaTransactionId',
+            'statusCheckCount',
+            'pollingEnabled',
+        ]);
+    }
 
     protected function processOtherPayment()
     {
@@ -1333,5 +1343,92 @@ protected function resetPaymentModal()
             'bulk' => ['color' => 'primary', 'icon' => 'bi-stack'],
             default => ['color' => 'secondary', 'icon' => 'bi-question-circle'],
         };
+    }
+
+    public function closeErrorModal()
+    {
+        $this->showErrorModal = false;
+        $this->errorMessage = null;
+    }
+
+
+    public function closeSuccessModal()
+    {
+        $this->showSuccessModal = false;
+        $this->successMessage = null;
+    }
+
+    public function acceptParcel()
+    {
+        $this->loggedUser = Auth::guard('partner')->user();
+        if ($this->parcel->payment_status != 'paid') {
+            $this->showErrorModal = true;
+            $this->errorMessage = "Parcel cannot be accepted because it is not fully paid. Please ensure that the payment is completed before accepting the parcel.";
+            return;
+        }
+
+
+        $senderPartnerId = $this->parcel->sender_partner_id;
+
+        $isPartner = $this->loggedUser->partner?->id === $senderPartnerId;
+        $isAssistant = $this->loggedUser->parcelHandlingAssistant?->partner?->id === $senderPartnerId;
+
+        if (! $isPartner && ! $isAssistant) {
+            $this->showErrorModal = true;
+            $this->errorMessage = "You are not authorized to accept this parcel. Only the sender partner can accept this parcel.";
+            return;
+        }
+
+        // if ($this->loggedUser->partner->id != $this->parcel->sender_partner_id || $this->loggedUser->parcelHandlingAssistant?->partner->id != $this->parcel->sender_partner_id) {
+        //     $this->showErrorModal = true;
+        //     $this->errorMessage = "You are not authorized to accept this parcel. Only the sender partner can accept this parcel.";
+        //     return;
+        // }
+
+
+        // if ($this->loggedUser->partner->id != $this->parcel->sender_partner_id || $this->loggedUser->parcelHandlingAssistant?->partner->id != $this->parcel->sender_partner_id) {
+        //     $this->showErrorModal = true;
+        //     $this->errorMessage = "You are not authorized to accept this parcel. Only the sender partner can accept this parcel.";
+        //     return;
+        // }
+
+        try {
+            DB::beginTransaction();
+
+            // Update parcel status to booked
+            $this->parcel->update([
+                'current_status' => Parcel::STATUS_BOOKED,
+                'pha_id' => $this->loggedUser->parcelHandlingAssistant?->id ?? null
+            ]);
+
+            // Create status history entry
+            $this->parcel->updateParcelStatus(
+                Parcel::STATUS_BOOKED,
+                $this->parcel->sender_pick_up_drop_off_point_id,
+                Auth::guard('partner')->user()->id,
+                current_user_type(),
+                'Parcel booked by partner',
+                null,
+                null,
+            );
+
+            DB::commit();
+
+            // Show success message
+            $this->showSuccessModal = true;
+            $this->successMessage = "Parcel has been accepted successfully. Await for a driver to come and pick it up";
+
+            $this->loadParcel();
+            $this->dispatch('parcel-updated');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to accept parcel', [
+                'parcel_id' => $this->parcelId,
+                'error' => $e->getMessage()
+            ]);
+
+            $this->showErrorModal = true;
+            $this->errorMessage = "Failed to accept parcel: " . $e->getMessage();
+        }
     }
 }

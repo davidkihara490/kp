@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\Parcel;
+use App\Models\ParcelPayout;
+use App\Models\Partner;
 use App\Models\PickUpAndDropOffPoint;
 use App\Models\Town;
 use Illuminate\Http\Request;
@@ -49,6 +51,7 @@ class ParcelController extends Controller
             'sender_town_id' => 'required|exists:towns,id',
             'sender_address' => 'nullable|string|max:500',
             'sender_notes' => 'nullable|string|max:500',
+            'sender_pick_up_drop_off_point_id' => 'required|exists:pick_up_and_drop_off_points,id',
 
             // Receiver Information
             'receiver_name' => 'required|string|max:255',
@@ -57,6 +60,7 @@ class ParcelController extends Controller
             'receiver_town_id' => 'required|exists:towns,id',
             'receiver_address' => 'nullable|string|max:500',
             'receiver_notes' => 'nullable|string|max:500',
+            'delivery_pick_up_drop_off_point_id' => 'required|exists:pick_up_and_drop_off_points,id',
 
             // Parcel Details
             'parcel_type' => 'required|in:document,package,envelope,box,pallet',
@@ -92,124 +96,407 @@ class ParcelController extends Controller
                 'errors' => $validated->errors()
             ], 422);
         }
-        // // Begin transaction
-        // DB::beginTransaction();
+        // Begin transaction
+        DB::beginTransaction();
 
-        // try {
-        // Prepare parcel data
-        $parcelData = [
-            // Basic Information
-            'customer_id' => Auth::guard('customer')->user()->id,
-            'booking_type' => $request->booking_type ?? 'instant',
-            'booking_source' => $request->booking_source ?? 'web',
+        try {
+            $senderPoint = PickUpAndDropOffPoint::findOrFail($request->sender_pick_up_drop_off_point_id);
+            $receivingPoint = PickUpAndDropOffPoint::findOrFail($request->delivery_pick_up_drop_off_point_id);
 
-            // Sender Information
-            'sender_name' => $request->sender_name,
-            'sender_phone' => $request->sender_phone,
-            'sender_email' => $request->sender_email ?? null,
-            'sender_town_id' => $request->sender_town_id,
-            'sender_address' => $request->sender_address ?? null,
-            'sender_notes' => $request->sender_notes ?? null,
+            $parcelData = [
+                // Basic Information
+                'customer_id' => Auth::guard('customer')->user()->id,
+                'booking_type' => $request->booking_type ?? 'instant',
+                'booking_source' => 'web',
 
-            // Receiver Information
-            'receiver_name' => $request->receiver_name,
-            'receiver_phone' => $request->receiver_phone,
-            'receiver_email' => $request->receiver_email ?? null,
-            'receiver_town_id' => $request->receiver_town_id,
-            'receiver_address' => $request->receiver_address ?? null,
-            'receiver_notes' => $request->receiver_notes ?? null,
+                // Sender Information
+                'sender_name' => $request->sender_name,
+                'sender_phone' => $request->sender_phone,
+                'sender_email' => $request->sender_email ?? null,
+                'sender_town_id' => $request->sender_town_id,
+                'sender_address' => $request->sender_address ?? null,
+                'sender_notes' => $request->sender_notes ?? null,
 
-            // Pickup Information (default values)
-            'pha_id' => null,
-            'sender_partner_id' => null,
-            'sender_pick_up_drop_off_point_id' => null,
-            'date' => now(),
+                // Receiver Information
+                'receiver_name' => $request->receiver_name,
+                'receiver_phone' => $request->receiver_phone,
+                'receiver_email' => $request->receiver_email ?? null,
+                'receiver_town_id' => $request->receiver_town_id,
+                'receiver_address' => $request->receiver_address ?? null,
+                'receiver_notes' => $request->receiver_notes ?? null,
 
-            // Parcel Details
-            'parcel_id' => Parcel::generateParcelNumber(),
-            'parcel_type' => $request->parcel_type,
-            'package_type' => $request->package_type,
-            'weight' => $request->weight,
-            'length' => $request->length ?? null,
-            'width' => $request->width ?? null,
-            'height' => $request->height ?? null,
-            'dimension_unit' => $request->dimension_unit ?? 'cm',
-            'weight_unit' => $request->weight_unit ?? 'kg',
-            'declared_value' => $request->declared_value ?? null,
-            'insurance_amount' => $request->insurance_required ? ($request->declared_value * 0.02) : 0,
-            'insurance_required' => $request->insurance_required ?? false,
-            'content_description' => $request->content_description,
-            'special_instructions' => $request->special_instructions ?? null,
+                // Pickup Information (default values)
+                'pha_id' => null,
+                'sender_partner_id' => $senderPoint->partner->id,
+                'sender_pick_up_drop_off_point_id' => $request->sender_pick_up_drop_off_point_id,
+                'date' => now(),
 
-            // Delivery Information (default values)
-            'delivery_partner_id' => null,
-            'delivery_pick_up_drop_off_point_id' => null,
-            'delivery_flow' => null,
-            'warehouse_id' => null,
+                // Parcel Details
+                'parcel_id' => Parcel::generateParcelNumber(),
+                'parcel_type' => $request->parcel_type,
+                'package_type' => $request->package_type,
+                'weight' => $request->weight,
+                'length' => $request->length ?? null,
+                'width' => $request->width ?? null,
+                'height' => $request->height ?? null,
+                'dimension_unit' => $request->dimension_unit ?? 'cm',
+                'weight_unit' => $request->weight_unit ?? 'kg',
+                'declared_value' => $request->declared_value ?? null,
+                'insurance_amount' => $request->insurance_required ? ($request->declared_value * 0.02) : 0,
+                'insurance_required' => $request->insurance_required ?? false,
+                'content_description' => $request->content_description,
+                'special_instructions' => $request->special_instructions ?? null,
 
-            // Pricing
-            'base_price' => round($request->total_amount * 0.84),
-            'insurance_charge' => $request->insuarance_amount ?? 0,
-            'tax_amount' => round($request->total_amount * 0.16),
-            'total_amount' => $request->total_amount,
-            'payment_method' => 'mpesa',
-            'payment_status' => 'pending',
+                // Delivery Information (default values)
+                'delivery_partner_id' => $receivingPoint->partner->id,
+                'delivery_pick_up_drop_off_point_id' => $request->delivery_pick_up_drop_off_point_id,
+                'delivery_flow' => null,
+                'warehouse_id' => null,
 
-            // Creator
-            'creator_id' => Auth::guard('customer')->user()->id,
-            'creator_type' => Customer::class,
-        ];
+                // Pricing
+                'base_price' => round($request->total_amount * 0.84),
+                'insurance_charge' => $request->insuarance_amount ?? 0,
+                'tax_amount' => round($request->total_amount * 0.16),
+                'total_amount' => $request->total_amount,
+                'payment_method' => 'mpesa',
+                'payment_status' => 'pending',
 
-        // Create the parcel
-        $parcel = Parcel::create($parcelData);
+                // Creator
+                'creator_id' => Auth::guard('customer')->user()->id,
+                'creator_type' => Customer::class,
+            ];
 
+            // Create the parcel
+            $parcel = Parcel::create($parcelData);
+            $payout = $parcel->calculateParcelPayout((float)($parcel->base_price + $parcel->tax_amount), 'direct');
 
-        // TODO::Update Status
-        // Add initial tracking status
-        // $parcel->addTracking(
-        //     Parcel::STATUS_CREATED,
-        //     auth()->id() ?? null,
-        //     'Parcel booked via online booking form'
-        // );
+            $parcel->updateParcelStatus(
+                Parcel::STATUS_CREATED,
+                null,
+                Auth::guard('customer')->user()->id,
+                Customer::class,
+                'Parcel created',
+                null,
+                null,
+            );
 
+            // Create initial tracking record
+            if ($parcel) {
+                $parcel->addTracking(Parcel::STATUS_CREATED, Auth::guard('customer')->user()->id, Customer::class);
+            }
 
-        // $parcel->updateParcelStatus(
-        //     Parcel::STATUS_CREATED,
-        //     $this->sender_pick_up_drop_off_point_id,
-        //     Auth::guard('partner')->user()->id,
-        //     current_user_type(),
-        //     'Parcel created',
-        //     null,
-        //     null,
-        // );
+            DB::commit();
 
-        // DB::commit();
+            // Redirect with success message
+            return redirect()
+                ->route('booking.success', $parcel->parcel_id)
+                ->with('success', 'Parcel booked successfully! Your tracking ID is: ' . $parcel->parcel_id);
+        } catch (\Exception $e) {
+            DB::rollBack();
 
-        // Redirect with success message
-        return redirect()
-            ->route('booking.success', $parcel->parcel_id)
-            ->with('success', 'Parcel booked successfully! Your tracking ID is: ' . $parcel->parcel_id);
-        // } catch (\Exception $e) {
-        //     DB::rollBack();
+            dd($e->getMessage());
 
-        //     dd($e->getMessage());
+            // Log the error
+            Log::info('Parcel booking failed: ' . $e->getMessage(), [
+                'request' => $request->all(),
+                'error' => $e
+            ]);
 
-        //     // Log the error
-        //     Log::info('Parcel booking failed: ' . $e->getMessage(), [
-        //         'request' => $request->all(),
-        //         'error' => $e
-        //     ]);
-
-        //     return redirect()
-        //         ->back()
-        //         ->withInput()
-        //         ->with('error', 'An error occurred while processing your booking. Please try again.');
-        // }
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'An error occurred while processing your booking. Please try again.');
+        }
     }
 
     public function success($parcelId)
     {
         $parcel = Parcel::with(['senderTown', 'receiverTown'])->where('parcel_id', $parcelId)->firstOrFail();
         return view('frontend.success', compact('parcel'));
+    }
+
+
+    /**
+     * Track a parcel by phone number and tracking ID
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function trackParcel(Request $request)
+    {
+        try {
+            // Validate the request
+            $request->validate([
+                'phone' => 'required|string',
+                'tracking_id' => 'required|string|max:50'
+            ]);
+
+            $phone = $request->input('phone');
+            $trackingId = $request->input('tracking_id');
+
+            // Clean phone number for database lookup (remove +254 and leading 0)
+            $cleanPhone = formatKenyaNumber($phone);
+
+            // Find the parcel
+            $parcel = Parcel::with([
+                'senderTown',
+                'receiverTown',
+                'senderPickUpDropOffPoint',
+                'deliveryStation',
+                'driver',
+                'statuses' => function ($query) {
+                    $query->orderBy('created_at', 'desc');
+                }
+            ])
+                ->where(function ($query) use ($trackingId, $cleanPhone) {
+                    $query->where('parcel_id', $trackingId)
+                        ->orWhere('id', $trackingId);
+                })
+                ->where(function ($query) use ($cleanPhone) {
+                    $query->where('sender_phone', 'LIKE', '%' . $cleanPhone)
+                        ->orWhere('receiver_phone', 'LIKE', '%' . $cleanPhone);
+                })
+                ->first();
+
+            if (!$parcel) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No parcel found with the provided details. Please check your phone number and tracking ID.'
+                ], 404);
+            }
+
+            // Format the parcel data for the frontend
+            $formattedData = $this->formatParcelData($parcel);
+
+            return response()->json([
+                'success' => true,
+                'data' => $formattedData
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid input provided.',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Parcel tracking error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'message' => 'An error occurred while tracking your parcel. Please try again later.'
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Format parcel data for API response
+     *
+     * @param Parcel $parcel
+     * @return array
+     */
+    private function formatParcelData($parcel)
+    {
+        // Get status history
+        $statusHistory = $parcel->statuses->map(function ($status) {
+            return [
+                'status' => $status->status,
+                'created_at' => $status->created_at->toDateTimeString(),
+                'location' => $this->getStatusLocation($status),
+                'notes' => $status->notes
+            ];
+        })->toArray();
+
+        // If no status history, create one with current status
+        if (empty($statusHistory)) {
+            $statusHistory = [
+                [
+                    'status' => $parcel->current_status ?? 'created',
+                    'created_at' => $parcel->created_at->toDateTimeString(),
+                    'location' => $parcel->senderTown->name ?? 'N/A',
+                    'notes' => 'Parcel created'
+                ]
+            ];
+        }
+
+        // Get current location
+        $currentLocation = $this->getCurrentLocation($parcel);
+
+        // Get estimated delivery
+        $estimatedDelivery = $this->getEstimatedDelivery($parcel);
+
+        // Get driver information
+        $driverInfo = null;
+        if ($parcel->driver) {
+            $driverInfo = [
+                'name' => $parcel->driver->full_name ?? $parcel->driver->name ?? 'N/A',
+                'phone' => $parcel->driver->phone_number ?? $parcel->driver->phone ?? 'N/A'
+            ];
+        }
+
+        // Check if there's a latest status with driver
+        $latestStatus = $parcel->statuses()
+            ->whereNotNull('driver_id')
+            ->with('driver')
+            ->latest()
+            ->first();
+
+        if ($latestStatus && $latestStatus->driver && !$driverInfo) {
+            $driverInfo = [
+                'name' => $latestStatus->driver->full_name ?? $latestStatus->driver->name ?? 'N/A',
+                'phone' => $latestStatus->driver->phone_number ?? $latestStatus->driver->phone ?? 'N/A'
+            ];
+        }
+
+        return [
+            'parcel_id' => $parcel->parcel_id ?? $parcel->id,
+            'tracking_id' => $parcel->parcel_id,
+            'sender_phone' => $parcel->sender_phone,
+            'receiver_phone' => $parcel->receiver_phone,
+            'sender_name' => $parcel->sender_name,
+            'receiver_name' => $parcel->receiver_name,
+            'sender_town' => $parcel->senderTown->name ?? 'N/A',
+            'receiver_town' => $parcel->receiverTown->name ?? 'N/A',
+            'from_location' => $parcel->senderPickUpDropOffPoint->name ?? $parcel->senderTown->name ?? 'N/A',
+            'to_location' => $parcel->deliveryStation->name ?? $parcel->receiverTown->name ?? 'N/A',
+            'current_location' => $currentLocation,
+            'current_status' => $parcel->current_status ?? 'created',
+            'payment_status' => $parcel->payment_status ?? 'pending',
+            'estimated_delivery' => $estimatedDelivery,
+            'last_updated' => $parcel->updated_at->toDateTimeString(),
+            'driver' => $driverInfo,
+            'status_history' => $statusHistory,
+            'weight' => $parcel->weight ?? null,
+            'weight_unit' => $parcel->weight_unit ?? 'kg',
+            'parcel_type' => $parcel->parcel_type ?? null,
+            'total_amount' => $parcel->total_amount ?? 0
+        ];
+    }
+
+    /**
+     * Get current location of the parcel
+     *
+     * @param Parcel $parcel
+     * @return string
+     */
+    private function getCurrentLocation($parcel)
+    {
+        // Check for latest status location
+        $latestStatus = $parcel->statuses()->latest()->first();
+
+        if ($latestStatus && $latestStatus->location) {
+            return $latestStatus->location;
+        }
+
+        // Determine based on current status
+        switch ($parcel->current_status) {
+            case 'created':
+            case 'booked':
+            case 'accepted':
+                return $parcel->senderPickUpDropOffPoint->name ?? $parcel->senderTown->name ?? 'N/A';
+
+            case 'assigned':
+            case 'in_transit':
+                return 'In transit to destination';
+
+            case 'warehouse':
+                return $parcel->warehouse->name ?? 'Warehouse';
+
+            case 'arrived_at_destination':
+            case 'picked':
+            case 'delivered':
+                return $parcel->deliveryStation->name ?? $parcel->receiverTown->name ?? 'Destination';
+
+            default:
+                return $parcel->senderTown->name ?? 'N/A';
+        }
+    }
+
+    /**
+     * Get estimated delivery date
+     *
+     * @param Parcel $parcel
+     * @return string
+     */
+    private function getEstimatedDelivery($parcel)
+    {
+        // If already delivered
+        if ($parcel->current_status === 'delivered') {
+            return 'Delivered';
+        }
+
+        // If there's a delivery date set
+        if ($parcel->delivery_date) {
+            return $parcel->delivery_date->format('M d, Y H:i');
+        }
+
+        // Calculate estimated delivery based on status
+        switch ($parcel->current_status) {
+            case 'created':
+            case 'booked':
+            case 'accepted':
+                return 'Pending pickup';
+
+            case 'assigned':
+                return 'Awaiting pickup';
+
+            case 'in_transit':
+                // Add 1-2 days from now
+                return now()->addDays(2)->format('M d, Y H:i');
+
+            case 'warehouse':
+                return now()->addDay()->format('M d, Y H:i');
+
+            case 'arrived_at_destination':
+                return 'Available for pickup today';
+
+            case 'picked':
+                return 'Picked up by recipient';
+
+            default:
+                return 'Pending';
+        }
+    }
+
+    /**
+     * Get location from status
+     *
+     * @param ParcelStatus $status
+     * @return string
+     */
+    private function getStatusLocation($status)
+    {
+        if ($status->location) {
+            return $status->location;
+        }
+
+        // If the status has a driver, try to get location from driver's current location
+        if ($status->driver && $status->driver->current_location) {
+            return $status->driver->current_location;
+        }
+
+        // Default based on status
+        switch ($status->status) {
+            case 'created':
+            case 'booked':
+            case 'accepted':
+                return $status->parcel->senderTown->name ?? 'N/A';
+
+            case 'in_transit':
+                return 'In transit';
+
+            case 'warehouse':
+                return $status->parcel->warehouse->name ?? 'Warehouse';
+
+            case 'arrived_at_destination':
+                return $status->parcel->deliveryStation->name ?? 'Destination';
+
+            default:
+                return 'N/A';
+        }
     }
 }
