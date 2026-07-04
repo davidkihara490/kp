@@ -902,6 +902,7 @@
                             displayTownQuoteResult(response);
                         },
                         error: function(xhr) {
+                            console.log(xhr);
                             let errorMessage = 'An error occurred while calculating the quote.';
                             if (xhr.responseJSON && xhr.responseJSON.message) {
                                 errorMessage = xhr.responseJSON.message;
