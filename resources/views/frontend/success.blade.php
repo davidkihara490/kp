@@ -6,6 +6,8 @@
   <title>Booking · Karibu Parcels</title>
   <!-- Bootstrap 5 + Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"/>
+      <link rel="icon" type="image/png" href="{{ asset('logo.jpeg') }}"> <!-- jQuery -->
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -334,7 +336,7 @@
             <button class="btn btn-success w-100" disabled><i class="bi bi-check-circle me-2"></i> Payment Completed</button>
           @endif
         </div>
-        <div class="col-md-6"><button class="btn btn-print w-100" onclick="window.print()"><i class="bi bi-printer me-2"></i> Print Receipt</button></div>
+        <div class="col-md-6"><a target="_blank" href="{{ route('print-customer-receipt', $parcel->id) }}" class="btn btn-print w-100"><i class="bi bi-printer me-2"></i> Print Receipt</a></div>
       </div>
       <div class="text-center mt-3 no-print">
         <a href="#" class="btn btn-outline-secondary-custom me-2"><i class="bi bi-box-seam me-2"></i>Track</a>

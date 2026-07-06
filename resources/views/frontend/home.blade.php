@@ -9,7 +9,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!--Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <!-- jQuery -->
+    <link rel="icon" href="/logo.jpeg">
+    <link rel="icon" type="image/png" href="{{ asset('logo.jpeg') }}"> <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Fonts -->
@@ -76,8 +77,8 @@
     <section id="home" class="hero-section">
         <div class="container">
             <div class="hero-content animate-fade-up">
-                <h1>A revolutionary concept that democratises parcel delivery in Kenya.</h1>
-                <p class="lead">You can now send and receive your parcels from any town, thanks to our unmatched technology, data, and reliable network</p>
+                <h1>Send your parcel anywhere in Kenya, from wherever you are.</h1>
+                <p class="lead">Book online or visit your nearest Karibu Pick-Up & Drop-Off Point (PUDO). We'll deliver it through our nationwide network of 170+ pickup points across 38+ counties.</p>
             </div>
 
             <div class="compact-booking-engine animate-fade-up" style="animation-delay: 0.2s;">
@@ -290,16 +291,16 @@
 
                         <div class="tracking-form-wrapper">
                             <div class="row g-3 align-items-end">
-                                <div class="col-md-5">
+                                <!-- <div class="col-md-5">
                                     <label class="text-white small fw-bold mb-2">Phone Number</label>
                                     <div class="tracking-input-group">
                                         <i class="bi bi-telephone text-muted me-2"></i>
                                         <input type="tel" class="tracking-input" id="senderPhone"
                                             placeholder="0712345678">
                                     </div>
-                                </div>
-                                <div class="col-md-5">
-                                    <label class="text-white small fw-bold mb-2">Tracking ID</label>
+                                </div> -->
+                                <div class="col-md-10">
+                                    <label class="text-white small fw-bold mb-2">Parcel Number</label>
                                     <div class="tracking-input-group">
                                         <i class="bi bi-upc-scan text-muted me-2"></i>
                                         <input type="text" class="tracking-input" id="trackingId"
@@ -313,20 +314,7 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="mt-4">
-                            <p class="small opacity-75 mb-0 d-flex align-items-center justify-content-center gap-2 flex-wrap">
-                                <i class="bi bi-info-circle"></i>
-                                Try sample:
-                                <button class="btn btn-sm btn-outline-light tracking-example"
-                                    data-phone="0712345678" data-id="KP78945">0712345678 / KP78945</button>
-                                <button class="btn btn-sm btn-outline-light tracking-example"
-                                    data-phone="0723456789" data-id="KP12367">0723456789 / KP12367</button>
-                            </p>
-                        </div>
-
                         <div id="trackingResult" class="mt-4" style="display: none;">
-                            <!-- Tracking result will appear here -->
                         </div>
                     </div>
                 </div>
@@ -334,7 +322,6 @@
         </div>
     </section>
 
-    <!-- Trusted By Section - Modern & Professional -->
     <section class="trusted-by-section">
         <div class="container">
             <div class="section-title">
@@ -780,6 +767,7 @@
                     <ul class="footer-links">
                         <li><a target="_blank" href="{{ route('policy') }}">Privacy Policy</a></li>
                         <li><a target="_blank" href="{{ route('terms') }}">Terms of Service</a></li>
+                        <li><a target="_blank" href="{{ route('prohibited-items') }}">Prohibited Items</a></li>
                     </ul>
                 </div>
             </div>
@@ -898,11 +886,9 @@
                         method: 'POST',
                         data: formData,
                         success: function(response) {
-                            console.log(response);
                             displayTownQuoteResult(response);
                         },
                         error: function(xhr) {
-                            console.log(xhr);
                             let errorMessage = 'An error occurred while calculating the quote.';
                             if (xhr.responseJSON && xhr.responseJSON.message) {
                                 errorMessage = xhr.responseJSON.message;
@@ -1053,21 +1039,8 @@
 
             function initTracking() {
                 $('#trackPackage').on('click', function() {
-                    const phone = $('#senderPhone').val().trim();
                     const trackingId = $('#trackingId').val().trim();
 
-                    if (!phone || !trackingId) {
-                        showTrackingAlert('Please enter both phone number and tracking ID');
-                        return;
-                    }
-
-                    // Validate phone number
-                    if (!phone.match(/^(0|254|\+254)[0-9]{9}$/)) {
-                        showTrackingAlert('Please enter a valid Kenyan phone number (e.g., 0712345678)');
-                        return;
-                    }
-
-                    // Show loading state
                     const btn = $(this);
                     const originalText = btn.html();
                     btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status"></span> Searching...');
@@ -1077,11 +1050,9 @@
                         url: '/api/track-parcel',
                         method: 'GET',
                         data: {
-                            phone: phone,
                             tracking_id: trackingId
                         },
                         success: function(response) {
-                            console.log(response.data);
                             if (response.success && response.data) {
                                 displayTrackingResult(response.data);
                             } else {
@@ -1102,9 +1073,7 @@
                 });
 
                 $('.tracking-example').on('click', function() {
-                    $('#senderPhone').val($(this).data('phone'));
                     $('#trackingId').val($(this).data('id'));
-                    // Auto-trigger tracking
                     $('#trackPackage').trigger('click');
                 });
             }
@@ -1209,10 +1178,6 @@
                     <div class="detail-item">
                         <span class="label">Current Location</span>
                         <span class="value">${parcelData.current_location || parcelData.delivery_point || 'N/A'}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="label">Est. Delivery</span>
-                        <span class="value">${parcelData.estimated_delivery || 'Pending'}</span>
                     </div>
                 </div>
             </div>

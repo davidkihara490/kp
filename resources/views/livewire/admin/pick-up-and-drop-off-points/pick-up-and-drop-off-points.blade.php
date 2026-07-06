@@ -139,7 +139,8 @@
                             <th>Partner</th>
                             <th>Contact Email</th>
                             <th>Contact Phone</th>
-                            <th>Parcels</th>
+                            <th>Parcels Handled</th>
+                            <th>Capacity</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -159,6 +160,7 @@
                                     {{ $station->parcels_count ?? 0 }} parcels
                                 </span>
                             </td>
+                            <td>{{ $station->capacity?? '--' }}</td>
                             <td>
                                 @if ($station->status == 'active')
                                 <span class="badge badge-success">Active</span>
@@ -212,7 +214,8 @@
                             <th>Station Partner</th>
                             <th>Contact Email</th>
                             <th>Contact Phone</th>
-                            <th>Parcels</th>
+                            <th>Parcels Handled</th>
+                            <th>Capacity</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>

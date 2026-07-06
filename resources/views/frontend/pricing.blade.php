@@ -7,6 +7,8 @@
     <title>Delivery Tariff | Karibu Parcels</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ asset('logo.jpeg') }}"> <!-- jQuery -->
+
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- Font Awesome -->
@@ -470,7 +472,7 @@
                     <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#contact">Contact</a></li>
                 </ul>
 
-                 <!-- <ul class="navbar-nav mx-auto">
+                <!-- <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
                         <a class="nav-link active" href="#home">Home</a>
                     </li>
@@ -607,6 +609,12 @@
                 <i class="fas fa-info-circle me-1"></i>
                 <strong>Guide:</strong> Base price for 0-5kg | Extra charge per kg beyond 5kg.
                 <small class="text-muted">* Prices in KSh, subject to change.</small>
+            </div>
+
+            <div class="alert alert-info mt-2 mb-0" style="font-size: 0.7rem; padding: 8px 12px;">
+                <i class="fas fa-info-circle me-1"></i>
+                <strong>Note:</strong> VAT 16%.
+                <small class="text-muted">* Prices are subject to 16% VAT.</small>
             </div>
         </div>
 

@@ -3,7 +3,7 @@
 
     <div class="header-right">
         <!-- Notification Dropdown -->
-        <div class="dropdown notification-dropdown">
+        {{--<div class="dropdown notification-dropdown">
             <button class="header-icon dropdown-toggle" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-bell"></i>
                 <span class="icon-badge">3</span>
@@ -72,7 +72,7 @@
         </div>
 
         <!-- Messages Dropdown -->
-        <div class="dropdown message-dropdown">
+       <div class="dropdown message-dropdown">
             <button class="header-icon dropdown-toggle" type="button" id="messageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-chat"></i>
                 <span class="icon-badge">5</span>
@@ -151,7 +151,7 @@
                     </a>
                 </li>
             </ul>
-        </div>
+        </div>--}}
 
         <!-- User Profile Dropdown -->
         <div class="dropdown profile-dropdown">

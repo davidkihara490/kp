@@ -265,4 +265,11 @@ class HomeController extends Controller
         // Download PDF
         return $pdf->stream('Karibu_Parcels_Tariffs_' . now()->format('Y-m-d') . '.pdf');
     }
+
+    public function prohibitedItems()
+    {
+        $path = storage_path("app/public/prohibited_items.pdf");
+        abort_unless(file_exists($path), 404);
+        return response()->file($path);
+    }
 }

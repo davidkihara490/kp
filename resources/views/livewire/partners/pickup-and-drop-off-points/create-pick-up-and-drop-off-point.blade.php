@@ -207,7 +207,7 @@
                             </div>
                             <div class="form-card-body">
                                 <!-- Capacity -->
-                                {{--<div class="mb-3">
+                                <div class="mb-3">
                                     <label for="capacity" class="form-label">
                                         <i class="bi bi-box-seam me-2"></i>
                                         Storage Capacity
@@ -222,7 +222,7 @@
                                     @error('capacity')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div> --}}
+                                </div> 
 
                                 <!-- Notes -->
                                 <div class="mb-3">

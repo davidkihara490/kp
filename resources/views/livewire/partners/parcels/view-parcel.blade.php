@@ -1900,7 +1900,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
+                    <!-- <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" wire:click="closeReceiptModal">
                             <i class="bi bi-x me-2"></i>
                             Close
@@ -1921,7 +1921,7 @@
                             <i class="bi bi-printer me-2"></i>
                             Print
                         </button>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>

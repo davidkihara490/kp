@@ -339,9 +339,11 @@
                                         </div>
 
                                         <div class="col-12">
-                                            <label class="form-label required">Content Description</label>
+                                            <label class="form-label required">Content Description <span class="text-danger">*</span> <span><a target="__blank" href="{{ route('prohibited-items') }}" class="text-primary">Please refer to our prohibited items.</a></label>
                                             <textarea class="form-control form-control-lg @error('content_description') is-invalid @enderror"
                                                 wire:model="content_description" rows="4" placeholder="Describe the contents of the parcel in detail"></textarea>
+                                            <span class="text-muted small"> Karibu Parcels Limited and its agents has the right to reject the prohibited items</span>
+
                                             @error('content_description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                         </div>
 

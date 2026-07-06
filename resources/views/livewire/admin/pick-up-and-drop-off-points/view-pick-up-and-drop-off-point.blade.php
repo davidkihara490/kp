@@ -192,6 +192,17 @@
                                     </small>
                                 </div>
                             </div>
+                            <br>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Capacity</strong></p>
+                                    <p class="text-muted">
+                                        <i class="fas fa-door-open mr-2"></i>
+                                        {{ $pickUpAndDropOffPoint->capacity }} Parcels
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

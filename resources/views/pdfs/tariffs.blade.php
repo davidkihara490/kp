@@ -252,6 +252,12 @@
         <br><small>* Prices are in Kenyan Shillings (KSh) and subject to change.</small>
     </div>
 
+    <div class="alert-info">
+        <strong>VAT:</strong> .
+        <br><small>All rices are subject to 16% VAT.</small>
+    </div>
+
+
     <!-- Zones and Towns Table -->
     <div style="margin-top: 30px;">
         <h3 style="color: #008f40; font-size: 14px;">Zones and Covered Towns</h3>

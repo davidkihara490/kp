@@ -5,9 +5,11 @@
   <meta charset="UTF-8">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Karibu Parcels – Book Your Parcel</title>
+  <title>Karibu Parcels - Book Your Parcel</title>
   <!-- Bootstrap 5 + Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="icon" type="image/png" href="{{ asset('logo.jpeg') }}"> <!-- jQuery -->
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -514,10 +516,12 @@
               </div>
             </div>
             <div class="col-12">
-              <label class="form-label">Content description <span class="text-danger">*</span></label>
+              <label class="form-label">Content description <span class="text-danger">*</span> <span><a target="__blank" href="{{ route('prohibited-items') }}" class="text-primary">Please refer to our prohibited items.</a></span></label>
               <input type="text" class="form-control" name="content_description" id="parcelContent"
                 placeholder="Describe what you are sending" required>
             </div>
+            <span class="text-muted small"> Karibu Parcels Limited and its agents has the right to reject the prohibited items</span>
+
             <div class="col-12">
               <label class="form-label">Special instructions (optional)</label>
               <input type="text" class="form-control" name="special_instructions" id="instructions"
@@ -556,14 +560,6 @@
                 <label class="form-label">Email</label>
                 <input type="email" class="form-control" name="sender_email" id="senderEmail" placeholder="john@example.com">
               </div>
-              <div class="mb-2">
-                <label class="form-label">Address</label>
-                <input type="text" class="form-control" name="sender_address" id="senderAddress" placeholder="Street, building, landmark">
-              </div>
-              <div class="mb-2">
-                <label class="form-label">Notes (optional)</label>
-                <input type="text" class="form-control" name="sender_notes" id="senderNotes" placeholder="Any special pickup notes">
-              </div>
             </div>
             <!-- Receiver column -->
             <div class="col-md-6">
@@ -580,14 +576,6 @@
                 <label class="form-label">Email</label>
                 <input type="email" class="form-control" name="receiver_email" id="receiverEmail" placeholder="jane@example.com">
               </div>
-              <div class="mb-2">
-                <label class="form-label">Address</label>
-                <input type="text" class="form-control" name="receiver_address" id="receiverAddress" placeholder="Street, building, landmark">
-              </div>
-              <div class="mb-2">
-                <label class="form-label">Notes (optional)</label>
-                <input type="text" class="form-control" name="receiver_notes" id="receiverNotes" placeholder="Any special delivery notes">
-              </div>
             </div>
           </div>
 
@@ -597,11 +585,9 @@
           </div>
         </div>
 
-        <!-- STEP 3: Review & Confirm -->
         <div class="step-panel" id="step3">
           <h5 class="fw-semibold mb-3"><i class="bi bi-clipboard-check me-2 text-primary"></i>Review & Confirm</h5>
 
-          <!-- Login / Register prompt - Now shows user status -->
           <div class="login-prompt d-flex justify-content-between align-items-center flex-wrap" id="authPrompt">
             <div>
               <i class="bi bi-person-circle me-2 fs-4"></i>
@@ -618,7 +604,6 @@
             </div>
           </div>
 
-          <!-- Review Summary -->
           <div class="review-summary">
             <h6><i class="bi bi-box me-2"></i>Parcel Details</h6>
             <div class="row">
@@ -644,7 +629,6 @@
               <div class="col-md-6"><span class="label">Name:</span> <span class="value" id="revSender">-</span></div>
               <div class="col-md-6"><span class="label">Phone:</span> <span class="value" id="revSenderPhone">-</span></div>
               <div class="col-md-6"><span class="label">Email:</span> <span class="value" id="revSenderEmail">-</span></div>
-              <div class="col-md-6"><span class="label">Address:</span> <span class="value" id="revSenderAddress">-</span></div>
             </div>
           </div>
 
@@ -654,11 +638,9 @@
               <div class="col-md-6"><span class="label">Name:</span> <span class="value" id="revReceiver">-</span></div>
               <div class="col-md-6"><span class="label">Phone:</span> <span class="value" id="revReceiverPhone">-</span></div>
               <div class="col-md-6"><span class="label">Email:</span> <span class="value" id="revReceiverEmail">-</span></div>
-              <div class="col-md-6"><span class="label">Address:</span> <span class="value" id="revReceiverAddress">-</span></div>
             </div>
           </div>
 
-          <!-- Hidden fields for calculated values -->
           <input type="hidden" name="booking_type" value="instant">
           <input type="hidden" name="booking_source" value="web">
           <input type="hidden" name="payment_method" value="cash">
@@ -667,13 +649,12 @@
           <input type="hidden" name="insurance_amount" id="insuranceAmountHidden" value="0">
           <input type="hidden" name="customer_id" id="customerId" value="">
 
-          <!-- Confirmation Checkbox -->
           <div class="confirmation-section">
             <div class="form-check">
               <input class="form-check-input" type="checkbox" id="termsCheck" name="terms" required>
               <label class="form-check-label" for="termsCheck">
                 <strong>I confirm that all the information provided above is correct.</strong><br>
-                <span class="text-muted small">By checking this box, you agree to our <a href="#" class="text-primary">terms of service</a> and confirm that you are authorized to send this parcel.</span>
+                <span class="text-muted small">By checking this box, you agree to our <a target="__blank" href="{{ route('terms') }}" class="text-primary">terms of service</a> and confirm that you are authorized to send this parcel.</span>
               </label>
             </div>
           </div>
@@ -689,12 +670,10 @@
     </div>
   </div>
 
-  <!-- WhatsApp float -->
   <div class="whatsapp-float">
     <a href="#" class="whatsapp-button" target="_blank"><i class="fab fa-whatsapp"></i></a>
   </div>
 
-  <!-- LOGIN MODAL -->
   <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -733,7 +712,6 @@
     </div>
   </div>
 
-  <!-- REGISTER MODAL -->
   <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -1166,7 +1144,7 @@
       // ============================================
       function calculateTotal() {
         const weight = parseFloat(document.getElementById('weight').value) || 1;
-        const basePrice = {{$price }};
+        const basePrice = {{ $price }};
         const weightCharge = (weight - 1) * 150;
         const declaredValue = parseFloat(document.getElementById('declaredValue').value) || 0;
         const insuranceRequired = document.getElementById('insuranceRequired').checked;

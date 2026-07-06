@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ParcelController extends Controller
 {
@@ -122,7 +123,7 @@ class ParcelController extends Controller
                 'receiver_phone' => $request->receiver_phone,
                 'receiver_email' => $request->receiver_email ?? null,
                 'receiver_town_id' => $request->receiver_town_id,
-                'receiver_address' => $request->receiver_address ?? null,
+                'receiver_address' => 'NULL',
                 'receiver_notes' => $request->receiver_notes ?? null,
 
                 // Pickup Information (default values)
@@ -227,15 +228,10 @@ class ParcelController extends Controller
         try {
             // Validate the request
             $request->validate([
-                'phone' => 'required|string',
                 'tracking_id' => 'required|string|max:50'
             ]);
 
-            $phone = $request->input('phone');
             $trackingId = $request->input('tracking_id');
-
-            // Clean phone number for database lookup (remove +254 and leading 0)
-            $cleanPhone = formatKenyaNumber($phone);
 
             // Find the parcel
             $parcel = Parcel::with([
@@ -248,13 +244,9 @@ class ParcelController extends Controller
                     $query->orderBy('created_at', 'desc');
                 }
             ])
-                ->where(function ($query) use ($trackingId, $cleanPhone) {
+                ->where(function ($query) use ($trackingId) {
                     $query->where('parcel_id', $trackingId)
                         ->orWhere('id', $trackingId);
-                })
-                ->where(function ($query) use ($cleanPhone) {
-                    $query->where('sender_phone', 'LIKE', '%' . $cleanPhone)
-                        ->orWhere('receiver_phone', 'LIKE', '%' . $cleanPhone);
                 })
                 ->first();
 
@@ -326,31 +318,12 @@ class ParcelController extends Controller
         // Get current location
         $currentLocation = $this->getCurrentLocation($parcel);
 
-        // Get estimated delivery
-        $estimatedDelivery = $this->getEstimatedDelivery($parcel);
-
-        // Get driver information
-        $driverInfo = null;
-        if ($parcel->driver) {
-            $driverInfo = [
-                'name' => $parcel->driver->full_name ?? $parcel->driver->name ?? 'N/A',
-                'phone' => $parcel->driver->phone_number ?? $parcel->driver->phone ?? 'N/A'
-            ];
-        }
-
         // Check if there's a latest status with driver
         $latestStatus = $parcel->statuses()
             ->whereNotNull('driver_id')
             ->with('driver')
             ->latest()
             ->first();
-
-        if ($latestStatus && $latestStatus->driver && !$driverInfo) {
-            $driverInfo = [
-                'name' => $latestStatus->driver->full_name ?? $latestStatus->driver->name ?? 'N/A',
-                'phone' => $latestStatus->driver->phone_number ?? $latestStatus->driver->phone ?? 'N/A'
-            ];
-        }
 
         return [
             'parcel_id' => $parcel->parcel_id ?? $parcel->id,
@@ -366,9 +339,7 @@ class ParcelController extends Controller
             'current_location' => $currentLocation,
             'current_status' => $parcel->current_status ?? 'created',
             'payment_status' => $parcel->payment_status ?? 'pending',
-            'estimated_delivery' => $estimatedDelivery,
             'last_updated' => $parcel->updated_at->toDateTimeString(),
-            'driver' => $driverInfo,
             'status_history' => $statusHistory,
             'weight' => $parcel->weight ?? null,
             'weight_unit' => $parcel->weight_unit ?? 'kg',
@@ -417,52 +388,6 @@ class ParcelController extends Controller
     }
 
     /**
-     * Get estimated delivery date
-     *
-     * @param Parcel $parcel
-     * @return string
-     */
-    private function getEstimatedDelivery($parcel)
-    {
-        // If already delivered
-        if ($parcel->current_status === 'delivered') {
-            return 'Delivered';
-        }
-
-        // If there's a delivery date set
-        if ($parcel->delivery_date) {
-            return $parcel->delivery_date->format('M d, Y H:i');
-        }
-
-        // Calculate estimated delivery based on status
-        switch ($parcel->current_status) {
-            case 'created':
-            case 'booked':
-            case 'accepted':
-                return 'Pending pickup';
-
-            case 'assigned':
-                return 'Awaiting pickup';
-
-            case 'in_transit':
-                // Add 1-2 days from now
-                return now()->addDays(2)->format('M d, Y H:i');
-
-            case 'warehouse':
-                return now()->addDay()->format('M d, Y H:i');
-
-            case 'arrived_at_destination':
-                return 'Available for pickup today';
-
-            case 'picked':
-                return 'Picked up by recipient';
-
-            default:
-                return 'Pending';
-        }
-    }
-
-    /**
      * Get location from status
      *
      * @param ParcelStatus $status
@@ -498,5 +423,26 @@ class ParcelController extends Controller
             default:
                 return 'N/A';
         }
+    }
+
+    public function printReceipt($id){
+       $parcel = Parcel::findOrFail($id);
+
+        $data = [
+            'parcel' => $parcel,
+            'logo' => public_path('logo.jpeg')
+        ];
+
+        // Load view and generate PDF in landscape
+        $pdf = Pdf::loadView('pdfs.parcel-label', $data)
+            ->setPaper('a4', 'landscape')
+            ->setOptions([
+                'defaultFont' => 'sans-serif',
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true
+            ]);
+
+        // Download PDF
+        return $pdf->stream('Karibu_Parcels_Label_' . now()->format('Y-m-d') . '.pdf');
     }
 }
