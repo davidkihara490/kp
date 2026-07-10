@@ -448,36 +448,41 @@
                                     <i class="bi bi-truck me-2"></i>
                                     Driver Information
                                 </h5>
-                                {{--@if(!$parcel->driver)
+                                @if(!$parcel->currentDriver())
                                 <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignDriverModal">
                                     <i class="bi bi-person-plus me-1"></i>
                                     Assign
                                 </button>
-                                @endif --}}
+                                @endif
                             </div>
                             <div class="card-body">
-                                @if($parcel->driver)
+                                @if($parcel->currentDriver())
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="avatar bg-success me-3">
                                         <i class="bi bi-person"></i>
                                     </div>
                                     <div>
-                                        <h6 class="mb-1">{{ $parcel->driver->full_name }}</h6>
-                                        <small class="text-muted">{{ $parcel->driver->phone_number }}</small>
+                                        <h6 class="mb-1">{{ $parcel->currentDriver()->full_name }}</h6>
+                                        <small class="text-muted">{{ $parcel->currentDriver()->phone_number }}</small>
                                     </div>
                                 </div>
                                 <table class="table table-sm table-borderless">
                                     <tr>
                                         <th>Assigned At:</th>
-                                        <td>{{ $parcel->updated_at?->format('M d, Y H:i') ?? 'N/A' }}</td>
+                                        <td>{{ $parcel->currentStatus()?->created_at->format('M d, Y H:i') ?? 'N/A' }}</td>
                                     </tr>
                                 </table>
 
 
+                                @if($loggedUser->user_type == 'pha' || $loggedUser->user_type == 'pickup-dropoff' )
+
+                                @if(  $parcel->latestStatus->otp_verified)
                                 <button type="button" class="btn btn-sm btn-outline-primary" wire:click="openDriverVerificationModal">
                                     <i class="bi bi-person-plus me-1"></i>
                                     Verify Code
                                 </button>
+                                @endif
+                                @endif
 
                                 @else
                                 <div class="text-center py-4 text-muted">
@@ -493,7 +498,7 @@
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">
                                     <i class="bi bi-truck me-2"></i>
-                                    Parcel Receiving
+                                    Parcel Receiving <small>(Receive from driver)</small>
                                 </h5>
                             </div>
                             <div class="card-body">
@@ -515,19 +520,23 @@
                                     </tr>
                                 </table>
 
-
-                                @if($parcel->latestStatus->status == 'in_transit')
+                                @if($parcel->transitStatus())
                                 <button type="button" class="btn btn-sm btn-outline-primary" wire:click="receiveParcelFromDriver">
                                     <i class="bi bi-person-plus me-1"></i>
                                     Receive Parcel
                                 </button>
-                                @else
-                                <button type="button" class="btn btn-sm btn-success">
-                                    <i class="bi bi-check me-1"></i>
-                                    Received at: {{ $parcel->latestStatus->updated_at?->format('M d, Y H:i') ?? 'N/A' }}
-                                </button>
                                 @endif
 
+                                @if($parcel->receivedStatus())
+                                <button type="button" class="btn btn-sm btn-success">
+                                    <i class="bi bi-check me-1"></i>
+                                    Received at: {{ $parcel->receivedStatus()->updated_at?->format('M d, Y H:i') ?? 'N/A' }}
+                                </button>
+                                @else
+                                <button type="button" class="btn btn-sm btn-outline-warning">
+                                    Wait to receive parcel
+                                </button>
+                                @endif
 
                                 @else
                                 <div class="text-center py-4 text-muted">
@@ -568,9 +577,10 @@
                                             <th>Picked Up At:</th>
                                             <td>{{ $parcel->parcelPickUp?->created_at}}</td>
                                         </button>
+                                        @endif
 
-                                        @else
-                                        @if(auth()->guard('partner')->user()->user_type == 'pha' || auth()->guard('partner')->user()->user_type == 'pick_up_and_drop_off')
+                                        
+                                        @if(auth()->guard('partner')->user()->user_type == 'pha' || auth()->guard('partner')->user()->user_type == 'pickup-dropoff')
                                         <button type="button" class="btn btn-sm btn-outline-primary" wire:click="openPickUpModal">
                                             <i class="bi bi-person-plus me-1"></i>
                                             Pick Up
@@ -581,12 +591,8 @@
                                             Not yet Picked
                                         </button>
                                         @endif
-                                        @endif
                                     </tr>
                                 </table>
-
-
-
                             </div>
                         </div>
 

@@ -178,7 +178,7 @@ class Parcel extends Model
     public function canBeAccepted(): bool
     {
         return $this->creator_type == Customer::class  &&
-        $this->latestStatus?->status == Parcel::STATUS_CREATED &&
+            $this->latestStatus?->status == Parcel::STATUS_CREATED &&
             $this->booking_source == 'web';
     }
 
@@ -277,9 +277,19 @@ class Parcel extends Model
     {
         return $this->belongsTo(Partner::class, 'sender_partner_id');
     }
-    public function driver()
+    // public function driver()
+    // {
+    //     return $this->belongsTo(Driver::class, 'driver_id');
+    // }
+
+    public function currentDriver()
     {
-        return $this->belongsTo(Driver::class, 'driver_id');
+        $status = $this->statuses()
+            ->where('status', self::STATUS_ASSIGNED)
+            ->latest()
+            ->first();
+
+        return $status?->driver;
     }
 
     public function transporter(): MorphTo
@@ -856,6 +866,25 @@ class Parcel extends Model
     {
         return $this->hasOne(ParcelStatus::class)->latestOfMany();
     }
+
+public function receivedStatus()
+{
+    return $this->statuses()
+        ->whereIn('status', [
+            self::STATUS_WAREHOUSE,
+            self::STATUS_ARRIVED_AT_DESTINATION,
+        ])
+        ->latest()
+        ->first();
+}
+
+    public function transitStatus(): bool
+    {
+        return $this->statuses()
+            ->latest()
+            ->value('status') === self::STATUS_IN_TRANSIT;
+    }
+
 
     // protected function isValidTransition(string $newStatus): bool
     // {

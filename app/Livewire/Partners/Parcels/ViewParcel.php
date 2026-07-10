@@ -72,21 +72,16 @@ class ViewParcel extends Component
     public $pickup_code = '';
     public $pickupVerificationError = '';
     protected $mpesaService;
-
     public $showReceiptModal = false;
     public $selectedPayment = null;
     public $receiptData = [];
     public $pollingEnabled = false;
-
     public $loggedUser;
     public $loggedUserType;
-
     public $showErrorModal = false;
     public $errorMessage = null;
-
     public $showSuccessModal = false;
     public $successMessage = null;
-
 
     public function startPolling()
     {
@@ -329,6 +324,7 @@ class ViewParcel extends Component
 
     public function mount($id)
     {
+        $this->loggedUser = Auth::guard('partner')->user();
         $this->parcelId = $id;
         $this->loadParcel();
         $this->latestStatus = $this->parcel->statuses()
@@ -625,7 +621,6 @@ class ViewParcel extends Component
             'customer',
             'sender',
             'receiver',
-            'driver',
             'payments' => function ($query) {
                 $query->latest();
             },

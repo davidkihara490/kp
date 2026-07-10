@@ -118,7 +118,7 @@ class Parcels extends Component
     protected function getFilteredQuery()
     {
         return Parcel::query()
-            ->with(['senderTown', 'receiverTown', 'transportPartner', 'driver', 'payments'])
+            ->with(['senderTown', 'receiverTown', 'transportPartner', 'payments'])
             ->orderBy('id', 'DESC')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
@@ -192,7 +192,6 @@ class Parcels extends Component
             'senderTown',
             'receiverTown',
             'transportPartner',
-            'driver',
             'senderPartner',
             'senderPickUpDropOffPoint',
             'deliveryStation',

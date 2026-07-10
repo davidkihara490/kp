@@ -876,7 +876,7 @@
                                     <div class="mt-2">
                                         @foreach($selectedPartner->towns as $town)
                                         <span class="badge badge-primary mr-1 mb-1 p-2">
-                                            <i class="fas fa-map-marker-alt mr-1"></i>{{ $town->town->name }}
+                                            <i class="fas fa-map-marker-alt mr-1"></i>{{ $town->town?->name}}
                                         </span>
                                         @endforeach
                                     </div>
