@@ -476,12 +476,12 @@
 
                                 @if($loggedUser->user_type == 'pha' || $loggedUser->user_type == 'pickup-dropoff' )
 
-                                @if(  $parcel->latestStatus->otp_verified)
+                                {{-- @if($parcel->latestStatus->otp_verified) --}}
                                 <button type="button" class="btn btn-sm btn-outline-primary" wire:click="openDriverVerificationModal">
                                     <i class="bi bi-person-plus me-1"></i>
                                     Verify Code
                                 </button>
-                                @endif
+                                {{-- @endif --}}
                                 @endif
 
                                 @else
