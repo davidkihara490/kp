@@ -571,25 +571,20 @@
                                 </div>
                                 <table class="table table-sm table-borderless">
                                     <tr>
+
+                                        @if(auth()->guard('partner')->user()->user_type == 'pha' || auth()->guard('partner')->user()->user_type == 'pickup-dropoff')
                                         @if($parcel->parcelPickUp)
                                         <button type="button" class="btn btn-sm btn-success">
                                             <i class="bi bi-check me-1"></i>
                                             <th>Picked Up At:</th>
                                             <td>{{ $parcel->parcelPickUp?->created_at}}</td>
                                         </button>
-                                        @endif
-
-                                        
-                                        @if(auth()->guard('partner')->user()->user_type == 'pha' || auth()->guard('partner')->user()->user_type == 'pickup-dropoff')
+                                        @else
                                         <button type="button" class="btn btn-sm btn-outline-primary" wire:click="openPickUpModal">
                                             <i class="bi bi-person-plus me-1"></i>
                                             Pick Up
                                         </button>
-                                        @elseif(auth()->guard('partner')->user()->user_type == 'transport')
-                                        <button type="button" class="btn btn-sm btn-outline-warning">
-                                            <i class="bi bi-person-plus me-1"></i>
-                                            Not yet Picked
-                                        </button>
+                                        @endif
                                         @endif
                                     </tr>
                                 </table>

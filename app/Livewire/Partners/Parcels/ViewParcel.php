@@ -442,8 +442,8 @@ class ViewParcel extends Component
                 'partner_id' => Auth::guard('partner')->user()->parcelHandlingAssistant?->partner?->id ?? Auth::guard('partner')->user()->partner?->id,
                 'type' => 'pickup-dropoff',
                 'destination' => 'final',
-                'destination_id' => $this->selectedParcel->delivery_pick_up_drop_off_point_id,
-                'origin_id' => $this->selectedParcel->sender_pick_up_drop_off_point_id,
+                'destination_id' => $this->parcel->delivery_pick_up_drop_off_point_id,
+                'origin_id' => $this->parcel->sender_pick_up_drop_off_point_id,
                 'amount' => $payout['pick_up_drop_off_partner']['amount'],
                 'status' => 'approved',
                 'paid_out_on' => null,
@@ -458,6 +458,7 @@ class ViewParcel extends Component
             $this->dispatch('parcel-updated');
         } catch (\Exception $e) {
             DB::rollBack();
+            dd($e->getMessage());
             Log::error('Pickup verification failed', ['error' => $e->getMessage()]);
             session()->flash('error', 'Failed to verify pickup: ' . $e->getMessage());
         }
