@@ -336,7 +336,9 @@
             <button class="btn btn-success w-100" disabled><i class="bi bi-check-circle me-2"></i> Payment Completed</button>
           @endif
         </div>
-        <div class="col-md-6"><a target="_blank" href="{{ route('print-customer-receipt', $parcel->id) }}" class="btn btn-print w-100"><i class="bi bi-printer me-2"></i> Print Receipt</a></div>
+        @if ($parcel->payment_status == 'paid') 
+                <div class="col-md-6"><a target="_blank" href="{{ route('print-customer-receipt', $parcel->id) }}" class="btn btn-print w-100"><i class="bi bi-printer me-2"></i> Print Sticker</a></div>
+        @endif
       </div>
       <div class="text-center mt-3 no-print">
         <a href="#" class="btn btn-outline-secondary-custom me-2"><i class="bi bi-box-seam me-2"></i>Track</a>

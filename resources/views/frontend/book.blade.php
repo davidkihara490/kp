@@ -654,7 +654,7 @@
               <input class="form-check-input" type="checkbox" id="termsCheck" name="terms" required>
               <label class="form-check-label" for="termsCheck">
                 <strong>I confirm that all the information provided above is correct.</strong><br>
-                <span class="text-muted small">By checking this box, you agree to our <a target="__blank" href="{{ route('terms') }}" class="text-primary">terms of service</a> and confirm that you are authorized to send this parcel.</span>
+                <span class="text-muted small">By checking this box, you agree to our <a target="__blank" href="{{ route('terms') }}" class="text-primary">terms of service</a> and <a target="__blank" href="{{ route('policy') }}" class="text-primary">privacy policy</a> and confirm that you are authorized to send this parcel.</span>
               </label>
             </div>
           </div>
