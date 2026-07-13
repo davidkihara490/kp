@@ -383,7 +383,7 @@
             </div>
             <div class="field">
                 <span class="field-label">Address</span>
-                <span class="field-value">{{ $parcel->deliveryStation->adress }}</span>
+                <span class="field-value">{{ $parcel->deliveryStation->address }}</span>
             </div>
         </div>
     </div>
