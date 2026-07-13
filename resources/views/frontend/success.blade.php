@@ -112,19 +112,21 @@
       color: white;
       transition: all 0.25s;
       box-shadow: 0 8px 20px -8px rgba(26, 77, 51, 0.3);
+      width: 100%;  /* full width */
     }
     .btn-pay:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -8px rgba(26, 77, 51, 0.4); color: white; }
     .btn-pay:disabled { opacity: 0.6; transform: none; box-shadow: none; }
     .btn-print {
-      background: #f1f5f9;
+      background: #06d3fc;
       border: 1px solid #e2e8f0;
       padding: 14px 30px;
       border-radius: 60px;
       font-weight: 600;
       color: #1e293b;
       transition: 0.2s;
+      width: 100%;  /* full width */
     }
-    .btn-print:hover { background: #e9edf2; color: #0f172a; }
+    .btn-print:hover { background: #06d3fc; color: #0f172a; }
     .btn-outline-secondary-custom {
       border: 1px solid #e2e8f0;
       background: transparent;
@@ -135,6 +137,67 @@
       transition: 0.2s;
     }
     .btn-outline-secondary-custom:hover { background: #f1f5f9; border-color: #cbd5e1; }
+
+    /* ---------- STEPS with RED BORDER (reduced spacing) ---------- */
+    .post-payment-steps {
+      border: 2px solid #dc2626;
+      border-radius: 24px;
+      padding: 0.8rem 1.5rem 0.5rem;
+      background: #fefaf9;
+      margin-top: 1.5rem;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.05);
+    }
+    .post-payment-steps .steps-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #0b3b2a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.5rem;
+    }
+    .post-payment-steps .steps-title i {
+      color: #0b3b2a;
+      background: #e2f0eb;
+      padding: 4px 8px;
+      border-radius: 40px;
+      font-size: 1rem;
+    }
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      padding-left: 0.1rem;
+    }
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: #1e293b;
+      padding: 2px 0;
+      border-bottom: 1px dashed #f1e6e6;
+    }
+    .step-item:last-child { border-bottom: 0; }
+    .step-number {
+      background: #dc2626;
+      color: white;
+      font-weight: 700;
+      font-size: 0.7rem;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 30px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-item .step-text {
+      line-height: 1.4;
+      padding-top: 1px;
+    }
+    .step-item .step-text strong { color: #0b3b2a; }
 
     /* MODAL STYLING */
     .stk-modal .modal-content {
@@ -281,6 +344,7 @@
       .stk-footer { flex-direction: column; }
       .stk-footer .btn { width: 100%; }
       .detail-grid { grid-template-columns: 1fr 1fr; }
+      .post-payment-steps { padding: 0.8rem 1rem 0.5rem; }
     }
   </style>
 </head>
@@ -327,19 +391,43 @@
       <div class="mt-3"><div class="detail-item"><span class="label"><i class="bi bi-file-text"></i> Content</span><div class="value">{{ $parcel->content_description }}</div>@if($parcel->special_instructions)<div class="sub"><i class="bi bi-info-circle me-1"></i>{{ $parcel->special_instructions }}</div>@endif</div></div>
       @endif
 
-      <!-- action buttons -->
+      <!-- ========== PAYMENT BUTTON (full width) ========== -->
       <div class="row g-3 mt-4 no-print">
-        <div class="col-md-6">
+        <div class="col-12">
           @if($parcel->payment_status == 'pending')
-            <button class="btn btn-pay w-100" id="payNowBtn"><i class="bi bi-phone me-2"></i> Pay with M-PESA</button>
+            <button class="btn btn-pay" id="payNowBtn"><i class="bi bi-phone me-2"></i> Pay with M-PESA</button>
           @else
             <button class="btn btn-success w-100" disabled><i class="bi bi-check-circle me-2"></i> Payment Completed</button>
           @endif
         </div>
-        @if ($parcel->payment_status == 'paid') 
-                <div class="col-md-6"><a target="_blank" href="{{ route('print-customer-receipt', $parcel->id) }}" class="btn btn-print w-100"><i class="bi bi-printer me-2"></i> Print Sticker</a></div>
-        @endif
       </div>
+
+      <!-- ========== STEPS with RED BORDER ========== -->
+      <div class="post-payment-steps no-print">
+        <div class="steps-title">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>What to do next</span>
+        </div>
+        <div class="step-list">
+          <div class="step-item"><span class="step-number">1</span><span class="step-text"><strong>You have successfully booked your parcel</strong> — keep your tracking number safe.</span></div>
+          <div class="step-item"><span class="step-number">2</span><span class="step-text"><strong>Kindly package it properly.</strong> Karibu parcels will not accept improperly packaged parcels.</span></div>
+          <div class="step-item"><span class="step-number">3</span><span class="step-text"><strong>Print the sticker</strong> by clicking the <strong>“Print Sticker”</strong> button below. If you do not have a printer, write a paper with the exact details.</span></div>
+          <div class="step-item"><span class="step-number">4</span><span class="step-text"><strong>Drop it at your origin Pick up and Drop off point.</strong> (see address above)</span></div>
+          <div class="step-item"><span class="step-number">5</span><span class="step-text"><strong>Allow it to be inspected</strong> and then leave.</span></div>
+          <div class="step-item"><span class="step-number">6</span><span class="step-text"><strong>We will take care of the rest.</strong> 🚚</span></div>
+        </div>
+      </div>
+
+      <!-- ========== PRINT STICKER (full width, below steps) ========== -->
+      @if ($parcel->payment_status == 'paid') 
+      <div class="row g-3 mt-3 no-print">
+        <div class="col-12">
+          <a target="_blank" href="{{ route('print-customer-receipt', $parcel->id) }}" class="btn btn-print"><i class="bi bi-printer me-2"></i> Print Sticker</a>
+        </div>
+      </div>
+      @endif
+
+      <!-- Track & New Booking -->
       <div class="text-center mt-3 no-print">
         <a href="#" class="btn btn-outline-secondary-custom me-2"><i class="bi bi-box-seam me-2"></i>Track</a>
         <a href="{{ route('home') }}" class="btn btn-outline-secondary-custom"><i class="bi bi-plus-circle me-2"></i>New Booking</a>
