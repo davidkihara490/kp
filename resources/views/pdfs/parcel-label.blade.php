@@ -326,7 +326,7 @@
 
     <div class="header">
         <div class="brand">
-            Karibu Parcels
+            Karibu Parcels Limited
         </div>
         <div class="header-right">
             <div class="doc-title">{{ $parcel->parcel_id }}</div>
