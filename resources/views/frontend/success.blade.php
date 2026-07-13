@@ -199,6 +199,28 @@
     }
     .step-item .step-text strong { color: #0b3b2a; }
 
+    /* NB notice at bottom of steps */
+    .nb-notice {
+      margin-top: 0.6rem;
+      padding: 0.5rem 0.8rem;
+      background: #fef2f2;
+      border-radius: 12px;
+      border-left: 4px solid #dc2626;
+      font-size: 0.85rem;
+      color: #991b1b;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .nb-notice i {
+      font-size: 1.1rem;
+      margin-top: 2px;
+      color: #dc2626;
+    }
+    .nb-notice strong {
+      font-weight: 700;
+    }
+
     /* MODAL STYLING */
     .stk-modal .modal-content {
       border-radius: 32px;
@@ -402,7 +424,7 @@
         </div>
       </div>
 
-      <!-- ========== STEPS with RED BORDER ========== -->
+      <!-- ========== STEPS with RED BORDER + NB ========== -->
       <div class="post-payment-steps no-print">
         <div class="steps-title">
           <i class="bi bi-check-circle-fill"></i>
@@ -415,6 +437,12 @@
           <div class="step-item"><span class="step-number">4</span><span class="step-text"><strong>Drop it at your origin Pick up and Drop off point.</strong> (see address above)</span></div>
           <div class="step-item"><span class="step-number">5</span><span class="step-text"><strong>Allow it to be inspected</strong> and then leave.</span></div>
           <div class="step-item"><span class="step-number">6</span><span class="step-text"><strong>We will take care of the rest.</strong></span></div>
+        </div>
+
+        <!-- NB NOTICE - do not write sender/receiver details on package -->
+        <div class="nb-notice">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span><strong>NB:</strong> Do not write your details and the details of the receiver (Name and contact) on the package.</span>
         </div>
       </div>
 
