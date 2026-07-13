@@ -20,6 +20,7 @@ use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
@@ -80,14 +81,14 @@ class HomeController extends Controller
             if (!$pricing) {
                 return;
             }
-
             $basePrice = (float) ($pricing->cost ?? 0);
             $extraKgCost = (float) ($pricing->extra ?? 0);
 
-            if ($request->weight <= 5) {
+
+            if ($request->parcel_weight <= 5) {
                 $base_price = round($basePrice, 2);
             } else {
-                $extraWeight = $request->weight - 5;
+                $extraWeight = $request->parcel_weight - 5;
                 $base_price = round(
                     $basePrice + ($extraWeight * $extraKgCost),
                     2
