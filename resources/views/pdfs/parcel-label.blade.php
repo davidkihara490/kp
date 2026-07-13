@@ -1,448 +1,397 @@
-<!DOCTYPE html>
-<html lang="en">
-
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Karibu Parcels · Delivery Note</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
     <style>
-        :root {
-            --ink: #12241d;
-            --forest: #0e4632;
-            --forest-deep: #0a3526;
-            --sage-bg: #f2f6f3;
-            --sage-line: #dde6e0;
-            --paper: #210e0e;
-            --slate: #5c6b66;
-            --amber: #c78a3d;
-            --amber-soft: #f7ecdb;
-        }
-
-        * {
+        *, *::before, *::after {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+        }
+        
+        @page {
+            size: A4;
+            margin: 15mm 12mm;
+            background-color: #ffffff;
         }
 
-        html,
         body {
-            height: 100%;
+          margin: 20px;
+            color: #1a1a1a;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #ffffff;
+            font-size: 10pt;
+            line-height: 1.5;
         }
 
-        body {
-            background: var(--sage-bg);
-            font-family: 'Inter', system-ui, sans-serif;
-            color: var(--ink);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 26px 16px;
-        }
-
-        .sheet {
+        .invoice-box {
             width: 100%;
-            max-width: 860px;
-            background: var(--paper);
-            border-radius: 18px;
-            box-shadow: 0 30px 60px -20px rgba(10, 53, 38, 0.25);
-            position: relative;
-            overflow: hidden;
-            border: 1px solid var(--sage-line);
-        }
-
-        /* ===== HEADER: logo + parcel number, centered ===== */
-        .head {
-            background: linear-gradient(135deg, var(--forest) 0%, var(--forest-deep) 100%);
-            color: #fff;
-            padding: 28px 34px 24px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            gap: 10px;
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 14px;
-        }
-
-        .logo-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 14px;
-            background: rgba(255, 255, 255, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            flex-shrink: 0;
-            border: 2px solid rgba(255, 255, 255, 0.10);
-        }
-
-        .brand-name {
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            font-size: 26px;
-            letter-spacing: 0.5px;
-            line-height: 1.1;
-        }
-
-        .brand-name small {
             display: block;
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            font-size: 11px;
-            letter-spacing: 1.8px;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.7);
-            margin-top: 4px;
         }
 
-        .parcel-number {
-            font-family: 'IBM Plex Mono', monospace;
-            font-weight: 600;
-            font-size: 20px;
-            letter-spacing: 0.6px;
-            background: rgba(255, 255, 255, 0.12);
-            padding: 8px 28px;
-            border-radius: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            display: inline-block;
-            margin-top: 4px;
+        /* HEADER */
+        .header {
+            display: table;
+            width: 100%;
+            padding-bottom: 5mm;
+            border-bottom: 2px solid #1a1a1a;
+        }
+        .brand {
+            display: table-cell;
+            font-size: 20pt;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #1a1a1a;
+            vertical-align: bottom;
+        }
+        .header-right {
+            display: table-cell;
+            text-align: right;
+            vertical-align: bottom;
+        }
+        .doc-title {
+            font-size: 12pt;
+            font-weight: 800;
+            letter-spacing: 1.6px;
+            text-transform: uppercase;
+            color: #000000;
         }
 
-        .parcel-number .tag {
-            font-family: 'Inter', sans-serif;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            background: var(--amber);
-            color: #241505;
-            padding: 3px 14px;
-            border-radius: 20px;
-            margin-left: 12px;
+        /* ROUTE */
+        .route-section {
+            padding: 6mm 0 4mm;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .route-table {
+            display: table;
+            width: 100%;
+        }
+        .route-city {
+            display: table-cell;
+            width: 30%;
             vertical-align: middle;
         }
-
-        /* ===== BODY ===== */
-        .body {
-            padding: 30px 34px 22px;
+        .route-city.left {
+            text-align: left;
         }
-
-        /* ---------- TWO COLUMN: FROM / TO ---------- */
-        .from-to-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0 30px;
-            align-items: start;
+        .route-city.right {
+            text-align: right;
         }
-
-        .stop h3 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 12px;
+        .route-city .code {
+            font-size: 22pt;
             font-weight: 700;
-            letter-spacing: 1.4px;
+            line-height: 1.1;
+            color: #1a1a1a;
+        }
+        .route-city .name {
+            font-size: 8.5pt;
+            font-weight: 500;
+            color: #666;
+            margin-top: 2px;
+        }
+        .route-line-cell {
+            display: table-cell;
+            width: 40%;
+            vertical-align: middle;
+            text-align: center;
+        }
+        .route-line {
+            height: 2px;
+            background: #d0d0d0;
+            position: relative;
+            margin: 0 10px;
+        }
+        .route-line .plane {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            padding: 0 8px;
+            font-size: 12pt;
+            color: #1a1a1a;
+            line-height: 1;
+        }
+        .route-meta {
+            display: table;
+            width: 100%;
+            margin-top: 4mm;
+            font-size: 7.5pt;
+            font-weight: 600;
+            letter-spacing: 0.6px;
             text-transform: uppercase;
-            color: var(--forest);
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            color: #888;
+        }
+        .route-meta-cell {
+            display: table-cell;
+            width: 33.33%;
+        }
+        .route-meta-cell.center {
+            text-align: center;
+        }
+        .route-meta-cell.right {
+            text-align: right;
+        }
+        .route-meta b {
+            color: #1a1a1a;
+            font-weight: 700;
         }
 
-        .stop h3 .idx {
-            background: var(--sage-bg);
-            border: 1px solid var(--sage-line);
-            color: var(--slate);
-            font-size: 10px;
+        /* TWO COLUMN LAYOUT */
+        .two-col-table {
+            display: table;
+            width: 100%;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .col {
+            display: table-cell;
+            width: 50%;
+            padding: 5mm 0;
+            vertical-align: top;
+        }
+        .col.left {
+            padding-right: 6mm;
+        }
+        .col.right {
+            padding-left: 6mm;
+            border-left: 1px solid #e8e8e8;
+        }
+        .col-title {
+            font-size: 8pt;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: #1a1a1a;
+            margin-bottom: 3mm;
+        }
+        .col-title .badge {
+            font-size: 6.5pt;
             font-weight: 600;
             letter-spacing: 0.5px;
-            padding: 2px 9px;
+            text-transform: uppercase;
+            color: #888;
+            border: 1px solid #e0e0e0;
             border-radius: 20px;
+            padding: 1px 8px;
+            float: right;
         }
-
-        .stop .town {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 19px;
+        .col-town {
+            font-size: 13pt;
             font-weight: 700;
-            color: var(--ink);
-            margin-bottom: 14px;
+            margin-bottom: 3mm;
+            color: #1a1a1a;
         }
-
         .field {
-            display: flex;
-            gap: 12px;
-            padding: 8px 0;
-            border-bottom: 1px dashed var(--sage-line);
+            display: table;
+            width: 100%;
+            padding: 3px 0;
+            border-bottom: 1px solid #f0f0f0;
         }
-
-        .field:last-of-type {
+        .field:last-child {
             border-bottom: none;
         }
-
-        .field .label {
-            width: 64px;
-            flex-shrink: 0;
-            font-size: 10.5px;
+        .field-label {
+            display: table-cell;
+            width: 60px;
+            font-size: 6.5pt;
             font-weight: 600;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
             text-transform: uppercase;
-            color: var(--slate);
-            padding-top: 1px;
+            color: #888;
+            vertical-align: top;
+            padding-top: 2px;
         }
-
-        .field .value {
-            font-size: 13.5px;
+        .field-value {
+            display: table-cell;
+            font-size: 9.5pt;
             font-weight: 500;
-            color: var(--ink);
-            line-height: 1.45;
+            vertical-align: top;
         }
-
-        .field .value.mono {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 13px;
+        .status {
+            margin-top: 4mm;
+            padding: 4px 10px;
+            background: #f5f0eb;
+            border-radius: 4px;
+            font-size: 8.5pt;
+            display: block;
         }
-
-        .status-pill {
-            margin-top: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--sage-bg);
-            border: 1px solid var(--sage-line);
-            border-radius: 10px;
-            padding: 9px 12px;
-            font-size: 12px;
-            color: var(--ink);
-        }
-
-        .status-pill .led {
-            width: 7px;
-            height: 7px;
+        .status .dot {
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
-            background: var(--forest);
-            flex-shrink: 0;
+            background: #b8631f;
+            display: inline-block;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .status b {
+            font-weight: 700;
+            color: #1a1a1a;
         }
 
-        .status-pill strong {
-            color: var(--forest);
+        /* STATS */
+        .stats-table {
+            display: table;
+            width: 100%;
+            border-bottom: 1px solid #e8e8e8;
         }
-
-        /* ===== STAT STRIP ===== */
-        .stat-strip {
-            margin-top: 24px;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            border: 1px solid var(--sage-line);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
         .stat {
-            padding: 14px 20px;
-            border-right: 1px solid var(--sage-line);
-            background: var(--paper);
+            display: table-cell;
+            width: 33.33%;
+            padding: 4mm 0;
+            text-align: center;
+            border-right: 1px solid #e8e8e8;
+            vertical-align: middle;
         }
-
         .stat:last-child {
             border-right: none;
-            background: var(--amber-soft);
+            background: #f8f8f8;
         }
-
-        .stat .k {
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: var(--slate);
-            margin-bottom: 5px;
-        }
-
-        .stat .v {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 15px;
+        .stat-label {
+            font-size: 7pt;
             font-weight: 700;
-            color: var(--ink);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 2px;
+        }
+        .stat-value {
+            font-size: 14pt;
+            font-weight: 700;
+            color: #1a1a1a;
         }
 
-        .stat:last-child .v {
-            color: var(--forest);
+        /* SIGNATURE & FOOTER AREA */
+        .bottom-section {
+            margin-top: 15mm;
+        }
+        
+        .signature-container {
+            text-align: right;
+            margin-bottom: 15mm;
+        }
+        .signature {
+            font-size: 9pt;
+            display: inline-block;
+        }
+        .signature .line {
+            display: inline-block;
+            width: 150px;
+            border-bottom: 1px solid #1a1a1a;
+            margin-left: 10px;
+            vertical-align: bottom;
         }
 
-        /* ===== FOOTER ===== */
-        .foot {
-            margin-top: 20px;
-            padding-top: 14px;
-            border-top: 1px solid var(--sage-line);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 11px;
-            color: var(--slate);
+        .footer-table {
+            display: table;
+            width: 100%;
+            padding-top: 4mm;
+            border-top: 1px solid #e8e8e8;
         }
-
-        .foot .stamp {
-            font-family: 'IBM Plex Mono', monospace;
-            color: var(--forest);
+        .barcode-cell {
+            display: table-cell;
+            width: 50%;
+            vertical-align: middle;
+        }
+        .barcode {
+            display: block;
+            height: 20px;
+        }
+        .barcode span {
+            display: inline-block;
+            width: 2px;
+            background: #1a1a1a;
+            margin-right: 1px;
+            vertical-align: bottom;
+        }
+        .footer-meta-cell {
+            display: table-cell;
+            width: 50%;
+            text-align: right;
+            vertical-align: middle;
+            font-size: 7.5pt;
+            color: #888;
+            line-height: 1.4;
+        }
+        .footer-meta-cell .inv {
             font-weight: 600;
-        }
-
-        /* responsive: stack on small screens */
-        @media (max-width: 640px) {
-            .from-to-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .stat-strip {
-                grid-template-columns: 1fr;
-            }
-
-            .stat {
-                border-right: none;
-                border-bottom: 1px solid var(--sage-line);
-            }
-
-            .stat:last-child {
-                border-bottom: none;
-            }
-
-            .head {
-                padding: 20px 18px;
-            }
-
-            .brand-name {
-                font-size: 20px;
-            }
-
-            .parcel-number {
-                font-size: 16px;
-                padding: 6px 18px;
-            }
-
-            .logo-icon {
-                width: 44px;
-                height: 44px;
-                font-size: 24px;
-            }
-        }
-
-        @media print {
-            @page {
-                size: A4;
-                margin: 10mm;
-            }
-
-            body {
-                background: #fff;
-                padding: 0;
-            }
-
-            .sheet {
-                box-shadow: none;
-                border: 1px solid #ddd;
-                max-width: 100%;
-            }
+            color: #1a1a1a;
+            font-size: 8.5pt;
         }
     </style>
 </head>
-
 <body>
-    <div class="sheet">
+<div class="invoice-box">
 
-        @php
-        $logoPath = public_path('logo.jpeg');
-        $logoExists = file_exists($logoPath);
-        @endphp
-
-        <!-- HEADER: logo + parcel number, both centered prominently -->
-        <div class="head">
-            <div class="logo-container">
-                <div class="logo-icon">
-                    <!-- <img src="{{ $logoPath }}" class="logo" alt="Karibu Parcels"> -->
-                </div>
-                <div class="brand-name">
-                    Karibu Parcels
-                </div>
-            </div>
-            <div class="parcel-number">
-                {{ $parcel->parcel_id }}
-            </div>
+    <div class="header">
+        <div class="brand">
+            Karibu Parcels
         </div>
+        <div class="header-right">
+            <div class="doc-title">{{ $parcel->parcel_id }}</div>
+        </div>
+    </div>
 
-        <div class="body">
-            <div class="from-to-grid">
-                <div class="stop">
-                    <h3>From <span class="idx">Sender</span></h3>
-                    <div class="town">Nairobi · CBD</div>
-                    <div class="field">
-                        <span class="label">Point</span>
-                        <span class="value">Karibu Hub, Moi Avenue</span>
-                    </div>
-                    <div class="field">
-                        <span class="label">Phone</span>
-                        <span class="value mono">+254 712 345 678</span>
-                    </div>
-                    <div class="field">
-                        <span class="label">Address</span>
-                        <span class="value">Moi Avenue, 3rd floor, Suite 12, Nairobi</span>
-                    </div>
-                    <div class="status-pill">
-                        <span class="led"></span>
-                        <span><strong>Pick-up ready</strong> · Mon–Fri, 8am–6pm</span>
-                    </div>
-                </div>
-
-                <div class="stop">
-                    <h3>To <span class="idx">Receiver</span></h3>
-                    <div class="town">Mombasa · Central</div>
-                    <div class="field">
-                        <span class="label">Point</span>
-                        <span class="value">Karibu Depot, Digo Road</span>
-                    </div>
-                    <div class="field">
-                        <span class="label">Phone</span>
-                        <span class="value mono">+254 798 654 321</span>
-                    </div>
-                    <div class="field">
-                        <span class="label">Address</span>
-                        <span class="value">Digo Road, near post office, Mombasa</span>
-                    </div>
-                    <div class="status-pill">
-                        <span class="led"></span>
-                        <span><strong>Delivery window</strong> · 24–48 hrs</span>
-                    </div>
+    <div class="route-section">
+        <div class="route-table">
+            <div class="route-city left">
+                <div class="code">{{ $parcel->senderTown->name }}</div>
+            </div>
+            <div class="route-line-cell">
+                <div class="route-line">
+                    <span class="plane">to</span>
                 </div>
             </div>
-
-            <div class="stat-strip">
-                <div class="stat">
-                    <div class="k">Weight</div>
-                    <div class="v">3.2 kg</div>
-                </div>
-                <div class="stat">
-                    <div class="k">Tariff</div>
-                    <div class="v">KSh 1,450 + 120/kg</div>
-                </div>
-                <div class="stat">
-                    <div class="k">Est. arrival</div>
-                    <div class="v">26 Jul 2026</div>
-                </div>
-            </div>
-
-            <div class="foot">
-                <span>© Karibu Parcels · secure & reliable</span>
-                <span class="stamp">Invoice #KP-2026-07-06</span>
+            <div class="route-city right">
+                <div class="code">{{ $parcel->receiverTown->name }}</div>
             </div>
         </div>
     </div>
-</body>
 
+    <div class="two-col-table">
+        <div class="col left">
+            <div class="col-title">
+                From
+            </div>
+            <div class="col-town">{{ $parcel->senderTown->name }}</div>
+            <div class="field">
+                <span class="field-label">Point</span>
+                <span class="field-value">{{ $parcel->senderPickUpDropOffPoint->name }}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Phone</span>
+                <span class="field-value">{{ $parcel->senderPickUpDropOffPoint->contact_phone_number }}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Address</span>
+                <span class="field-value">{{ $parcel->senderPickUpDropOffPoint->address }}</span>
+            </div>
+        </div>
+        <div class="col right">
+            <div class="col-title">
+                To
+            </div>
+            <div class="col-town">{{ $parcel->receiverTown->name }}</div>
+            <div class="field">
+                <span class="field-label">Point</span>
+                <span class="field-value">{{ $parcel->deliveryStation->name }}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Phone</span>
+                <span class="field-value">{{ $parcel->deliveryStation->contact_phone_number }}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Address</span>
+                <span class="field-value">{{ $parcel->deliveryStation->adress }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div>
+      <hr>
+    </div>
+
+</div>
+</body>
 </html>
