@@ -239,7 +239,6 @@ class ParcelController extends Controller
                 'receiverTown',
                 'senderPickUpDropOffPoint',
                 'deliveryStation',
-                'driver',
                 'statuses' => function ($query) {
                     $query->orderBy('created_at', 'desc');
                 }
@@ -321,7 +320,6 @@ class ParcelController extends Controller
         // Check if there's a latest status with driver
         $latestStatus = $parcel->statuses()
             ->whereNotNull('driver_id')
-            ->with('driver')
             ->latest()
             ->first();
 
