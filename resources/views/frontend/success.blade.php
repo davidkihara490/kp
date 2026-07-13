@@ -411,10 +411,10 @@
         <div class="step-list">
           <div class="step-item"><span class="step-number">1</span><span class="step-text"><strong>You have successfully booked your parcel</strong> — keep your tracking number safe.</span></div>
           <div class="step-item"><span class="step-number">2</span><span class="step-text"><strong>Kindly package it properly.</strong> Karibu parcels will not accept improperly packaged parcels.</span></div>
-          <div class="step-item"><span class="step-number">3</span><span class="step-text"><strong>Print the sticker</strong> by clicking the <strong>“Print Sticker”</strong> button below. If you do not have a printer, write a paper with the exact details.</span></div>
+          <div class="step-item"><span class="step-number">3</span><span class="step-text"><strong>Print the sticker</strong> by clicking the <strong>“Print Sticker”</strong> button below. If you do not have a printer, write the exact details on paper and stick it on your parcel.</span></div>
           <div class="step-item"><span class="step-number">4</span><span class="step-text"><strong>Drop it at your origin Pick up and Drop off point.</strong> (see address above)</span></div>
           <div class="step-item"><span class="step-number">5</span><span class="step-text"><strong>Allow it to be inspected</strong> and then leave.</span></div>
-          <div class="step-item"><span class="step-number">6</span><span class="step-text"><strong>We will take care of the rest.</strong> 🚚</span></div>
+          <div class="step-item"><span class="step-number">6</span><span class="step-text"><strong>We will take care of the rest.</strong></span></div>
         </div>
       </div>
 
