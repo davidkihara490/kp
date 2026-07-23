@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Partner extends Model
 {
@@ -151,5 +152,49 @@ class Partner extends Model
     public function createdParcels(): MorphMany
     {
         return $this->morphMany(Parcel::class, 'creator');
+    }
+
+    public function suspend(): void
+    {
+        DB::transaction(function () {
+
+            $this->update([
+                'verification_status' => 'suspended',
+            ]);
+
+            $this->drivers()->update([
+                'status' => 'suspended',
+            ]);
+
+            $this->pickUpAndDropOffPoints()->update([
+                'status' => 'suspended',
+            ]);
+
+            $this->parcelHandlingAssistants()->update([
+                'status' => 'suspended',
+            ]);
+        });
+    }
+
+    public function activate(): void
+    {
+        DB::transaction(function () {
+
+            $this->update([
+                'verification_status' => 'verified',
+            ]);
+
+            $this->drivers()->update([
+                'status' => 'active',
+            ]);
+
+            $this->pickUpAndDropOffPoints()->update([
+                'status' => 'active',
+            ]);
+
+            $this->parcelHandlingAssistants()->update([
+                'status' => 'active',
+            ]);
+        });
     }
 }

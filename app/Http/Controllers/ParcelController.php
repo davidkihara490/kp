@@ -24,8 +24,8 @@ class ParcelController extends Controller
         $parcelWeight = $request->query('parcel_weight');
         $price = $request->query('price');
 
-        $pickupPoints = PickUpAndDropOffPoint::with('town')->where('town_id', $fromTownId)->get();
-        $dropoffPoints = PickUpAndDropOffPoint::with('town')->where('town_id', $toTownId)->get();
+        $pickupPoints = PickUpAndDropOffPoint::with('town')->where('status', 'active')->where('town_id', $fromTownId)->get();
+        $dropoffPoints = PickUpAndDropOffPoint::with('town')->where('status', 'active')->where('town_id', $toTownId)->get();
 
         $towns = Town::with('subCounty.county')->orderBy('name')->get();
         return view('frontend.book', compact('towns', 'fromTownId', 'toTownId', 'parcelWeight', 'price', 'pickupPoints', 'dropoffPoints'));
@@ -407,7 +407,7 @@ class ParcelController extends Controller
             case 'created':
             case 'booked':
             case 'accepted':
-                return $status->parcel->senderTown->name ?? 'N/A';
+                return $status->parcel->senderPickUpDropOffPoint->name ?? 'N/A';
 
             case 'in_transit':
                 return 'In transit';
@@ -423,8 +423,9 @@ class ParcelController extends Controller
         }
     }
 
-    public function printReceipt($id){
-       $parcel = Parcel::findOrFail($id);
+    public function printReceipt($id)
+    {
+        $parcel = Parcel::findOrFail($id);
 
         $data = [
             'parcel' => $parcel,

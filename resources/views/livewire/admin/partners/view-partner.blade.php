@@ -35,6 +35,12 @@
                                 </button>
                                 @endif
 
+                                 @if($partner->verification_status === 'suspended')
+                                <button class="btn btn-sm btn-success mr-2" wire:click="activatePartner">
+                                    <i class="fas fa-check mr-1"></i> Activate
+                                </button>
+                                @endif
+
                                 <button class="btn btn-sm btn-danger mr-2" wire:click="confirmDelete">
                                     <i class="fas fa-trash mr-1"></i> Delete
                                 </button>
@@ -77,11 +83,11 @@
                                     <div class="col-md-6">
                                         <p class="mb-1">
                                             <i class="fas fa-envelope text-muted mr-2"></i>
-                                            <strong>Email:</strong> {{ $partner->owner->email }}
+                                            <strong>Email:</strong> {{ $partner->owner?->email }}
                                         </p>
                                         <p class="mb-1">
                                             <i class="fas fa-phone text-muted mr-2"></i>
-                                            <strong>Phone:</strong> {{ $partner->owner->phone_number }}
+                                            <strong>Phone:</strong> {{ $partner->owner?->phone_number }}
                                         </p>
                                         @if($partner->kra_pin)
                                         <p class="mb-1">
@@ -250,11 +256,11 @@
                                             <tbody>
                                                 <tr>
                                                     <td width="40%"><strong>Email:</strong></td>
-                                                    <td>{{ $partner->owner->email }}</td>
+                                                    <td>{{ $partner->owner?->email }}</td>
                                                 </tr>
                                                 <tr>
                                                     <td><strong>Phone:</strong></td>
-                                                    <td>{{ $partner->owner->phone_number }}</td>
+                                                    <td>{{ $partner->owner?->phone_number }}</td>
                                                 </tr>
                                             </tbody>
                                         </table>

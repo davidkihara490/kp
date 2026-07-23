@@ -1603,7 +1603,7 @@
                             <!-- Header -->
                             <div class="text-center mb-4">
                                 <div class="company-logo mb-3">
-                                    <i class="bi bi-box-seam fs-1 text-primary"></i>
+                                  <img width="50px" height="50px" src="{{ asset('logo.jpeg') }}" alt="">
                                 </div>
                                 <h3 class="mb-1">{{ $receiptData['company_details']['name'] }}</h3>
                                 <p class="text-muted mb-0">{{ $receiptData['company_details']['address'] }}</p>
@@ -1611,7 +1611,7 @@
                                     Tel: {{ $receiptData['company_details']['phone'] }} |
                                     Email: {{ $receiptData['company_details']['email'] }}
                                 </p>
-                                <p class="text-muted small">PIN: {{ $receiptData['company_details']['pin'] }}</p>
+                                {{-- <p class="text-muted small">PIN: {{ $receiptData['company_details']['pin'] }}</p> --}}
                                 <hr class="my-3">
                                 <h4 class="mb-0">PAYMENT RECEIPT</h4>
                                 <p class="text-muted small">Receipt No: <strong>{{ $receiptData['receipt_number'] }}</strong></p>

@@ -172,12 +172,12 @@ class ViewParcel extends Component
     {
         // Fetch company details from settings or config
         return [
-            'name' => config('app.name', 'Courier Service'),
-            'address' => '123 Business Park, Nairobi, Kenya',
-            'phone' => '+254 700 000000',
-            'email' => 'info@courier.com',
-            'website' => 'www.courier.com',
-            'pin' => 'P051234567Z',
+            'name' => config('app.name', 'Karibu Parcels'),
+            'address' => 'Mashariki Breeze, Diani Beach Road, Office No.6 , Diani Beach Kwale County',
+            'phone' => '+254 700 130 759',
+            'email' => 'karibuparcels@gmail.com',
+            'website' => 'www.karibuparcels.com',
+            'pin' => '',
         ];
     }
 

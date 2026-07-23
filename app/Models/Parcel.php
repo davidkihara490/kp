@@ -24,6 +24,7 @@ class Parcel extends Model
         'parcel_id',
         'customer_id',
         'booking_type', // instant, scheduled, bulk
+        'booking_source',
 
         // Sender Information
         'sender_name',
@@ -144,7 +145,6 @@ class Parcel extends Model
         'dimension_unit' => 'cm',
         'weight_unit' => 'kg',
         'booking_type' => 'instant',
-        'booking_source' => 'web',
     ];
 
     const STATUS_CREATED = 'created';

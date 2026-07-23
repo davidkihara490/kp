@@ -102,4 +102,15 @@ class ViewPartner extends Component
 
         session()->flash('success', 'Partner verified successfully');
     }
+    public function suspendPartner()
+    {
+        $this->partner->suspend();
+        session()->flash('success', 'Partner suspened successfully');
+    }
+
+    public function activatePartner()
+    {
+        $this->partner->activate();
+        session()->flash('success', 'Partner activated successfully');
+    }
 }
