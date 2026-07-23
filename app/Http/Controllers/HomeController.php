@@ -26,7 +26,14 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $towns = Town::whereHas('pickUpAndDropOffPoint')
+        // $towns = Town::whereHas('pickUpAndDropOffPoint')
+        //     ->where('status', true)
+        //     ->orderBy('name', 'ASC')
+        //     ->get();
+
+        $towns = Town::whereHas('pickUpAndDropOffPoint', function ($query) {
+            $query->where('status', 'active');
+        })
             ->where('status', true)
             ->orderBy('name', 'ASC')
             ->get();
