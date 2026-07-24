@@ -209,21 +209,18 @@
                                 <td>
                                     <div class="d-flex align-items-start">
 
-                                        <!-- @if ($post->featured_image)
-                                        <img
-                                            src="{{ asset('uploads/' . $post->featured_image) }}"
+                                        @if ($post->featured_image && is_string($post->featured_image))
+                                        <img src="{{ asset('storage/' . $post->featured_image) }}"
                                             alt="{{ $post->title }}"
                                             class="rounded mr-2"
                                             style="width: 50px; height: 50px; object-fit: cover;">
                                         @else
-                                        <img
-                                            src="{{ asset('logo.jpeg') }}"
+                                        <img src="{{ asset('logo.jpeg') }}"
                                             alt="{{ $post->title }}"
                                             class="rounded mr-2"
                                             style="width: 50px; height: 50px; object-fit: cover;">
-                                        @endif -->
-
-                                         @if ($post->featured_image)
+                                        @endif
+                                        <!-- @if ($post->featured_image)
                                         <img src="{{ asset('storage/'.$post->featured_image) }}" alt="{{ $post->title }}"
                                             class="rounded mr-2"
                                             style="width: 50px; height: 50px; object-fit: cover;">
@@ -231,7 +228,7 @@
                                         <img src="{{ asset('logo.jpeg') }}) }}" alt="{{ $post->title }}"
                                             class="rounded mr-2"
                                             style="width: 50px; height: 50px; object-fit: cover;">
-                                        @endif 
+                                        @endif  -->
 
                                         <div>
                                             <strong>{{ $post->title }}</strong>
