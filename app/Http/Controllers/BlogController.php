@@ -43,9 +43,6 @@ class BlogController extends Controller
             ->firstOrFail();
         $post->increment('views_count');
         
-
-        dd($post);
-
         $relatedPosts = BlogPost::with(['category', 'author'])
             ->where('status', 'published')
             ->where('id', '!=', $post->id)
