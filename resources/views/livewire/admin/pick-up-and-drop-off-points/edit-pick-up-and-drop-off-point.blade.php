@@ -107,6 +107,36 @@
                                     </div>
                                 </div>
 
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="capacity">Capacity</label>
+                                            <input type="number"
+                                                class="form-control @error('capacity') is-invalid @enderror"
+                                                id="capacity"
+                                                wire:model="capacity"
+                                                placeholder="Capacity">
+                                            @error('capacity')
+                                            <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="notes">Notes</label>
+                                            <textarea class="form-control @error('notes') is-invalid @enderror" wire:model="notes" id=""></textarea>
+
+                                            @error('notes')
+                                            <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- Location Details Section -->
                                 <h5 class="mt-4 mb-3 text-primary">Location Details</h5>
                                 <hr>

@@ -220,8 +220,6 @@
                                             style="width: 50px; height: 50px; object-fit: cover;">
                                         @endif
 
-
-
                                         <div>
                                             <strong>{{ $post->title }}</strong>
                                             @if ($post->is_featured)

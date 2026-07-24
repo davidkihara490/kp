@@ -9,11 +9,11 @@ use App\Models\Town;
 
 class CreatePickUpAndDropOffPoint extends Component
 {
-    public $partner_id;
-    public $name;
-    public $code;
+    public int $partner_id;
+    public string $name;
+    public ?string $code = null;
     public $type = "warehouse";
-    public $town_id;
+    public int $town_id;
     public $building;
     public $room_number;
     public $address;
@@ -26,6 +26,9 @@ class CreatePickUpAndDropOffPoint extends Component
     public $operating_days = [];
     public $partners = [];
     public $towns = [];
+    public $notes;
+    public $capacity;
+
     protected $rules = [
         'partner_id' => 'required|exists:partners,id',
         'type' => 'required|string|in:warehouse,pickup-dropoff',
@@ -37,6 +40,7 @@ class CreatePickUpAndDropOffPoint extends Component
         'contact_person' => 'nullable|string|max:255',
         'contact_email' => 'nullable|email|max:255',
         'contact_phone_number' => 'nullable|string|max:20',
+        'capacity' => 'integer',
     ];
 
     protected $messages = [
@@ -50,6 +54,7 @@ class CreatePickUpAndDropOffPoint extends Component
         'latitude.between' => 'Latitude must be between -90 and 90.',
         'longitude.between' => 'Longitude must be between -180 and 180.',
         'contact_email.email' => 'Please enter a valid email address.',
+        'capacity.integer' => 'Use an integer for capacity.'
     ];
 
     public function mount()
@@ -94,6 +99,8 @@ class CreatePickUpAndDropOffPoint extends Component
                 'contact_person' => $this->contact_person,
                 'contact_email' => $this->contact_email,
                 'contact_phone_number' => $this->contact_phone_number,
+                'capacity' => $this->capacity,
+                'notes' => $this->notes,
             ]);
 
             session()->flash('success', 'Pick-up & Drop-off Point created successfully!');

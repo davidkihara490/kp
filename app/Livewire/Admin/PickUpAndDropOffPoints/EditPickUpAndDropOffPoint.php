@@ -34,6 +34,9 @@ class EditPickUpAndDropOffPoint extends Component
 
     public $original_code;
 
+    public $capacity;
+    public $notes;
+
     protected $rules = [
         'partner_id' => 'required|exists:partners,id',
         'name' => 'required|string|max:255',
@@ -46,6 +49,7 @@ class EditPickUpAndDropOffPoint extends Component
         'contact_person' => 'nullable|string|max:255',
         'contact_email' => 'nullable|email|max:255',
         'contact_phone_number' => 'nullable|string|max:20',
+        'capacity' => 'integer',
     ];
 
     protected $messages = [
@@ -60,6 +64,7 @@ class EditPickUpAndDropOffPoint extends Component
         'latitude.between' => 'Latitude must be between -90 and 90.',
         'longitude.between' => 'Longitude must be between -180 and 180.',
         'contact_email.email' => 'Please enter a valid email address.',
+        'capacity.integer' => 'Capacity should be a whole number'
     ];
 
     public function mount($id)
@@ -95,6 +100,8 @@ class EditPickUpAndDropOffPoint extends Component
         $this->contact_person = $point->contact_person;
         $this->contact_email = $point->contact_email;
         $this->contact_phone_number = $point->contact_phone_number;
+        $this->capacity = $point->capacity;
+        $this->notes = $point->notes;
     }
 
 
@@ -125,6 +132,8 @@ class EditPickUpAndDropOffPoint extends Component
                 'contact_person' => $this->contact_person,
                 'contact_email' => $this->contact_email,
                 'contact_phone_number' => $this->contact_phone_number,
+                'capacity' => $this->capacity,
+                'notes' => $this->notes,
             ]);
 
             session()->flash('success', 'Pick-up & Drop-off Point updated successfully!');

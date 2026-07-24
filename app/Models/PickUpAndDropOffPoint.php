@@ -28,7 +28,8 @@ class PickUpAndDropOffPoint extends Model
         'opening_hours',
         'closing_hours',
         'operating_days',
-        'capacity'
+        'capacity',
+        'notes'
     ];
 
     protected $casts = [
