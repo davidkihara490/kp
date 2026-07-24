@@ -386,6 +386,23 @@ class CreateBlogPost extends Component
             $post->updateSeoScore();
             $post->generateSchemaMarkup();
 
+
+            // In your controller or view
+            if ($this->featured_image) {
+                $path = storage_path('app/public/' . $this->featured_image);
+                $publicPath = public_path('storage/' . $this->featured_image);
+
+                \Log::info('Image path:', [
+                    'db_path' => $this->featured_image,
+                    'storage_path' => $path,
+                    'public_path' => $publicPath,
+                    'file_exists' => file_exists($path),
+                    'public_exists' => file_exists($publicPath)
+                ]);
+            }
+
+
+
             DB::commit();
 
             return redirect()->route('admin.blog-posts.index')->with('success', 'Blog post created successfully!');

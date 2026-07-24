@@ -42,6 +42,7 @@ class BlogController extends Controller
             ->where('status', 'published')
             ->firstOrFail();
         $post->increment('views_count');
+        
 
         dd($post);
 
