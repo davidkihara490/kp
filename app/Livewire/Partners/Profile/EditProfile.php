@@ -2,16 +2,17 @@
 
 namespace App\Livewire\Partners\Profile;
 
-use App\Models\Partner;
 use App\Models\PartnerTown;
 use App\Models\Town;
-use App\Models\County;
-use App\Models\SubCounty;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Throwable;
 
 class EditProfile extends Component
 {
@@ -25,216 +26,590 @@ class EditProfile extends Component
     public $registration_number;
     public $kra_pin;
 
-    // Document Uploads
+    // New document uploads
     public $registration_certificate;
     public $pin_certificate;
     public $compliance_certificate;
     public $insurance_certificate;
     public $drivers_certificate;
 
-    // Current documents (for display)
+    public $phone_number;
+    public $email;
+
+    // Existing documents
     public $current_registration_certificate;
     public $current_pin_certificate;
     public $current_compliance_certificate;
     public $current_insurance_certificate;
     public $current_drivers_certificate;
 
-    // Service Areas
-    public $service_towns = [];
+    // Service areas
+    public array $service_towns = [];
     public $availableTowns = [];
-    public $searchTerm = '';
+    public string $searchTerm = '';
 
     // System
     public $verification_status;
 
-    protected function rules()
+    protected function rules(): array
     {
-        $partnerId = $this->partner->id;
+        $ownerId = $this->partner->owner_id;
         return [
-            // Basic Information
-            'company_name' => 'required|string|max:255',
+            'company_name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
             'registration_number' => [
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('partners')->ignore($partnerId)
+                Rule::unique('partners', 'registration_number')
+                    ->ignore($this->partner->id),
             ],
+
             'kra_pin' => [
                 'required',
                 'string',
                 'max:20',
-                Rule::unique('partners')->ignore($partnerId)
+                Rule::unique('partners', 'kra_pin')
+                    ->ignore($this->partner->id),
+            ],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($ownerId),
             ],
 
-            // Document uploads
-            'registration_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'pin_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'compliance_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'insurance_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'drivers_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'phone_number' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('users', 'phone_number')->ignore($ownerId),
+            ],
 
-            // Service Areas
-            'service_towns' => 'array',
-            'service_towns.*' => 'exists:towns,id',
+            'registration_certificate' => [
+                'nullable',
+                'file',
+                'mimes:pdf,jpg,jpeg,png',
+                'max:5120',
+            ],
+
+            'pin_certificate' => [
+                'nullable',
+                'file',
+                'mimes:pdf,jpg,jpeg,png',
+                'max:5120',
+            ],
+
+            'compliance_certificate' => [
+                'nullable',
+                'file',
+                'mimes:pdf,jpg,jpeg,png',
+                'max:5120',
+            ],
+
+            'insurance_certificate' => [
+                'nullable',
+                'file',
+                'mimes:pdf,jpg,jpeg,png',
+                'max:5120',
+            ],
+
+            'drivers_certificate' => [
+                'nullable',
+                'file',
+                'mimes:pdf,jpg,jpeg,png',
+                'max:5120',
+            ],
+
+            'service_towns' => [
+                'nullable',
+                'array',
+            ],
+
+            'service_towns.*' => [
+                'integer',
+                'distinct',
+                'exists:towns,id',
+            ],
         ];
     }
 
-    protected $messages = [
+    protected array $messages = [
+        'company_name.required' => 'Please enter the company name.',
+
+        'registration_number.required' => 'Please enter the registration number.',
         'registration_number.unique' => 'This registration number is already registered.',
+
+        'kra_pin.required' => 'Please enter the KRA PIN.',
         'kra_pin.unique' => 'This KRA PIN is already registered.',
-        'registration_certificate.max' => 'Registration certificate must not exceed 5MB.',
-        'pin_certificate.max' => 'PIN certificate must not exceed 5MB.',
-        'compliance_certificate.max' => 'Compliance certificate must not exceed 5MB.',
-        'insurance_certificate.max' => 'Insurance certificate must not exceed 5MB.',
-        'drivers_certificate.max' => 'Drivers certificate must not exceed 5MB.',
-        'service_towns.*.exists' => 'Selected town is invalid.',
+
+        'email.required' => 'Please enter the Email.',
+        'email.unique' => 'This email is already registered.',
+
+        'phone_number.required' => 'Please enter the phone number.',
+        'phone_number.unique' => 'This phone number is already registered.',
+
+        'registration_certificate.mimes' => 'The registration certificate must be a PDF, JPG, JPEG, or PNG file.',
+        'registration_certificate.max' => 'The registration certificate must not exceed 5MB.',
+
+        'pin_certificate.mimes' => 'The PIN certificate must be a PDF, JPG, JPEG, or PNG file.',
+        'pin_certificate.max' => 'The PIN certificate must not exceed 5MB.',
+
+        'compliance_certificate.mimes' => 'The compliance certificate must be a PDF, JPG, JPEG, or PNG file.',
+        'compliance_certificate.max' => 'The compliance certificate must not exceed 5MB.',
+
+        'insurance_certificate.mimes' => 'The insurance certificate must be a PDF, JPG, JPEG, or PNG file.',
+        'insurance_certificate.max' => 'The insurance certificate must not exceed 5MB.',
+
+        'drivers_certificate.mimes' => 'The drivers certificate must be a PDF, JPG, JPEG, or PNG file.',
+        'drivers_certificate.max' => 'The drivers certificate must not exceed 5MB.',
+
+        'service_towns.array' => 'The selected service areas are invalid.',
+        'service_towns.*.exists' => 'One of the selected towns is invalid.',
+        'service_towns.*.distinct' => 'The same town cannot be selected more than once.',
     ];
 
-    public function mount()
+    public function mount(): void
     {
-        $this->partner = Auth::guard('partner')->user()->partner;
+        $authenticatedPartner = Auth::guard('partner')->user()?->partner;
+
+        abort_unless($authenticatedPartner, 403, 'Partner account not found.');
+
+        $this->partner = $authenticatedPartner;
+
         $this->loadPartnerData();
         $this->loadAvailableTowns();
     }
 
-    public function loadAvailableTowns()
+    public function loadAvailableTowns(): void
     {
-        $query = Town::with('subCounty.county')->orderBy('name');
-        
-        if (!empty($this->searchTerm)) {
-            $query->where('name', 'like', '%' . $this->searchTerm . '%');
-        }
-        
-        $this->availableTowns = $query->get();
+        $this->availableTowns = Town::query()
+            ->with('subCounty.county')
+            ->when(
+                filled($this->searchTerm),
+                fn($query) => $query->where(
+                    'name',
+                    'like',
+                    '%' . trim($this->searchTerm) . '%'
+                )
+            )
+            ->orderBy('name')
+            ->get();
     }
 
-    public function updatedSearchTerm()
+    public function updatedSearchTerm(): void
     {
         $this->loadAvailableTowns();
     }
 
-    public function loadPartnerData()
+    /**
+     * Clear a field's validation error after the user changes it.
+     */
+    public function updated(string $propertyName): void
     {
+        $this->resetValidation($propertyName);
+    }
+
+    public function loadPartnerData(): void
+    {
+        $this->partner->refresh();
+        $this->partner->load('towns');
+
         $this->partner_type = $this->partner->partner_type;
         $this->company_name = $this->partner->company_name;
         $this->registration_number = $this->partner->registration_number;
         $this->kra_pin = $this->partner->kra_pin;
 
-        // Load current documents
-        $this->current_registration_certificate = $this->partner->registration_certificate_path;
-        $this->current_pin_certificate = $this->partner->pin_certificate_path;
-        $this->current_compliance_certificate = $this->partner->compliance_certificate_path;
-        $this->current_insurance_certificate = $this->partner->insurance_certificate_path;
-        $this->current_drivers_certificate = $this->partner->drivers_certificate_path;
+        $this->email = $this->partner->owner?->email;
+        $this->phone_number = $this->partner->owner?->phone_number;
+
+        $this->current_registration_certificate =
+            $this->partner->registration_certificate_path;
+
+        $this->current_pin_certificate =
+            $this->partner->pin_certificate_path;
+
+        $this->current_compliance_certificate =
+            $this->partner->compliance_certificate_path;
+
+        $this->current_insurance_certificate =
+            $this->partner->insurance_certificate_path;
+
+        $this->current_drivers_certificate =
+            $this->partner->drivers_certificate_path;
 
         $this->verification_status = $this->partner->verification_status;
 
-        // Load service towns
-        $this->service_towns = $this->partner->towns->pluck('town_id')->toArray();
-    }
+        /*
+     * Get saved town IDs, then keep only IDs that still exist
+     * in the towns table.
+     */
+        $savedTownIds = PartnerTown::query()
+            ->where('partner_id', $this->partner->id)
+            ->pluck('town_id');
 
-    public function updateProfile()
+        $this->service_towns = Town::query()
+            ->whereIn('id', $savedTownIds)
+            ->pluck('id')
+            ->map(fn($id) => (int) $id)
+            ->toArray();
+    }
+    public function updateProfile(): void
     {
-        $this->validate();
+        $this->resetValidation();
+
+        /*
+     * Remove town IDs that no longer exist before validation.
+     */
+        $this->service_towns = Town::query()
+            ->whereIn(
+                'id',
+                collect($this->service_towns)
+                    ->filter()
+                    ->map(fn($id) => (int) $id)
+                    ->unique()
+                    ->values()
+                    ->toArray()
+            )
+            ->pluck('id')
+            ->map(fn($id) => (int) $id)
+            ->toArray();
 
         try {
+            $validated = $this->validate();
+
+            $newlyStoredFiles = [];
+            $oldFilesToDelete = [];
+
             $data = [
-                'company_name' => $this->company_name,
-                'registration_number' => $this->registration_number,
-                'kra_pin' => $this->kra_pin,
+                'company_name' => trim($validated['company_name']),
+                'registration_number' => trim($validated['registration_number']),
+                'kra_pin' => strtoupper(trim($validated['kra_pin'])),
             ];
 
-            // Handle document uploads
-            if ($this->registration_certificate) {
-                if ($this->current_registration_certificate && Storage::disk('public')->exists($this->current_registration_certificate)) {
-                    Storage::disk('public')->delete($this->current_registration_certificate);
+            $documents = [
+                'registration_certificate' => 'registration_certificate_path',
+                'pin_certificate' => 'pin_certificate_path',
+                'compliance_certificate' => 'compliance_certificate_path',
+                'insurance_certificate' => 'insurance_certificate_path',
+                'drivers_certificate' => 'drivers_certificate_path',
+            ];
+
+            /*
+             * Store the new documents first.
+             *
+             * Existing documents are only deleted after the database update
+             * succeeds, preventing the current file from being lost when the
+             * database update fails.
+             */
+            foreach ($documents as $uploadProperty => $databaseColumn) {
+                if (!$this->{$uploadProperty}) {
+                    continue;
                 }
-                $path = $this->registration_certificate->store('documents/partners', 'public');
-                $data['registration_certificate_path'] = $path;
-            }
 
-            if ($this->pin_certificate) {
-                if ($this->current_pin_certificate && Storage::disk('public')->exists($this->current_pin_certificate)) {
-                    Storage::disk('public')->delete($this->current_pin_certificate);
+                $newPath = $this->{$uploadProperty}->store(
+                    "documents/partners/{$this->partner->id}",
+                    'public'
+                );
+
+                $newlyStoredFiles[] = $newPath;
+
+                if ($this->partner->{$databaseColumn}) {
+                    $oldFilesToDelete[] = $this->partner->{$databaseColumn};
                 }
-                $path = $this->pin_certificate->store('documents/partners', 'public');
-                $data['pin_certificate_path'] = $path;
+
+                $data[$databaseColumn] = $newPath;
             }
 
-            if ($this->compliance_certificate) {
-                if ($this->current_compliance_certificate && Storage::disk('public')->exists($this->current_compliance_certificate)) {
-                    Storage::disk('public')->delete($this->current_compliance_certificate);
+            try {
+                DB::transaction(function () use ($data, $validated) {
+                    $this->partner->update($data);
+                    $this->partner->owner->update([
+                        'email' => strtolower(trim($validated['email'])),
+                        'phone_number' => trim($validated['phone_number']),
+                    ]);
+
+                    /*
+                     * sync-style update using the PartnerTown model.
+                     */
+                    PartnerTown::query()
+                        ->where('partner_id', $this->partner->id)
+                        ->delete();
+
+                    $townIds = collect($validated['service_towns'] ?? [])
+                        ->map(fn($townId) => (int) $townId)
+                        ->unique()
+                        ->values();
+
+                    if ($townIds->isNotEmpty()) {
+                        PartnerTown::insert(
+                            $townIds
+                                ->map(fn($townId) => [
+                                    'partner_id' => $this->partner->id,
+                                    'town_id' => $townId,
+                                    'created_at' => now(),
+                                    'updated_at' => now(),
+                                ])
+                                ->toArray()
+                        );
+                    }
+                });
+            } catch (Throwable $exception) {
+                /*
+                 * Remove newly uploaded files when the database transaction
+                 * fails.
+                 */
+                foreach ($newlyStoredFiles as $file) {
+                    Storage::disk('public')->delete($file);
                 }
-                $path = $this->compliance_certificate->store('documents/partners', 'public');
-                $data['compliance_certificate_path'] = $path;
+
+                throw $exception;
             }
 
-            if ($this->insurance_certificate) {
-                if ($this->current_insurance_certificate && Storage::disk('public')->exists($this->current_insurance_certificate)) {
-                    Storage::disk('public')->delete($this->current_insurance_certificate);
+            /*
+             * The database update succeeded, so the previous files can now
+             * safely be deleted.
+             */
+            foreach ($oldFilesToDelete as $oldFile) {
+                if (Storage::disk('public')->exists($oldFile)) {
+                    Storage::disk('public')->delete($oldFile);
                 }
-                $path = $this->insurance_certificate->store('documents/partners', 'public');
-                $data['insurance_certificate_path'] = $path;
             }
 
-            if ($this->drivers_certificate) {
-                if ($this->current_drivers_certificate && Storage::disk('public')->exists($this->current_drivers_certificate)) {
-                    Storage::disk('public')->delete($this->current_drivers_certificate);
-                }
-                $path = $this->drivers_certificate->store('documents/partners', 'public');
-                $data['drivers_certificate_path'] = $path;
-            }
+            $this->reset([
+                'registration_certificate',
+                'pin_certificate',
+                'compliance_certificate',
+                'insurance_certificate',
+                'drivers_certificate',
+            ]);
 
-            // Update partner
-            $this->partner->update($data);
-
-            // Update service towns - Delete existing and add new ones
-            PartnerTown::where('partner_id', $this->partner->id)->delete();
-            
-            foreach ($this->service_towns as $townId) {
-                PartnerTown::create([
-                    'partner_id' => $this->partner->id,
-                    'town_id' => $townId,
-                ]);
-            }
-
-            // Reload data
             $this->loadPartnerData();
             $this->loadAvailableTowns();
 
-            session()->flash('success', 'Profile updated successfully!');
-            
-            // Dispatch event for browser notification
-            $this->dispatch('profile-updated');
-            
-        } catch (\Exception $e) {
-            session()->flash('error', 'Failed to update profile: ' . $e->getMessage());
+            session()->flash(
+                'success',
+                'Your partner profile was updated successfully.'
+            );
+
+            $this->dispatch(
+                'profile-updated',
+                message: 'Your partner profile was updated successfully.'
+            );
+        } catch (ValidationException $exception) {
+            session()->flash(
+                'validation_error',
+                'Please correct the highlighted fields and submit the form again.'
+            );
+
+            $this->dispatch(
+                'profile-validation-failed',
+                message: 'Please correct the highlighted fields.'
+            );
+
+            throw $exception;
+        } catch (Throwable $exception) {
+            Log::error('Partner profile update failed.', [
+                'partner_id' => $this->partner?->id,
+                'message' => $exception->getMessage(),
+                'exception' => $exception,
+            ]);
+
+            session()->flash(
+                'error',
+                'The profile could not be updated. Please try again.'
+            );
+
+            $this->dispatch(
+                'profile-update-failed',
+                message: 'The profile could not be updated. Please try again.'
+            );
         }
     }
 
-    public function removeDocument($documentType)
+    public function removeDocument(string $documentType): void
     {
-        $field = $documentType . '_certificate_path';
-        $currentField = 'current_' . $documentType . '_certificate';
-        
-        if ($this->partner->$field && Storage::disk('public')->exists($this->partner->$field)) {
-            Storage::disk('public')->delete($this->partner->$field);
-            $this->partner->update([$field => null]);
-            $this->$currentField = null;
-            session()->flash('success', ucfirst($documentType) . ' certificate removed successfully!');
+        $documents = [
+            'registration' => [
+                'database_column' => 'registration_certificate_path',
+                'current_property' => 'current_registration_certificate',
+                'label' => 'Registration certificate',
+            ],
+            'pin' => [
+                'database_column' => 'pin_certificate_path',
+                'current_property' => 'current_pin_certificate',
+                'label' => 'PIN certificate',
+            ],
+            'compliance' => [
+                'database_column' => 'compliance_certificate_path',
+                'current_property' => 'current_compliance_certificate',
+                'label' => 'Compliance certificate',
+            ],
+            'insurance' => [
+                'database_column' => 'insurance_certificate_path',
+                'current_property' => 'current_insurance_certificate',
+                'label' => 'Insurance certificate',
+            ],
+            'drivers' => [
+                'database_column' => 'drivers_certificate_path',
+                'current_property' => 'current_drivers_certificate',
+                'label' => 'Drivers certificate',
+            ],
+        ];
+
+        if (!array_key_exists($documentType, $documents)) {
+            session()->flash('error', 'Invalid document type selected.');
+
+            $this->dispatch(
+                'profile-update-failed',
+                message: 'Invalid document type selected.'
+            );
+
+            return;
+        }
+
+        $document = $documents[$documentType];
+        $databaseColumn = $document['database_column'];
+        $currentProperty = $document['current_property'];
+        $documentLabel = $document['label'];
+
+        try {
+            $path = $this->partner->{$databaseColumn};
+
+            if (!$path) {
+                session()->flash(
+                    'error',
+                    "{$documentLabel} was not found."
+                );
+
+                return;
+            }
+
+            DB::transaction(function () use ($databaseColumn) {
+                $this->partner->update([
+                    $databaseColumn => null,
+                ]);
+            });
+
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+
+            $this->{$currentProperty} = null;
+
+            session()->flash(
+                'success',
+                "{$documentLabel} removed successfully."
+            );
+
+            $this->dispatch(
+                'profile-updated',
+                message: "{$documentLabel} removed successfully."
+            );
+        } catch (Throwable $exception) {
+            Log::error('Partner document removal failed.', [
+                'partner_id' => $this->partner?->id,
+                'document_type' => $documentType,
+                'message' => $exception->getMessage(),
+            ]);
+
+            session()->flash(
+                'error',
+                "{$documentLabel} could not be removed. Please try again."
+            );
+
+            $this->dispatch(
+                'profile-update-failed',
+                message: "{$documentLabel} could not be removed."
+            );
         }
     }
 
-    public function selectAllTowns()
+    public function selectAllTowns(): void
     {
-        $this->service_towns = Town::pluck('id')->toArray();
-        session()->flash('success', 'All towns selected successfully!');
+        /*
+         * Select only the currently displayed results when searching.
+         * Without a search, this selects every town.
+         */
+        $this->service_towns = collect($this->service_towns)
+            ->merge(collect($this->availableTowns)->pluck('id'))
+            ->map(fn($townId) => (int) $townId)
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $this->resetValidation('service_towns');
+
+        session()->flash(
+            'success',
+            filled($this->searchTerm)
+                ? 'All displayed towns were selected.'
+                : 'All towns were selected.'
+        );
     }
 
-    public function deselectAllTowns()
+    public function deselectAllTowns(): void
     {
+        if (filled($this->searchTerm)) {
+            $displayedTownIds = collect($this->availableTowns)
+                ->pluck('id')
+                ->map(fn($townId) => (int) $townId)
+                ->toArray();
+
+            $this->service_towns = collect($this->service_towns)
+                ->reject(fn($townId) => in_array(
+                    (int) $townId,
+                    $displayedTownIds,
+                    true
+                ))
+                ->values()
+                ->toArray();
+
+            session()->flash(
+                'success',
+                'All displayed towns were deselected.'
+            );
+
+            return;
+        }
+
         $this->service_towns = [];
-        session()->flash('success', 'All towns deselected successfully!');
+
+        session()->flash(
+            'success',
+            'All towns were deselected.'
+        );
+    }
+
+    public function resetProfileForm(): void
+    {
+        $this->resetValidation();
+
+        $this->reset([
+            'registration_certificate',
+            'pin_certificate',
+            'compliance_certificate',
+            'insurance_certificate',
+            'drivers_certificate',
+            'searchTerm',
+        ]);
+
+        $this->loadPartnerData();
+        $this->loadAvailableTowns();
+
+        session()->flash(
+            'success',
+            'The form was reset to the saved profile information.'
+        );
+
+        $this->dispatch(
+            'profile-updated',
+            message: 'The form was reset.'
+        );
     }
 
     public function render()

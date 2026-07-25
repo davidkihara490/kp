@@ -36,12 +36,17 @@
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Parcels</span>
             </a>
-            @if (auth()->guard('partner')?->user()?->user_type == 'pickup-dropoff' || auth()->guard('partner')?->user()?->user_type == 'transport')
+            {{--@if (auth()->guard('partner')?->user()?->user_type == 'pickup-dropoff' || auth()->guard('partner')?->user()?->user_type == 'transport')
             <a href="{{ route('partners.earnings') }}" class="nav-link">
-                <i class="bi bi-bank"></i>
-                <span>Earnings</span>
+            <i class="bi bi-bank"></i>
+            <span>Earnings</span>
             </a>
-            @endif
+            @endif--}}
+
+            <a href="{{ route('partners.commissions') }}" class="nav-link">
+                <i class="bi bi-bank"></i>
+                <span>Commission Structure</span>
+            </a>
         </div>
 
         @if (auth()->guard('partner')?->user()?->user_type == 'pickup-dropoff' || auth()->guard('partner')?->user()?->user_type == 'transport')

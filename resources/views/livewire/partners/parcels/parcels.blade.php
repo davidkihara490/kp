@@ -774,7 +774,8 @@
                                 </td>
 
                                 <td class="status-col">
-                                    @php                                    $statusBadge = $this->getStatusBadge($parcel->current_status);
+                                    @php 
+                                    $statusBadge = $this->getStatusBadge($parcel->current_status);
                                     @endphp
                                     <div class="status-wrapper">
                                         <span class="status-badge" style="background: {{ $statusBadge['color'] }}20; color: {{ $statusBadge['color'] }}">
@@ -790,9 +791,9 @@
                                     @endphp
                                     <div class="assignment-cell">
                                         @if ($assinged)
-                                        {{ $assinged->driver->full_name }}
+                                        {{ $assinged->driver?->full_name }}
                                         <div class="vehicle-info">
-                                            {{ $assinged->driver->phone_number }}
+                                            {{ $assinged->driver?->phone_number }}
                                         </div>
                                         @else
                                         <span class="unassigned">Not assigned</span>
@@ -1581,18 +1582,22 @@
                 background: rgba(67, 97, 238, 0.1);
                 color: var(--primary);
             }
+
             .stat-card.pending .stat-icon {
                 background: rgba(245, 158, 11, 0.1);
                 color: var(--warning);
             }
+
             .stat-card.transit .stat-icon {
                 background: rgba(59, 130, 246, 0.1);
                 color: var(--info);
             }
+
             .stat-card.delivered .stat-icon {
                 background: rgba(16, 185, 129, 0.1);
                 color: var(--success);
             }
+
             .stat-card.revenue .stat-icon {
                 background: rgba(139, 92, 246, 0.1);
                 color: #8b5cf6;
@@ -2133,21 +2138,25 @@
                 color: white;
                 border-color: var(--info);
             }
+
             .action-btn.success:hover {
                 background: var(--success);
                 color: white;
                 border-color: var(--success);
             }
+
             .action-btn.primary:hover {
                 background: var(--primary);
                 color: white;
                 border-color: var(--primary);
             }
+
             .action-btn.warning:hover {
                 background: var(--warning);
                 color: white;
                 border-color: var(--warning);
             }
+
             .action-btn.danger:hover {
                 background: var(--danger);
                 color: white;

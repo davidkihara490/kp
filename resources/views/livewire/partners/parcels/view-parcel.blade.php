@@ -29,10 +29,12 @@
                                     <i class="bi {{ $statusBadge['icon'] }} me-1"></i>
                                     {{ ucfirst(str_replace('_', ' ', $parcel->current_status ?? 'pending')) }}
                                 </span>
+                                @if($this->shouldShowPaymentSection())
                                 <span class="status-badge status-{{ $paymentBadge['color'] }}">
                                     <i class="bi {{ $paymentBadge['icon'] }} me-1"></i>
                                     Payment: {{ ucfirst(str_replace('_', ' ', $parcel->payment_status)) }}
                                 </span>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -42,7 +44,7 @@
                         <i class="bi bi-arrow-left me-2"></i>
                         Back to Parcels
                     </a>
-                    @if($parcel->canBeAccepted())
+                    @if($this->shouldShowAcceptButton())
                     <button class="btn btn-primary me-2" wire:click="acceptParcel">
                         <i class="bi bi-check-circle me-2"></i>
                         Accept Parcel
@@ -53,6 +55,8 @@
 
             <!-- Quick Stats -->
             <div class="row mb-4">
+                <!-- Total Amount - Hide from Driver and Transport Partner -->
+                @if($this->shouldShowPaymentSection())
                 <div class="col-xl-3 col-md-6 mb-3">
                     <div class="stat-card">
                         <div class="stat-icon total">
@@ -72,6 +76,9 @@
                         </div>
                     </div>
                 </div>
+                @endif
+
+                <!-- Weight - Show to all -->
                 <div class="col-xl-3 col-md-6 mb-3">
                     <div class="stat-card">
                         <div class="stat-icon distance">
@@ -86,6 +93,8 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Driver - Show to all -->
                 <div class="col-xl-3 col-md-6 mb-3">
                     <div class="stat-card">
                         <div class="stat-icon rating">
@@ -100,6 +109,8 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Route - Show to all -->
                 <div class="col-xl-3 col-md-6 mb-3">
                     <div class="stat-card">
                         <div class="stat-icon experience">
@@ -125,6 +136,7 @@
                             Overview
                         </button>
                     </li>
+                    @if($this->shouldShowPaymentsTab())
                     <li class="nav-item" role="presentation">
                         <button class="nav-link {{ $activeTab === 'payments' ? 'active' : '' }}"
                             wire:click="changeTab('payments')"
@@ -134,6 +146,7 @@
                             <span class="badge bg-secondary ms-2">{{ $parcel->payments->count() }}</span>
                         </button>
                     </li>
+                    @endif
                     <li class="nav-item" role="presentation">
                         <button class="nav-link {{ $activeTab === 'tracking' ? 'active' : '' }}"
                             wire:click="changeTab('tracking')"
@@ -159,7 +172,7 @@
                                     <i class="bi bi-info-circle me-2"></i>
                                     Parcel Details
                                 </h5>
-                                @if($remainingBalance > 0)
+                                @if($this->shouldShowPaymentSection() && $remainingBalance > 0)
                                 <button class="btn btn-sm btn-primary" wire:click="openPaymentModal">
                                     <i class="bi bi-cash me-2"></i>
                                     Make Payment
@@ -168,6 +181,8 @@
                             </div>
                             <div class="card-body">
                                 <div class="row">
+                                    <!-- Sender Information - Hide from Driver and Transport Partner -->
+                                    @if($this->shouldShowSenderInfo())
                                     <div class="col-md-6">
                                         <h6 class="border-bottom pb-2 mb-3">Sender Information</h6>
                                         <table class="table table-borderless">
@@ -197,11 +212,9 @@
                                                 <th>Address:</th>
                                                 <td>{{ $parcel->sender_address }}</td>
                                             </tr>
-
                                             <tr>
                                                 <th>PickUp Town</th>
                                                 <td>{{ $parcel->senderTown->name }}</td>
-
                                             </tr>
                                             <tr>
                                                 <th>PickUp Point</th>
@@ -213,6 +226,10 @@
                                             </tr>
                                         </table>
                                     </div>
+                                    @endif
+
+                                    <!-- Receiver Information - Hide from Driver and Transport Partner -->
+                                    @if($this->shouldShowReceiverInfo())
                                     <div class="col-md-6">
                                         <h6 class="border-bottom pb-2 mb-3">Receiver Information</h6>
                                         <table class="table table-borderless">
@@ -245,7 +262,6 @@
                                             <tr>
                                                 <th>Drop Off Town</th>
                                                 <td>{{ $parcel->receiverTown->name }}</td>
-
                                             </tr>
                                             <tr>
                                                 <th>Drop Off Point</th>
@@ -257,8 +273,67 @@
                                             </tr>
                                         </table>
                                     </div>
+                                    @endif
+
+                                    <!-- For Driver/Transport - Show simplified parcel info -->
+                                    @if($this->isDriver || $this->isTransportPartner)
+                                    <div class="col-md-12">
+                                        <h6 class="border-bottom pb-2 mb-3">Parcel Information</h6>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <table class="table table-borderless">
+                                                    <tr>
+                                                        <th>Parcel Number:</th>
+                                                        <td><strong>{{ $parcel->parcel_id }}</strong></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Type:</th>
+                                                        <td>{{ ucfirst($parcel->parcel_type) }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Package Type:</th>
+                                                        <td>{{ ucfirst($parcel->package_type) }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Weight:</th>
+                                                        <td>{{ $parcel->weight }} {{ $parcel->weight_unit }}</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <table class="table table-borderless">
+                                                    <tr>
+                                                        <th>From:</th>
+                                                        <td>{{ $parcel->senderTown->name ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>To:</th>
+                                                        <td>{{ $parcel->receiverTown->name ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Pickup Point:</th>
+                                                        <td>{{ $parcel->senderPickUpDropOffPoint->name ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>PickUp Point Address</th>
+                                                        <td>{{ $parcel->senderPickUpDropOffPoint->address }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Delivery Point:</th>
+                                                        <td>{{ $parcel->deliveryStation->name ?? 'N/A' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Delivery Point Address</th>
+                                                        <td>{{ $parcel->deliveryStation->address }}</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
                                 </div>
 
+                                <!-- Parcel Information - Show to all but with price hidden for driver/transport -->
                                 <div class="row mt-3">
                                     <div class="col-md-12">
                                         <h6 class="border-bottom pb-2 mb-3">Parcel Information</h6>
@@ -291,6 +366,8 @@
                                                     @endif
                                                 </td>
                                             </tr>
+                                            <!-- Hide declared value and insurance from driver/transport -->
+                                            @if($this->shouldShowPriceInfo())
                                             <tr>
                                                 <th>Declared Value:</th>
                                                 <td>KES {{ number_format($parcel->declared_value, 2) }}</td>
@@ -305,6 +382,7 @@
                                                     @endif
                                                 </td>
                                             </tr>
+                                            @endif
                                         </table>
                                     </div>
                                     <div class="col-md-4">
@@ -341,7 +419,8 @@
                             </div>
                         </div>
 
-                        <!-- Price Breakdown -->
+                        <!-- Price Breakdown - Hide from Driver and Transport Partner -->
+                        @if($this->shouldShowPriceInfo())
                         <div class="card mb-4">
                             <div class="card-header">
                                 <h5 class="mb-0">
@@ -398,11 +477,13 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
                     </div>
 
-                    <!-- Right Column - Important Information -->
+                    <!-- Right Column -->
                     <div class="col-lg-4">
-                        <!-- Payment Summary -->
+                        <!-- Payment Summary - Hide from Driver and Transport Partner -->
+                        @if($this->shouldShowPaymentSection())
                         <div class="card mb-4">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">
@@ -440,15 +521,16 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
 
-                        <!-- Verify Code -->
+                        <!-- Driver Information -->
                         <div class="card mb-4">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">
                                     <i class="bi bi-truck me-2"></i>
                                     Driver Information
                                 </h5>
-                                @if(!$parcel->currentDriver())
+                                @if($this->isOriginPudo && !$parcel->currentDriver())
                                 <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignDriverModal">
                                     <i class="bi bi-person-plus me-1"></i>
                                     Assign
@@ -473,44 +555,67 @@
                                     </tr>
                                 </table>
 
+                                <!-- Driver Code - Show only to relevant roles -->
+                                @if($this->shouldShowDriverCode())
+                                @if($this->latestStatus && $this->latestStatus->otp)
+                                <div class="alert alert-info mt-2">
+                                    <strong>Driver Code:</strong>
+                                    <code class="h5">{{ $this->latestStatus->otp }}</code>
+                                    <small class="d-block text-muted mt-1">Share this code with the driver for verification</small>
+                                </div>
+                                @endif
+                                @endif
 
-                                @if($loggedUser->user_type == 'pha' || $loggedUser->user_type == 'pickup-dropoff' )
-
-                                {{-- @if($parcel->latestStatus->otp_verified) --}}
-                                <button type="button" class="btn btn-sm btn-outline-primary" wire:click="openDriverVerificationModal">
-                                    <i class="bi bi-person-plus me-1"></i>
-                                    Verify Code
+                                <!-- Driver Verification - Only for Origin PUDO -->
+                                @if($this->shouldShowDriverVerification())
+                                <button type="button" class="btn btn-sm btn-outline-primary mt-2" wire:click="openDriverVerificationModal">
+                                    <i class="bi bi-shield-check me-1"></i>
+                                    Verify Driver Code
                                 </button>
-                                {{-- @endif --}}
+                                @endif
+
+                                <!-- Parcel Receiving - Only for Destination PUDO -->
+                                @if($this->shouldShowParcelReceiving())
+                                <button type="button" class="btn btn-sm btn-outline-primary mt-2" wire:click="receiveParcelFromDriver">
+                                    <i class="bi bi-box-arrow-in-down me-1"></i>
+                                    Receive Parcel
+                                </button>
                                 @endif
 
                                 @else
                                 <div class="text-center py-4 text-muted">
                                     <i class="bi bi-truck display-6"></i>
                                     <p class="mt-2">No driver assigned yet</p>
+                                    @if($this->isOriginPudo)
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#assignDriverModal">
+                                        <i class="bi bi-person-plus me-1"></i>
+                                        Assign Driver
+                                    </button>
+                                    @endif
                                 </div>
                                 @endif
                             </div>
                         </div>
 
-                        <!------Receive Parcel-------->
+                        <!-- Parcel Receiving Card - Only for Destination PUDO -->
+                        @if($this->isDestinationPudo)
                         <div class="card mb-4">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">
-                                    <i class="bi bi-truck me-2"></i>
-                                    Parcel Receiving <small>(Receive from driver)</small>
+                                    <i class="bi bi-box-seam me-2"></i>
+                                    Parcel Receiving
+                                    <small class="text-muted">(Receive from driver)</small>
                                 </h5>
                             </div>
                             <div class="card-body">
-
-                                @if($parcel->latestStatus->driver)
+                                @if($this->latestStatus && $this->latestStatus->driver)
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="avatar bg-success me-3">
                                         <i class="bi bi-person"></i>
                                     </div>
                                     <div>
-                                        <h6 class="mb-1">{{ $parcel->latestStatus->driver->full_name }}</h6>
-                                        <small class="text-muted">{{ $parcel->latestStatus->driver->phone_number }}</small>
+                                        <h6 class="mb-1">{{ $this->latestStatus->driver->full_name }}</h6>
+                                        <small class="text-muted">{{ $this->latestStatus->driver->phone_number }}</small>
                                     </div>
                                 </div>
                                 <table class="table table-sm table-borderless">
@@ -522,7 +627,7 @@
 
                                 @if($parcel->transitStatus())
                                 <button type="button" class="btn btn-sm btn-outline-primary" wire:click="receiveParcelFromDriver">
-                                    <i class="bi bi-person-plus me-1"></i>
+                                    <i class="bi bi-box-arrow-in-down me-1"></i>
                                     Receive Parcel
                                 </button>
                                 @endif
@@ -546,14 +651,14 @@
                                 @endif
                             </div>
                         </div>
+                        @endif
 
-
-
-                        <!-- Pick Up Modal-->
+                        <!-- Recipient Information - Only for Destination PUDO and non-driver/transport -->
+                        @if($this->isDestinationPudo && !$this->isDriver && !$this->isTransportPartner)
                         <div class="card mb-4">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">
-                                    <i class="bi bi-truck me-2"></i>
+                                    <i class="bi bi-person-check me-2"></i>
                                     Recipient Information
                                 </h5>
                             </div>
@@ -571,8 +676,6 @@
                                 </div>
                                 <table class="table table-sm table-borderless">
                                     <tr>
-
-                                        @if(auth()->guard('partner')->user()->user_type == 'pha' || auth()->guard('partner')->user()->user_type == 'pickup-dropoff')
                                         @if($parcel->parcelPickUp)
                                         <button type="button" class="btn btn-sm btn-success">
                                             <i class="bi bi-check me-1"></i>
@@ -580,9 +683,11 @@
                                             <td>{{ $parcel->parcelPickUp?->created_at}}</td>
                                         </button>
                                         @else
+                                        <!-- Pickup Verification - Only for Destination PUDO -->
+                                        @if($this->shouldShowPickupVerification())
                                         <button type="button" class="btn btn-sm btn-outline-primary" wire:click="openPickUpModal">
                                             <i class="bi bi-person-plus me-1"></i>
-                                            Pick Up
+                                            Verify Pickup
                                         </button>
                                         @endif
                                         @endif
@@ -590,11 +695,10 @@
                                 </table>
                             </div>
                         </div>
+                        @endif
 
-
-
-                        <!-- Recent Payments -->
-                        @if($parcel->payments->where('status', 'completed')->count() > 0)
+                        <!-- Recent Payments - Hide from Driver and Transport Partner -->
+                        @if($this->shouldShowPaymentSection() && $parcel->payments->where('status', 'completed')->count() > 0)
                         <div class="card">
                             <div class="card-header">
                                 <h5 class="mb-0">
@@ -635,12 +739,25 @@
                             </div>
                         </div>
                         @endif
+
+                        <!-- Accept Parcel Button - Only for Origin PUDO -->
+                        @if($this->shouldShowAcceptButton())
+                        <div class="card mb-4">
+                            <div class="card-body text-center">
+                                <button class="btn btn-primary btn-lg w-100" wire:click="acceptParcel">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    Accept Parcel
+                                </button>
+                                <small class="text-muted d-block mt-2">Accept this parcel to start the delivery process</small>
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
                 @endif
 
                 <!-- Payments Tab -->
-                @if($activeTab === 'payments')
+                @if($activeTab === 'payments' && $this->shouldShowPaymentsTab())
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
@@ -811,7 +928,6 @@
                             <i class="bi bi-cash-stack me-2"></i>
                             Make Payment
                         </h5>
-
                         <button type="button" class="btn-close" wire:click="closePaymentModal"></button>
                     </div>
                     <div class="modal-body">
@@ -920,7 +1036,7 @@
                                 </div>
                             </div>
 
-                            <!-- Payment Failed State (Insufficient Funds, Wrong PIN, etc) -->
+                            <!-- Payment Failed State -->
                             @elseif($paymentStatus === 'failed')
                             <div class="failed-state">
                                 <div class="failed-animation mb-3">
@@ -1125,11 +1241,9 @@
         </div>
         @endif
 
-
         @if($pollingEnabled)
         <div wire:poll.5s="checkMpesaStatus" class="d-none"></div>
         @endif
-
 
         <!-- Error Modal -->
         @if($showErrorModal)
@@ -1171,18 +1285,6 @@
         </div>
         @endif
 
-        <!-- Optional: Click outside to close -->
-        @if($showErrorModal)
-        <script>
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('modal') && e.target.id === 'errorModal') {
-                    @this.set('showErrorModal', false);
-                }
-            });
-        </script>
-        @endif
-
-
         <!-- Success Modal -->
         @if($showSuccessModal)
         <div class="modal fade show d-block" id="successModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5); display: block;" wire:ignore.self>
@@ -1216,8 +1318,9 @@
         </div>
         @endif
 
+        <!-- Driver Verification Modal -->
         @if($showDriverVerificationModal)
-        <div class="modal fade show d-block" id="paymentModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal fade show d-block" id="driverVerificationModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -1292,14 +1395,14 @@
 
                             <!-- Code Input Section -->
                             <div class="code-input-section mb-3">
-                                <label for="driverCode" class="form-label fw-medium">
+                                <label for="driver_code" class="form-label fw-medium">
                                     <i class="bi bi-key me-1"></i>
                                     Enter Driver Assignment Code
                                 </label>
                                 <div class="input-group">
                                     <input type="text"
                                         class="form-control form-control-lg"
-                                        id="driverCode"
+                                        id="driver_code"
                                         wire:model="driver_code"
                                         placeholder="Enter 6-digit code"
                                         maxlength="6"
@@ -1311,21 +1414,13 @@
                                 @error('driver_code')
                                 <span class="text-danger small mt-1">{{ $message }}</span>
                                 @enderror
-                                <div class="form-text">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Enter the 6-digit code sent to the driver's phone
-                                </div>
-
                                 @if($driverVerificationError)
                                 <div class="text-danger small mt-1">
                                     {{ $driverVerificationError }}
                                 </div>
                                 @endif
-
-
                             </div>
 
-                            <!-- Additional Info -->
                             <div class="alert alert-info py-2 small">
                                 <i class="bi bi-exclamation-triangle me-2"></i>
                                 This code is required to verify driver assignment. The driver should provide this code.
@@ -1336,8 +1431,7 @@
                                 <i class="bi bi-x me-1"></i>
                                 Cancel
                             </button>
-                            <button type="button" class="btn btn-primary"
-                                wire:click="verifyDriverCode">
+                            <button type="submit" class="btn btn-primary">
                                 <span wire:loading.remove wire:target="verifyDriverCode">
                                     <i class="bi bi-check-circle me-1"></i>
                                     Verify & Issue
@@ -1354,7 +1448,7 @@
         </div>
         @endif
 
-
+        <!-- Pickup Modal -->
         @if($showPickUpModal)
         <div class="modal fade show d-block" id="pickupModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -1447,7 +1541,7 @@
 
                             <!-- Other Person Details Form (shown only when 'other' is selected) -->
                             @if($pickup_person_type === 'other')
-                            <div class="other-person-card mb-4 p-3 bg-light rounded border" x-data x-init="$el.scrollIntoView({ behavior: 'smooth', block: 'center' })">
+                            <div class="other-person-card mb-4 p-3 bg-light rounded border">
                                 <h6 class="text-primary mb-3">
                                     <i class="bi bi-person-plus me-2"></i>
                                     Person Picking Up Details
@@ -1493,14 +1587,14 @@
 
                             <!-- Verification Code Section -->
                             <div class="code-input-section mb-3">
-                                <label for="pickupCode" class="form-label fw-medium">
+                                <label for="pickup_code" class="form-label fw-medium">
                                     <i class="bi bi-key me-1"></i>
                                     Enter Pickup Verification Code
                                 </label>
                                 <div class="input-group">
                                     <input type="text"
                                         class="form-control form-control-lg @error('pickup_code') is-invalid @enderror"
-                                        id="pickupCode"
+                                        id="pickup_code"
                                         wire:model="pickup_code"
                                         placeholder="Enter 6-digit code"
                                         maxlength="6"
@@ -1512,11 +1606,6 @@
                                 @error('pickup_code')
                                 <span class="text-danger small mt-1">{{ $message }}</span>
                                 @enderror
-                                <div class="form-text">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Enter the verification code provided to the recipient
-                                </div>
-
                                 @if($pickupVerificationError)
                                 <div class="text-danger small mt-1">
                                     {{ $pickupVerificationError }}
@@ -1540,8 +1629,7 @@
                                 <i class="bi bi-x me-1"></i>
                                 Cancel
                             </button>
-                            <button type="submit" class="btn btn-primary"
-                                wire:loading.attr="disabled">
+                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
                                 <span wire:loading.remove wire:target="verifyPickup">
                                     <i class="bi bi-check-circle me-1"></i>
                                     Complete Pickup
@@ -1559,7 +1647,6 @@
         @endif
 
         <!-- Assign Driver Modal -->
-        @if($activeTab === 'overview' && !$parcel->driver)
         <div class="modal fade" id="assignDriverModal" tabindex="-1" wire:ignore.self>
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -1572,8 +1659,10 @@
                     </div>
                     <div class="modal-body">
                         <p>Select a driver to assign to this parcel:</p>
-                        <!-- Driver selection form would go here -->
-                        <p class="text-muted">Driver list coming soon...</p>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Driver assignment functionality coming soon.
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -1582,9 +1671,7 @@
                 </div>
             </div>
         </div>
-        @endif
 
-        <!-- Receipt Modal -->
         <!-- Receipt Modal -->
         @if($showReceiptModal && $selectedPayment)
         <div class="modal fade show d-block" id="receiptModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" wire:ignore.self>
@@ -1603,7 +1690,7 @@
                             <!-- Header -->
                             <div class="text-center mb-4">
                                 <div class="company-logo mb-3">
-                                  <img width="50px" height="50px" src="{{ asset('logo.jpeg') }}" alt="">
+                                    <img width="50px" height="50px" src="{{ asset('logo.jpeg') }}" alt="">
                                 </div>
                                 <h3 class="mb-1">{{ $receiptData['company_details']['name'] }}</h3>
                                 <p class="text-muted mb-0">{{ $receiptData['company_details']['address'] }}</p>
@@ -1611,7 +1698,6 @@
                                     Tel: {{ $receiptData['company_details']['phone'] }} |
                                     Email: {{ $receiptData['company_details']['email'] }}
                                 </p>
-                                {{-- <p class="text-muted small">PIN: {{ $receiptData['company_details']['pin'] }}</p> --}}
                                 <hr class="my-3">
                                 <h4 class="mb-0">PAYMENT RECEIPT</h4>
                                 <p class="text-muted small">Receipt No: <strong>{{ $receiptData['receipt_number'] }}</strong></p>
@@ -1883,14 +1969,6 @@
                             </div>
                             @endif
 
-                            <!-- QR Code (if available) -->
-                            @if($receiptData['qr_code_url'])
-                            <div class="text-center mb-4">
-                                <img src="{{ $receiptData['qr_code_url'] }}" alt="QR Code" style="width: 100px; height: 100px;">
-                                <p class="text-muted small mt-2">Scan to verify receipt</p>
-                            </div>
-                            @endif
-
                             <!-- Footer -->
                             <div class="text-center mt-4">
                                 <div class="border-top pt-3">
@@ -1901,7 +1979,7 @@
                             </div>
                         </div>
                     </div>
-                    <!-- <div class="modal-footer">
+                    <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" wire:click="closeReceiptModal">
                             <i class="bi bi-x me-2"></i>
                             Close
@@ -1922,7 +2000,7 @@
                             <i class="bi bi-printer me-2"></i>
                             Print
                         </button>
-                    </div> -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -1945,12 +2023,11 @@
             .section-title {
                 font-size: 1.8rem;
                 font-weight: 600;
-                color: var(--text-dark);
                 margin: 0;
             }
 
             .section-subtitle {
-                color: var(--text-light);
+                color: #6c757d;
                 margin: 5px 0 0 0;
             }
 
@@ -1964,7 +2041,7 @@
                 width: 100px;
                 height: 100px;
                 border-radius: 50%;
-                background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+                background: linear-gradient(135deg, #007bff, #0056b3);
                 color: white;
                 display: flex;
                 align-items: center;
@@ -2011,24 +2088,17 @@
                 border: 1px solid rgba(23, 162, 184, 0.2);
             }
 
-            .status-dark {
-                background-color: rgba(52, 58, 64, 0.1);
-                color: #343a40;
-                border: 1px solid rgba(52, 58, 64, 0.2);
-            }
-
             .status-primary {
                 background-color: rgba(0, 123, 255, 0.1);
                 color: #004085;
                 border: 1px solid rgba(0, 123, 255, 0.2);
             }
 
-            /* Quick Stats */
             .stat-card {
                 background: white;
                 border-radius: 12px;
                 padding: 20px;
-                border: 1px solid var(--border-color);
+                border: 1px solid #dee2e6;
                 display: flex;
                 align-items: center;
                 gap: 15px;
@@ -2069,46 +2139,42 @@
             .stat-value {
                 font-size: 1.5rem;
                 font-weight: 700;
-                color: var(--text-dark);
                 line-height: 1;
             }
 
             .stat-label {
                 font-size: 0.9rem;
-                color: var(--text-light);
+                color: #6c757d;
                 margin-top: 5px;
             }
 
             .stat-subtext {
                 font-size: 0.8rem;
-                color: var(--text-light);
+                color: #6c757d;
                 margin-top: 2px;
             }
 
-            /* Tabs */
             .tabs-navigation .nav-tabs {
-                border-bottom: 2px solid var(--border-color);
+                border-bottom: 2px solid #dee2e6;
             }
 
             .tabs-navigation .nav-link {
                 border: none;
-                color: var(--text-light);
+                color: #6c757d;
                 font-weight: 500;
                 padding: 12px 20px;
             }
 
             .tabs-navigation .nav-link.active {
-                color: var(--primary-color);
-                border-bottom: 2px solid var(--primary-color);
+                color: #007bff;
+                border-bottom: 2px solid #007bff;
                 background: transparent;
             }
 
-            /* Table Styling */
             .table th {
                 background-color: #f8f9fa;
                 font-weight: 600;
-                color: var(--text-dark);
-                border-bottom: 2px solid var(--border-color);
+                border-bottom: 2px solid #dee2e6;
             }
 
             .table-borderless th,
@@ -2117,7 +2183,6 @@
                 padding: 8px 0;
             }
 
-            /* Avatar */
             .avatar {
                 width: 40px;
                 height: 40px;
@@ -2137,7 +2202,6 @@
                 background-color: #28a745;
             }
 
-            /* Timeline */
             .timeline {
                 position: relative;
                 padding: 20px 0;
@@ -2171,14 +2235,14 @@
                 top: 40px;
                 bottom: -20px;
                 width: 2px;
-                background: var(--border-color);
+                background: #dee2e6;
             }
 
             .timeline-content {
                 background: #f8f9fa;
                 border-radius: 8px;
                 padding: 15px;
-                border: 1px solid var(--border-color);
+                border: 1px solid #dee2e6;
             }
 
             .bg-success {
@@ -2197,7 +2261,6 @@
                 background-color: #dc3545;
             }
 
-            /* Modal */
             .modal.show.d-block {
                 display: block;
                 overflow-y: auto;
@@ -2208,90 +2271,6 @@
                 color: #dc3545;
             }
 
-            .driver-info-card {
-                background: linear-gradient(to bottom, #f8fafc, #ffffff);
-                border-left: 4px solid var(--primary);
-            }
-
-            .driver-avatar img,
-            .avatar-placeholder {
-                transition: transform 0.2s;
-            }
-
-            .driver-avatar:hover img,
-            .avatar-placeholder:hover {
-                transform: scale(1.05);
-            }
-
-            .avatar-placeholder {
-                background: linear-gradient(135deg, #6b7280, #4b5563);
-            }
-
-            #driverCode {
-                font-family: monospace;
-                font-size: 1.25rem;
-                letter-spacing: 2px;
-                text-align: center;
-            }
-
-            #driverCode:focus {
-                border-color: var(--primary);
-                box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-            }
-
-            /* Optional: Add a subtle animation for the verification process */
-            @keyframes pulse {
-                0% {
-                    opacity: 1;
-                }
-
-                50% {
-                    opacity: 0.7;
-                }
-
-                100% {
-                    opacity: 1;
-                }
-            }
-
-            .btn-primary:disabled {
-                animation: pulse 1.5s infinite;
-            }
-
-            @media (max-width: 768px) {
-                .section-header {
-                    flex-direction: column;
-                    align-items: stretch;
-                }
-
-                .header-actions {
-                    justify-content: flex-start;
-                    flex-wrap: wrap;
-                }
-
-                .tabs-navigation .nav-link {
-                    padding: 8px 12px;
-                    font-size: 0.9rem;
-                }
-
-                .stat-card {
-                    flex-direction: column;
-                    text-align: center;
-                    padding: 15px;
-                }
-
-                .stat-icon {
-                    width: 50px;
-                    height: 50px;
-                    font-size: 1.5rem;
-                }
-
-                .stat-value {
-                    font-size: 1.5rem;
-                }
-            }
-
-            /* Additional styles for the pickup form */
             .btn-group .btn-outline-primary {
                 border: 2px solid #e5e7eb;
                 background: white;
@@ -2300,46 +2279,16 @@
 
             .btn-group .btn-outline-primary:hover {
                 background: #eef2ff;
-                color: var(--primary);
-                border-color: var(--primary);
+                color: #007bff;
+                border-color: #007bff;
             }
 
             .btn-check:checked+.btn-outline-primary {
-                background: var(--primary);
+                background: #007bff;
                 color: white;
-                border-color: var(--primary);
+                border-color: #007bff;
             }
 
-            .parcel-info-banner {
-                background: linear-gradient(45deg, rgba(67, 97, 238, 0.05), rgba(67, 97, 238, 0.1));
-            }
-
-            .owner-info-card,
-            .other-person-card,
-            .driver-info-card {
-                transition: all 0.3s ease;
-                border: 1px solid #e5e7eb;
-            }
-
-            .owner-info-card:hover,
-            .other-person-card:hover,
-            .driver-info-card:hover {
-                border-color: var(--primary);
-                box-shadow: 0 4px 12px rgba(67, 97, 238, 0.1);
-            }
-
-            .form-control:focus {
-                border-color: var(--primary);
-                box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-            }
-
-            .modal-lg {
-                max-width: 800px;
-            }
-        </style>
-
-        <!-- Add CSS for animations -->
-        <style>
             .phone-animation {
                 display: flex;
                 align-items: center;
@@ -2399,10 +2348,7 @@
                 align-items: center;
                 justify-content: center;
             }
-        </style>
 
-        <style>
-            /* Receipt Styles */
             .receipt-container {
                 background: white;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -2427,7 +2373,53 @@
                 border-top: 2px solid #dee2e6;
             }
 
-            /* Print specific styles */
+            #driver_code,
+            #pickup_code {
+                font-family: monospace;
+                font-size: 1.25rem;
+                letter-spacing: 2px;
+                text-align: center;
+            }
+
+            #driver_code:focus,
+            #pickup_code:focus {
+                border-color: #007bff;
+                box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+            }
+
+            @media (max-width: 768px) {
+                .section-header {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .header-actions {
+                    justify-content: flex-start;
+                    flex-wrap: wrap;
+                }
+
+                .tabs-navigation .nav-link {
+                    padding: 8px 12px;
+                    font-size: 0.9rem;
+                }
+
+                .stat-card {
+                    flex-direction: column;
+                    text-align: center;
+                    padding: 15px;
+                }
+
+                .stat-icon {
+                    width: 50px;
+                    height: 50px;
+                    font-size: 1.5rem;
+                }
+
+                .stat-value {
+                    font-size: 1.5rem;
+                }
+            }
+
             @media print {
                 .modal-dialog {
                     max-width: 100%;
@@ -2457,14 +2449,12 @@
                 }
             }
 
-            // Close modal when clicking outside
             document.addEventListener('click', function(e) {
                 if (e.target.classList.contains('modal') && e.target.id === 'paymentModal') {
                     @this.call('closePaymentModal');
                 }
             });
 
-            // Auto-hide flash messages after 5 seconds
             document.addEventListener('livewire:init', () => {
                 setTimeout(() => {
                     const alerts = document.querySelectorAll('.alert');
@@ -2477,28 +2467,20 @@
                     });
                 }, 5000);
             });
-        </script>
 
-        <script>
             document.addEventListener('livewire:init', () => {
                 let mpesaPollingInterval = null;
 
-                // Start polling when M-Pesa payment is initiated
                 Livewire.on('start-mpesa-polling', () => {
                     console.log('Starting M-Pesa polling');
-
-                    // Clear any existing interval
                     if (mpesaPollingInterval) {
                         clearInterval(mpesaPollingInterval);
                     }
-
-                    // Start polling every 5 seconds
                     mpesaPollingInterval = setInterval(() => {
                         Livewire.dispatch('checkMpesaStatus');
                     }, 5000);
                 });
 
-                // Stop polling when payment is completed or failed
                 Livewire.on('stop-mpesa-polling', () => {
                     console.log('Stopping M-Pesa polling');
                     if (mpesaPollingInterval) {
@@ -2507,7 +2489,6 @@
                     }
                 });
 
-                // Also listen for the payment events to ensure polling stops
                 Livewire.on('mpesa-payment-initiated', (data) => {
                     console.log('M-Pesa payment initiated', data);
                 });
@@ -2522,101 +2503,28 @@
                     Livewire.dispatch('stop-mpesa-polling');
                 });
 
-                // Clean up on page unload
                 window.addEventListener('beforeunload', () => {
                     if (mpesaPollingInterval) {
                         clearInterval(mpesaPollingInterval);
                     }
                 });
             });
-        </script>
 
-        <!-- Add this JavaScript for automatic code formatting if needed -->
-        <script>
             document.addEventListener('livewire:initialized', () => {
-                // Auto-format code input to uppercase or handle specific formatting
-                const codeInput = document.getElementById('driverCode');
+                const codeInput = document.getElementById('driver_code');
                 if (codeInput) {
                     codeInput.addEventListener('input', function(e) {
-                        // Option 1: Force uppercase
-                        // this.value = this.value.toUpperCase();
-
-                        // Option 2: Only allow numbers (if code is numeric)
+                        this.value = this.value.replace(/[^0-9]/g, '');
+                    });
+                }
+                const pickupCodeInput = document.getElementById('pickup_code');
+                if (pickupCodeInput) {
+                    pickupCodeInput.addEventListener('input', function(e) {
                         this.value = this.value.replace(/[^0-9]/g, '');
                     });
                 }
             });
-        </script>
 
-        <script>
-            // Print receipt functionality
-            Livewire.on('print-receipt', () => {
-                const receiptContent = document.getElementById('receipt-content').cloneNode(true);
-                const printWindow = window.open('', '_blank');
-
-                printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Payment Receipt</title>
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-            <style>
-                body {
-                    padding: 20px;
-                    font-family: Arial, sans-serif;
-                }
-                .receipt-container {
-                    max-width: 800px;
-                    margin: 0 auto;
-                }
-                .table-borderless td, .table-borderless th {
-                    border: none;
-                }
-                @media print {
-                    body {
-                        padding: 0;
-                        margin: 0;
-                    }
-                    .btn, .modal-footer {
-                        display: none !important;
-                    }
-                    .receipt-container {
-                        margin: 0;
-                        padding: 20px;
-                    }
-                }
-            </style>
-        </head>
-        <body>
-            ${receiptContent.outerHTML}
-            <div class="text-center mt-4" style="print-color-adjust: exact;">
-                <button class="btn btn-primary" onclick="window.print();">
-                    <i class="bi bi-printer me-2"></i>
-                    Print
-                </button>
-                <button class="btn btn-secondary" onclick="window.close();">
-                    <i class="bi bi-x me-2"></i>
-                    Close
-                </button>
-            </div>
-            <script>
-                // Auto-print
-                window.onload = function() {
-                    window.print();
-                }
-            <\/script>
-        </body>
-        </html>
-    `);
-
-                printWindow.document.close();
-            });
-
-            // Open WhatsApp
-            Livewire.on('open-whatsapp', (data) => {
-                window.open(data.url, '_blank');
-            });
         </script>
     </div>
 </div>

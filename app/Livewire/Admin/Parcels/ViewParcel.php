@@ -172,31 +172,28 @@ class ViewParcel extends Component
         $this->validate();
 
         try {
-            $changedByType = Auth::user()->user_type ?? 'admin';
+            $changedByType = 'admin';
+
+            // dd($this->parcel->getCurrentLocation());
 
             $this->parcel->updateParcelStatus(
                 $this->newStatus,
-                Auth::id(),
+                null,
+                Auth::guard('admin')->user()->id,
                 $changedByType,
                 $this->statusNotes,
-                $this->parcel->driver_id,
+                null,
                 null
             );
 
             $this->reset(['newStatus', 'statusNotes']);
             $this->showUpdateStatusModal = false;
 
-            $this->parcel->refresh();
+            session()->flash('success', 'Parcel status updated successfully!');
 
-            $this->dispatch('notify', [
-                'type' => 'success',
-                'message' => 'Parcel status updated successfully!'
-            ]);
+            $this->parcel->refresh();
         } catch (\Exception $e) {
-            $this->dispatch('notify', [
-                'type' => 'error',
-                'message' => 'Failed to update status: ' . $e->getMessage()
-            ]);
+            session()->flash('error', 'Failed to update status: ' . $e->getMessage());
         }
     }
 
@@ -412,16 +409,18 @@ class ViewParcel extends Component
     public function render()
     {
         $statusOptions = [
-            'pending' => 'Pending',
-            'accepted' => 'Accept Parcel',
-            'assigned' => 'Assign to Driver',
-            'in_transit' => 'Mark In Transit',
-            'warehouse' => 'Arrived at Warehouse',
-            'arrived_at_destination' => 'Arrived at Destination',
-            'picked' => 'Picked Up',
-            'delivered' => 'Delivered',
-            'failed' => 'Failed Delivery',
-            'returned' => 'Return to Sender',
+            Parcel::STATUS_CREATED => 'Created',
+            Parcel::STATUS_BOOKED => 'Booked',
+            Parcel::STATUS_PENDING => 'Pending',
+            Parcel::STATUS_ACCEPTED => 'Accepted',
+            Parcel::STATUS_ASSIGNED => 'Assigned',
+            Parcel::STATUS_IN_TRANSIT => 'In Transit',
+            Parcel::STATUS_WAREHOUSE => 'At Warehouse',
+            Parcel::STATUS_ARRIVED_AT_DESTINATION => 'Arrived at Destination',
+            Parcel::STATUS_PICKED => 'Picked Up',
+            Parcel::STATUS_DELIVERED => 'Delivered',
+            Parcel::STATUS_FAILED => 'Failed Delivery',
+            Parcel::STATUS_RETURNED => 'Returned',
         ];
 
         // Get available transport partners with their towns

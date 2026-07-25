@@ -969,8 +969,5 @@
             uploadcare_public_key: 'ed7312cf0958d607cbc6',
         });
     </script>
-
-
 </body>
-
 </html>
