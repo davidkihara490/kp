@@ -342,7 +342,7 @@
 
     .user-info-bar .logout-btn {
       cursor: pointer;
-      color: var(--text-danger);
+      color: var(--accent-color);
       font-size: 0.9rem;
     }
 
@@ -395,12 +395,19 @@
         <div id="userInfoDisplay">
           <span class="guest-text"><i class="bi bi-person-circle me-2"></i>You are browsing as a guest</span>
         </div>
-        <div>
+
+        <div id="guestTopActions">
           <button type="button" class="btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
             <i class="bi bi-box-arrow-in-right me-1"></i> Login
           </button>
           <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">
             <i class="bi bi-person-plus me-1"></i> Register
+          </button>
+        </div>
+
+        <div id="customerTopActions" class="d-none">
+          <button type="button" class="btn btn-outline-danger btn-sm" id="logoutBtnTop">
+            <i class="bi bi-box-arrow-right me-1"></i> Logout
           </button>
         </div>
       </div>
@@ -762,562 +769,502 @@
   <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    (function() {
-      // ============================================
-      // AUTH STATE MANAGEMENT
-      // ============================================
+    (() => {
+      'use strict';
+
+      let currentStep = 1;
       let isLoggedIn = false;
       let currentUser = null;
 
-      // ============================================
-      // UI UPDATES
-      // ============================================
-      function updateUIForLoggedInUser(user) {
-        if (!user) return;
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
-        // Update top user bar
-        const userInfoDisplay = document.getElementById('userInfoDisplay');
-        userInfoDisplay.innerHTML = `
-          <span class="user-name"><i class="bi bi-person-check-fill me-2 text-primary"></i>Welcome, ${user.name}!</span>
-          <span class="text-muted ms-2 small">(${user.email})</span>
-        `;
+      const endpoints = {
+        login: @json(url('/customer/login?type=api')),
+        register: @json(url('/customer/register')),
+        checkAuth: @json(url('/customer/check-auth')),
+        logout: @json(url('/customer/logout')),
+      };
 
-        // Replace buttons with logout
-        const userInfoBar = document.getElementById('userInfoBar');
-        const existingButtons = userInfoBar.querySelector('div:last-child');
-        existingButtons.innerHTML = `
-          <button type="button" class="btn btn-outline-danger btn-sm" id="logoutBtnTop">
-            <i class="bi bi-box-arrow-right me-1"></i> Logout
-          </button>
-        `;
-        document.getElementById('logoutBtnTop').addEventListener('click', handleLogout);
+      const element = (id) => document.getElementById(id);
 
-        // Update auth prompt in step 3
-        document.getElementById('authStatusText').textContent = `You are logged in as ${user.name}`;
-        document.getElementById('authActionText').textContent = '';
-        document.getElementById('authButtons').style.display = 'none';
-        document.getElementById('loggedInActions').style.display = 'inline-block';
-        document.getElementById('loggedInName').textContent = user.name;
+      const stepPanels = {
+        1: element('step1'),
+        2: element('step2'),
+        3: element('step3'),
+      };
 
-        // Enable booking button
-        document.getElementById('saveParcelBtn').disabled = false;
-        document.getElementById('saveParcelBtn').innerHTML = '<i class="bi bi-check-circle me-1"></i> Confirm & Book';
+      const indicators = {
+        1: element('stepIndicator1'),
+        2: element('stepIndicator2'),
+        3: element('stepIndicator3'),
+      };
 
-        // Set customer_id hidden field
-        document.getElementById('customerId').value = user.id;
-
-        // Pre-fill sender details if available
-        if (user.name) {
-          document.getElementById('senderName').value = user.name;
-        }
-        if (user.email) {
-          document.getElementById('senderEmail').value = user.email;
-        }
-        if (user.phone) {
-          document.getElementById('senderPhone').value = user.phone;
-        }
-
-        isLoggedIn = true;
-        currentUser = user;
+      function escapeHtml(value) {
+        const div = document.createElement('div');
+        div.textContent = value ?? '';
+        return div.innerHTML;
       }
 
-      function updateUIForLoggedOutUser() {
-        // Reset top user bar
-        const userInfoDisplay = document.getElementById('userInfoDisplay');
-        userInfoDisplay.innerHTML = `
-          <span class="guest-text"><i class="bi bi-person-circle me-2"></i>You are browsing as a guest</span>
-        `;
-
-        const userInfoBar = document.getElementById('userInfoBar');
-        const existingButtons = userInfoBar.querySelector('div:last-child');
-        existingButtons.innerHTML = `
-          <button type="button" class="btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
-            <i class="bi bi-box-arrow-in-right me-1"></i> Login
-          </button>
-          <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">
-            <i class="bi bi-person-plus me-1"></i> Register
-          </button>
-        `;
-
-        // Reset auth prompt
-        document.getElementById('authStatusText').textContent = 'You are browsing as a guest';
-        document.getElementById('authActionText').textContent = ' - Please login or register to complete booking';
-        document.getElementById('authButtons').style.display = 'inline-block';
-        document.getElementById('loggedInActions').style.display = 'none';
-
-        // Disable booking button
-        document.getElementById('saveParcelBtn').disabled = true;
-        document.getElementById('saveParcelBtn').innerHTML = '<i class="bi bi-lock me-1"></i> Please Login to Book';
-
-        // Clear customer_id
-        document.getElementById('customerId').value = '';
-
-        isLoggedIn = false;
-        currentUser = null;
+      function normalizeCustomer(data) {
+        return data?.user ?? data?.customer ?? null;
       }
 
-      // ============================================
-      // AUTH FUNCTIONS WITH REAL API CALLS
-      // ============================================
+      function customerPhone(customer) {
+        return customer?.phone ?? customer?.phone_number ?? '';
+      }
 
-      function handleLogin(e) {
-        e.preventDefault();
+      function showMessage(container, message, type = 'danger') {
+        container.className = `alert alert-${type}`;
+        container.textContent = message;
+        container.style.display = 'block';
+      }
 
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value.trim();
-        const messageDiv = document.getElementById('loginMessage');
+      function hideMessage(container) {
+        container.style.display = 'none';
+        container.textContent = '';
+      }
 
-        if (!email || !password) {
-          showMessage(messageDiv, 'Please fill in both fields.', 'warning');
+      function setButtonLoading(button, textElement, spinnerElement, loading) {
+        button.disabled = loading;
+        textElement.style.display = loading ? 'none' : 'inline';
+        spinnerElement.style.display = loading ? 'inline-block' : 'none';
+      }
+
+      async function parseResponse(response) {
+        const contentType = response.headers.get('content-type') ?? '';
+        const payload = contentType.includes('application/json')
+          ? await response.json()
+          : { message: await response.text() };
+
+        if (!response.ok) {
+          if (payload.errors) {
+            const messages = Object.values(payload.errors).flat();
+            throw new Error(messages.join(' '));
+          }
+
+          throw new Error(payload.message || `Request failed with status ${response.status}.`);
+        }
+
+        return payload;
+      }
+
+      function updateUIForLoggedInUser(customer) {
+        if (!customer) {
+          updateUIForLoggedOutUser();
           return;
         }
 
-        // Show loading
-        document.getElementById('loginBtnText').style.display = 'none';
-        document.getElementById('loginBtnSpinner').style.display = 'inline-block';
-        document.getElementById('loginSubmitBtn').disabled = true;
-        document.getElementById('loginMessage').style.display = 'none';
+        const safeName = escapeHtml(customer.name || 'Customer');
+        const safeEmail = escapeHtml(customer.email || '');
 
-        // Get CSRF token
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        element('userInfoDisplay').innerHTML = `
+          <span class="user-name">
+            <i class="bi bi-person-check-fill me-2"></i>Welcome, ${safeName}!
+          </span>
+          ${safeEmail ? `<span class="text-muted ms-2 small">(${safeEmail})</span>` : ''}
+        `;
 
-        // Make API call to login endpoint
-        fetch('/customer/login?type=api', {
+        element('guestTopActions').classList.add('d-none');
+        element('customerTopActions').classList.remove('d-none');
+
+        element('authStatusText').textContent = `You are logged in as ${customer.name || 'Customer'}`;
+        element('authActionText').textContent = '';
+        element('authButtons').style.display = 'none';
+        element('loggedInActions').style.display = 'inline-block';
+        element('loggedInName').textContent = customer.name || 'Customer';
+
+        element('saveParcelBtn').disabled = false;
+        element('saveParcelBtn').innerHTML = '<i class="bi bi-check-circle me-1"></i> Confirm & Book';
+        element('customerId').value = customer.id ?? '';
+
+        if (customer.name) element('senderName').value = customer.name;
+        if (customer.email) element('senderEmail').value = customer.email;
+        if (customerPhone(customer)) element('senderPhone').value = customerPhone(customer);
+
+        currentUser = customer;
+        isLoggedIn = true;
+      }
+
+      function updateUIForLoggedOutUser() {
+        element('userInfoDisplay').innerHTML = `
+          <span class="guest-text">
+            <i class="bi bi-person-circle me-2"></i>You are browsing as a guest
+          </span>
+        `;
+
+        element('guestTopActions').classList.remove('d-none');
+        element('customerTopActions').classList.add('d-none');
+
+        element('authStatusText').textContent = 'You are browsing as a guest';
+        element('authActionText').textContent = ' - Please login or register to complete booking';
+        element('authButtons').style.display = 'inline-block';
+        element('loggedInActions').style.display = 'none';
+
+        element('saveParcelBtn').disabled = true;
+        element('saveParcelBtn').innerHTML = '<i class="bi bi-lock me-1"></i> Please Login to Book';
+        element('customerId').value = '';
+
+        currentUser = null;
+        isLoggedIn = false;
+      }
+
+      async function handleLogin(event) {
+        event?.preventDefault();
+
+        const email = element('loginEmail').value.trim();
+        const password = element('loginPassword').value;
+        const message = element('loginMessage');
+        const button = element('loginSubmitBtn');
+
+        hideMessage(message);
+
+        if (!email || !password) {
+          showMessage(message, 'Please enter your email address and password.', 'warning');
+          return;
+        }
+
+        setButtonLoading(button, element('loginBtnText'), element('loginBtnSpinner'), true);
+
+        try {
+          const response = await fetch(endpoints.login, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
               'X-CSRF-TOKEN': csrfToken,
-              'X-Requested-With': 'XMLHttpRequest'
+              'X-Requested-With': 'XMLHttpRequest',
             },
             credentials: 'same-origin',
             body: JSON.stringify({
-              email: email,
-              password: password,
-              remember: document.getElementById('rememberMe').checked
-            })
-          })
-          .then(response => {
-            if (!response.ok) {
-              return response.json().then(err => {
-                throw new Error(err.message || 'Login failed');
-              });
-            }
-            return response.json();
-          })
-          .then(data => {
-            if (data.success) {
-              // Update UI with user data from server
-              updateUIForLoggedInUser(data.user);
-              showMessage(messageDiv, data.message || 'Login successful!', 'success');
-
-              // Close modal after delay
-              setTimeout(() => {
-                const modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
-                modal.hide();
-                // Reset form
-                document.getElementById('loginForm').reset();
-                document.getElementById('loginBtnText').style.display = 'inline';
-                document.getElementById('loginBtnSpinner').style.display = 'none';
-                document.getElementById('loginSubmitBtn').disabled = false;
-                document.getElementById('loginMessage').style.display = 'none';
-              }, 1000);
-            } else {
-              showMessage(messageDiv, data.message || 'Login failed. Please try again.', 'danger');
-              document.getElementById('loginBtnText').style.display = 'inline';
-              document.getElementById('loginBtnSpinner').style.display = 'none';
-              document.getElementById('loginSubmitBtn').disabled = false;
-            }
-          })
-          .catch(error => {
-            console.error('Login error:', error);
-            showMessage(messageDiv, error.message || 'Network error. Please try again.', 'danger');
-            document.getElementById('loginBtnText').style.display = 'inline';
-            document.getElementById('loginBtnSpinner').style.display = 'none';
-            document.getElementById('loginSubmitBtn').disabled = false;
+              email,
+              password,
+              remember: element('rememberMe').checked,
+            }),
           });
+
+          const data = await parseResponse(response);
+          const customer = normalizeCustomer(data);
+
+          if (!data.success || !customer) {
+            throw new Error(data.message || 'Login succeeded, but customer details were not returned.');
+          }
+
+          updateUIForLoggedInUser(customer);
+          updateReviewDetails();
+          showMessage(message, data.message || 'Login successful.', 'success');
+
+          bootstrap.Modal.getOrCreateInstance(element('loginModal')).hide();
+          element('loginForm').reset();
+          hideMessage(message);
+        } catch (error) {
+          console.error('Login error:', error);
+          showMessage(message, error.message || 'Login failed. Please try again.', 'danger');
+        } finally {
+          setButtonLoading(button, element('loginBtnText'), element('loginBtnSpinner'), false);
+        }
       }
 
-      function handleRegister(e) {
-        e.preventDefault();
+      async function handleRegister(event) {
+        event?.preventDefault();
 
-        const name = document.getElementById('regName').value.trim();
-        const email = document.getElementById('regEmail').value.trim();
-        const phone = document.getElementById('regPhone').value.trim();
-        const password = document.getElementById('regPassword').value;
-        const confirm = document.getElementById('regConfirmPassword').value;
-        const terms = document.getElementById('regTerms').checked;
-        const messageDiv = document.getElementById('registerMessage');
+        const name = element('regName').value.trim();
+        const email = element('regEmail').value.trim();
+        const phone = element('regPhone').value.trim();
+        const password = element('regPassword').value;
+        const passwordConfirmation = element('regConfirmPassword').value;
+        const termsAccepted = element('regTerms').checked;
+        const message = element('registerMessage');
+        const button = element('registerSubmitBtn');
 
-        // Client-side validation
-        if (!name || !email || !phone || !password || !confirm) {
-          showMessage(messageDiv, 'Please fill all fields.', 'warning');
+        hideMessage(message);
+
+        if (!name || !email || !phone || !password || !passwordConfirmation) {
+          showMessage(message, 'Please fill in all required fields.', 'warning');
           return;
         }
 
-        if (password !== confirm) {
-          showMessage(messageDiv, 'Passwords do not match.', 'warning');
+        if (password !== passwordConfirmation) {
+          showMessage(message, 'Passwords do not match.', 'warning');
           return;
         }
 
         if (password.length < 8) {
-          showMessage(messageDiv, 'Password must be at least 8 characters.', 'warning');
+          showMessage(message, 'Password must contain at least 8 characters.', 'warning');
           return;
         }
 
-        if (!phone.match(/^(0|254|\+254)[0-9]{9}$/)) {
-          showMessage(messageDiv, 'Please enter a valid phone number (e.g. 0712345678).', 'warning');
+        if (!/^(0|254|\+254)[0-9]{9}$/.test(phone)) {
+          showMessage(message, 'Please enter a valid Kenyan phone number, for example 0712345678.', 'warning');
           return;
         }
 
-        if (!terms) {
-          showMessage(messageDiv, 'Please agree to the terms and conditions.', 'warning');
+        if (!termsAccepted) {
+          showMessage(message, 'Please agree to the terms and conditions.', 'warning');
           return;
         }
 
-        // Show loading
-        document.getElementById('registerBtnText').style.display = 'none';
-        document.getElementById('registerBtnSpinner').style.display = 'inline-block';
-        document.getElementById('registerSubmitBtn').disabled = true;
-        document.getElementById('registerMessage').style.display = 'none';
+        setButtonLoading(button, element('registerBtnText'), element('registerBtnSpinner'), true);
 
-        // Get CSRF token
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-
-        // Make API call to register endpoint
-        fetch('/customer/register', {
+        try {
+          const response = await fetch(endpoints.register, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
               'X-CSRF-TOKEN': csrfToken,
-              'X-Requested-With': 'XMLHttpRequest'
+              'X-Requested-With': 'XMLHttpRequest',
             },
             credentials: 'same-origin',
             body: JSON.stringify({
-              name: name,
-              email: email,
-              phone: phone,
-              password: password,
-              password_confirmation: confirm,
-              terms: true
-            })
-          })
-          .then(response => {
-            if (!response.ok) {
-              return response.json().then(err => {
-                // Handle validation errors
-                if (err.errors) {
-                  const errorMessages = Object.values(err.errors).flat().join(', ');
-                  throw new Error(errorMessages);
-                }
-                throw new Error(err.message || 'Registration failed');
-              });
-            }
-            return response.json();
-          })
-          .then(data => {
-            if (data.success) {
-              // Update UI with user data from server
-              updateUIForLoggedInUser(data.customer);
-              showMessage(messageDiv, data.message || 'Registration successful!', 'success');
-
-              // Close modal after delay
-              setTimeout(() => {
-                const modal = bootstrap.Modal.getInstance(document.getElementById('registerModal'));
-                modal.hide();
-                // Reset form
-                document.getElementById('registerForm').reset();
-                document.getElementById('registerBtnText').style.display = 'inline';
-                document.getElementById('registerBtnSpinner').style.display = 'none';
-                document.getElementById('registerSubmitBtn').disabled = false;
-                document.getElementById('registerMessage').style.display = 'none';
-              }, 1000);
-            } else {
-              showMessage(messageDiv, data.message || 'Registration failed. Please try again.', 'danger');
-              document.getElementById('registerBtnText').style.display = 'inline';
-              document.getElementById('registerBtnSpinner').style.display = 'none';
-              document.getElementById('registerSubmitBtn').disabled = false;
-            }
-          })
-          .catch(error => {
-            console.error('Registration error:', error);
-            showMessage(messageDiv, error.message || 'Network error. Please try again.', 'danger');
-            document.getElementById('registerBtnText').style.display = 'inline';
-            document.getElementById('registerBtnSpinner').style.display = 'none';
-            document.getElementById('registerSubmitBtn').disabled = false;
+              name,
+              email,
+              phone,
+              password,
+              password_confirmation: passwordConfirmation,
+              terms: true,
+            }),
           });
+
+          const data = await parseResponse(response);
+          const customer = normalizeCustomer(data);
+
+          if (!data.success || !customer) {
+            throw new Error(data.message || 'Registration succeeded, but customer details were not returned.');
+          }
+
+          updateUIForLoggedInUser(customer);
+          updateReviewDetails();
+          showMessage(message, data.message || 'Registration successful.', 'success');
+
+          bootstrap.Modal.getOrCreateInstance(element('registerModal')).hide();
+          element('registerForm').reset();
+          hideMessage(message);
+        } catch (error) {
+          console.error('Registration error:', error);
+          showMessage(message, error.message || 'Registration failed. Please try again.', 'danger');
+        } finally {
+          setButtonLoading(button, element('registerBtnText'), element('registerBtnSpinner'), false);
+        }
       }
 
-      // ============================================
-      // CHECK LOGIN STATUS ON PAGE LOAD
-      // ============================================
-      function checkLoginStatus() {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-
-        fetch('/customer/check-auth', {
+      async function checkLoginStatus() {
+        try {
+          const response = await fetch(endpoints.checkAuth, {
             method: 'GET',
             headers: {
               'Accept': 'application/json',
-              'X-CSRF-TOKEN': csrfToken,
-              'X-Requested-With': 'XMLHttpRequest'
+              'X-Requested-With': 'XMLHttpRequest',
             },
-            credentials: 'same-origin'
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.authenticated && data.customer) {
-              updateUIForLoggedInUser(data.customer);
-            } else {
-              updateUIForLoggedOutUser();
-            }
-          })
-          .catch(error => {
-            console.error('Auth check error:', error);
-            updateUIForLoggedOutUser();
+            credentials: 'same-origin',
           });
+
+          const data = await parseResponse(response);
+          const customer = normalizeCustomer(data);
+
+          if (data.authenticated && customer) {
+            updateUIForLoggedInUser(customer);
+          } else {
+            updateUIForLoggedOutUser();
+          }
+        } catch (error) {
+          console.error('Authentication check failed:', error);
+          updateUIForLoggedOutUser();
+        }
       }
 
-      function handleLogout() {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-
-        fetch('/customer/logout', {
+      async function handleLogout() {
+        try {
+          const response = await fetch(endpoints.logout, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
               'X-CSRF-TOKEN': csrfToken,
-              'X-Requested-With': 'XMLHttpRequest'
+              'X-Requested-With': 'XMLHttpRequest',
             },
-            credentials: 'same-origin'
-          })
-          .then(response => response.json())
-          .then(data => {
-            updateUIForLoggedOutUser();
-            document.getElementById('loginForm').reset();
-            document.getElementById('registerForm').reset();
-            alert(data.message || 'You have been logged out successfully.');
-          })
-          .catch(error => {
-            console.error('Logout error:', error);
-            updateUIForLoggedOutUser();
-            alert('You have been logged out.');
+            credentials: 'same-origin',
           });
-      }
 
-      function showMessage(container, message, type) {
-        container.style.display = 'block';
-        container.className = `alert alert-${type}`;
-        container.textContent = message;
+          await parseResponse(response);
+        } catch (error) {
+          console.error('Logout error:', error);
+        } finally {
+          updateUIForLoggedOutUser();
+          element('loginForm').reset();
+          element('registerForm').reset();
+        }
       }
-
-      // ============================================
-      // STEP NAVIGATION
-      // ============================================
-      let currentStep = 1;
-      const stepPanels = {
-        1: document.getElementById('step1'),
-        2: document.getElementById('step2'),
-        3: document.getElementById('step3')
-      };
-      const indicators = {
-        1: document.getElementById('stepIndicator1'),
-        2: document.getElementById('stepIndicator2'),
-        3: document.getElementById('stepIndicator3')
-      };
 
       function updateStep(step) {
-        Object.values(stepPanels).forEach(p => p.classList.remove('active'));
-        if (stepPanels[step]) stepPanels[step].classList.add('active');
-        for (let i = 1; i <= 3; i++) {
-          const ind = indicators[i];
-          ind.classList.remove('active', 'completed');
-          if (i < step) ind.classList.add('completed');
-          else if (i === step) ind.classList.add('active');
+        Object.values(stepPanels).forEach((panel) => panel.classList.remove('active'));
+        stepPanels[step]?.classList.add('active');
+
+        for (let index = 1; index <= 3; index++) {
+          indicators[index].classList.remove('active', 'completed');
+
+          if (index < step) indicators[index].classList.add('completed');
+          if (index === step) indicators[index].classList.add('active');
         }
+
         currentStep = step;
-        if (step === 3) updateReviewDetails();
+
+        if (step === 3) {
+          updateReviewDetails();
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
-      // ============================================
-      // CALCULATIONS
-      // ============================================
       function calculateTotal() {
-        const weight = parseFloat(document.getElementById('weight').value) || 1;
-        const basePrice = {{ $price }};
-        const weightCharge = (weight - 1) * 150;
-        const declaredValue = parseFloat(document.getElementById('declaredValue').value) || 0;
-        const insuranceRequired = document.getElementById('insuranceRequired').checked;
+        const declaredValue = Number.parseFloat(element('declaredValue').value) || 0;
+        const insuranceRequired = element('insuranceRequired').checked;
         const insuranceAmount = insuranceRequired ? declaredValue * 0.02 : 0;
+        const basePrice = Number(@json((float) $price));
         const total = basePrice + insuranceAmount;
 
-        document.getElementById('insuranceAmount').textContent = insuranceAmount.toFixed(0);
-        document.getElementById('insuranceAmountHidden').value = insuranceAmount.toFixed(2);
-        document.getElementById('estimatedTotal').textContent = 'KES ' + total.toFixed(0);
-        document.getElementById('totalAmount').value = total.toFixed(2);
+        element('insuranceAmount').textContent = insuranceAmount.toFixed(0);
+        element('insuranceAmountHidden').value = insuranceAmount.toFixed(2);
+        element('estimatedTotal').textContent = `KES ${total.toFixed(0)}`;
+        element('totalAmount').value = total.toFixed(2);
 
-        return {
-          total: total,
-          insuranceAmount: insuranceAmount,
-          declaredValue: declaredValue,
-          insuranceRequired: insuranceRequired
-        };
+        return { total, insuranceAmount, declaredValue, insuranceRequired };
+      }
+
+      function selectedText(selectId) {
+        const select = element(selectId);
+        return select.options[select.selectedIndex]?.text?.trim() || '—';
       }
 
       function updateReviewDetails() {
-        const fromTown = document.getElementById('fromTown');
-        const toTown = document.getElementById('toTown');
-        const pickupPoint = document.getElementById('pickupPoint');
-        const dropoffPoint = document.getElementById('dropoffPoint');
+        element('revFrom').textContent = selectedText('fromTown');
+        element('revTo').textContent = selectedText('toTown');
+        element('revPickup').textContent = selectedText('pickupPoint');
+        element('revDropoff').textContent = selectedText('dropoffPoint');
+        element('revType').textContent = selectedText('parcelType');
+        element('revPackageType').textContent = selectedText('packageType');
+        element('revWeight').textContent = element('weight').value ? `${element('weight').value} kg` : '—';
 
-        document.getElementById('revFrom').textContent = fromTown.options[fromTown.selectedIndex]?.text || '—';
-        document.getElementById('revTo').textContent = toTown.options[toTown.selectedIndex]?.text || '—';
-        document.getElementById('revPickup').textContent = pickupPoint.options[pickupPoint.selectedIndex]?.text || '—';
-        document.getElementById('revDropoff').textContent = dropoffPoint.options[dropoffPoint.selectedIndex]?.text || '—';
-        document.getElementById('revType').textContent = document.getElementById('parcelType').options[document.getElementById('parcelType').selectedIndex]?.text || '—';
-        document.getElementById('revPackageType').textContent = document.getElementById('packageType').options[document.getElementById('packageType').selectedIndex]?.text || '—';
-        document.getElementById('revWeight').textContent = document.getElementById('weight').value ? document.getElementById('weight').value + ' kg' : '—';
+        const totals = calculateTotal();
+        element('revValue').textContent = `KES ${totals.declaredValue.toFixed(0)}`;
+        element('revInsurance').textContent = totals.insuranceRequired ? 'Yes' : 'No';
+        element('revInsuranceAmount').textContent = `KES ${totals.insuranceAmount.toFixed(0)}`;
+        element('revTotal').textContent = `KES ${totals.total.toFixed(0)}`;
 
-        const declaredValue = parseFloat(document.getElementById('declaredValue').value) || 0;
-        document.getElementById('revValue').textContent = declaredValue > 0 ? 'KES ' + declaredValue : 'KES 0';
-
-        const insuranceRequired = document.getElementById('insuranceRequired').checked;
-        document.getElementById('revInsurance').textContent = insuranceRequired ? 'Yes' : 'No';
-        const insuranceAmount = insuranceRequired ? declaredValue * 0.02 : 0;
-        document.getElementById('revInsuranceAmount').textContent = insuranceAmount > 0 ? 'KES ' + insuranceAmount.toFixed(0) : 'KES 0';
-
-        document.getElementById('revContent').textContent = document.getElementById('parcelContent').value || '—';
-        document.getElementById('revInstructions').textContent = document.getElementById('instructions').value || 'None';
-
-        const totalData = calculateTotal();
-        document.getElementById('revTotal').textContent = 'KES ' + totalData.total.toFixed(0);
-
-        document.getElementById('revSender').textContent = document.getElementById('senderName').value || '—';
-        document.getElementById('revSenderPhone').textContent = document.getElementById('senderPhone').value || '—';
-        document.getElementById('revSenderEmail').textContent = document.getElementById('senderEmail').value || '—';
-        document.getElementById('revSenderAddress').textContent = document.getElementById('senderAddress').value || '—';
-
-        document.getElementById('revReceiver').textContent = document.getElementById('receiverName').value || '—';
-        document.getElementById('revReceiverPhone').textContent = document.getElementById('receiverPhone').value || '—';
-        document.getElementById('revReceiverEmail').textContent = document.getElementById('receiverEmail').value || '—';
-        document.getElementById('revReceiverAddress').textContent = document.getElementById('receiverAddress').value || '—';
+        element('revContent').textContent = element('parcelContent').value.trim() || '—';
+        element('revInstructions').textContent = element('instructions').value.trim() || 'None';
+        element('revSender').textContent = element('senderName').value.trim() || '—';
+        element('revSenderPhone').textContent = element('senderPhone').value.trim() || '—';
+        element('revSenderEmail').textContent = element('senderEmail').value.trim() || '—';
+        element('revReceiver').textContent = element('receiverName').value.trim() || '—';
+        element('revReceiverPhone').textContent = element('receiverPhone').value.trim() || '—';
+        element('revReceiverEmail').textContent = element('receiverEmail').value.trim() || '—';
       }
 
-      // ============================================
-      // EVENT LISTENERS
-      // ============================================
+      function validKenyanPhone(phone) {
+        return /^(0|254|\+254)[0-9]{9}$/.test(phone);
+      }
 
-      // Login
-      document.getElementById('loginSubmitBtn').addEventListener('click', handleLogin);
-      document.getElementById('loginForm').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') handleLogin(e);
-      });
+      function bindEvents() {
+        element('loginSubmitBtn').addEventListener('click', handleLogin);
+        element('loginForm').addEventListener('submit', handleLogin);
+        element('registerSubmitBtn').addEventListener('click', handleRegister);
+        element('registerForm').addEventListener('submit', handleRegister);
+        element('logoutBtn').addEventListener('click', handleLogout);
+        element('logoutBtnTop').addEventListener('click', handleLogout);
 
-      // Register
-      document.getElementById('registerSubmitBtn').addEventListener('click', handleRegister);
-      document.getElementById('registerForm').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') handleRegister(e);
-      });
+        element('toStep2').addEventListener('click', () => {
+          const requiredValues = [
+            element('fromTown').value,
+            element('toTown').value,
+            element('pickupPoint').value,
+            element('dropoffPoint').value,
+            element('parcelType').value,
+            element('packageType').value,
+            element('weight').value,
+          ];
 
-      // Logout
-      document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+          if (requiredValues.some((value) => !value) || Number(element('weight').value) <= 0) {
+            alert('Please complete all required parcel details.');
+            return;
+          }
 
-      // Step navigation
-      document.getElementById('toStep2').addEventListener('click', function() {
-        const from = document.getElementById('fromTown').value;
-        const to = document.getElementById('toTown').value;
-        const pickup = document.getElementById('pickupPoint').value;
-        const dropoff = document.getElementById('dropoffPoint').value;
-        const type = document.getElementById('parcelType').value;
-        const weight = document.getElementById('weight').value;
-        const content = document.getElementById('parcelContent').value.trim();
+          if (!element('parcelContent').value.trim()) {
+            alert('Please describe the parcel contents.');
+            return;
+          }
 
-        if (!from || !to || !pickup || !dropoff || !type || !weight || weight <= 0) {
-          alert('Please fill all parcel details (from, to, pickup point, dropoff point, type, weight > 0)');
-          return;
-        }
-        if (!content) {
-          alert('Please describe the parcel content.');
-          return;
-        }
-        updateStep(2);
-      });
-
-      document.getElementById('backToStep1').addEventListener('click', function() {
-        updateStep(1);
-      });
-
-      document.getElementById('toStep3').addEventListener('click', function() {
-        const sName = document.getElementById('senderName').value.trim();
-        const sPhone = document.getElementById('senderPhone').value.trim();
-        const rName = document.getElementById('receiverName').value.trim();
-        const rPhone = document.getElementById('receiverPhone').value.trim();
-
-        if (!sName || !sPhone || !rName || !rPhone) {
-          alert('Please fill sender and receiver names and phone numbers.');
-          return;
-        }
-        if (!sPhone.match(/^(0|254|\+254)[0-9]{9}$/)) {
-          alert('Please enter a valid sender phone (e.g. 0712345678)');
-          return;
-        }
-        if (!rPhone.match(/^(0|254|\+254)[0-9]{9}$/)) {
-          alert('Please enter a valid receiver phone (e.g. 0712345678)');
-          return;
-        }
-        updateStep(3);
-      });
-
-      document.getElementById('backToStep2').addEventListener('click', function() {
-        updateStep(2);
-      });
-
-      // Real-time updates
-      document.getElementById('weight').addEventListener('input', function() {
-        calculateTotal();
-        if (currentStep === 3) updateReviewDetails();
-      });
-
-      document.getElementById('declaredValue').addEventListener('input', function() {
-        calculateTotal();
-        if (currentStep === 3) updateReviewDetails();
-      });
-
-      document.getElementById('insuranceRequired').addEventListener('change', function() {
-        calculateTotal();
-        if (currentStep === 3) updateReviewDetails();
-      });
-
-      document.querySelectorAll('#senderName, #senderPhone, #senderEmail, #senderAddress, #receiverName, #receiverPhone, #receiverEmail, #receiverAddress, #parcelContent, #instructions, #fromTown, #toTown, #pickupPoint, #dropoffPoint, #parcelType, #packageType, #weight, #declaredValue, #insuranceRequired').forEach(el => {
-        el.addEventListener('input', function() {
-          if (currentStep === 3) updateReviewDetails();
+          updateStep(2);
         });
-        el.addEventListener('change', function() {
-          if (currentStep === 3) updateReviewDetails();
+
+        element('backToStep1').addEventListener('click', () => updateStep(1));
+        element('backToStep2').addEventListener('click', () => updateStep(2));
+
+        element('toStep3').addEventListener('click', () => {
+          const senderName = element('senderName').value.trim();
+          const senderPhone = element('senderPhone').value.trim();
+          const receiverName = element('receiverName').value.trim();
+          const receiverPhone = element('receiverPhone').value.trim();
+
+          if (!senderName || !senderPhone || !receiverName || !receiverPhone) {
+            alert('Please enter the sender and receiver names and phone numbers.');
+            return;
+          }
+
+          if (!validKenyanPhone(senderPhone)) {
+            alert('Please enter a valid sender phone number, for example 0712345678.');
+            return;
+          }
+
+          if (!validKenyanPhone(receiverPhone)) {
+            alert('Please enter a valid receiver phone number, for example 0712345678.');
+            return;
+          }
+
+          updateStep(3);
         });
-      });
 
-      // Form submit - check authentication before submitting
-      document.getElementById('bookingForm').addEventListener('submit', function(e) {
-        if (!isLoggedIn) {
-          e.preventDefault();
-          alert('Please login or register to book a parcel.');
-          return;
-        }
-        // Ensure customer_id is set
-        if (currentUser) {
-          document.getElementById('customerId').value = currentUser.id;
-        }
-        // Form will submit normally
-      });
+        const reactiveFields = [
+          'senderName', 'senderPhone', 'senderEmail',
+          'receiverName', 'receiverPhone', 'receiverEmail',
+          'parcelContent', 'instructions', 'fromTown', 'toTown',
+          'pickupPoint', 'dropoffPoint', 'parcelType', 'packageType',
+          'weight', 'declaredValue', 'insuranceRequired',
+        ];
 
-      // ============================================
-      // INITIALIZE
-      // ============================================
-      // Check login status with server
-      checkLoginStatus();
+        reactiveFields.forEach((id) => {
+          ['input', 'change'].forEach((eventName) => {
+            element(id).addEventListener(eventName, () => {
+              calculateTotal();
+              if (currentStep === 3) updateReviewDetails();
+            });
+          });
+        });
+
+        element('bookingForm').addEventListener('submit', (event) => {
+          if (!isLoggedIn || !currentUser) {
+            event.preventDefault();
+            alert('Please login or register before booking the parcel.');
+            bootstrap.Modal.getOrCreateInstance(element('loginModal')).show();
+            return;
+          }
+
+          if (!element('termsCheck').checked) {
+            event.preventDefault();
+            alert('Please confirm the parcel information and accept the terms.');
+            return;
+          }
+
+          element('customerId').value = currentUser.id ?? '';
+          calculateTotal();
+          element('saveParcelBtn').disabled = true;
+          element('saveParcelBtn').innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Booking parcel...';
+        });
+      }
+
+      bindEvents();
       updateStep(1);
       calculateTotal();
+      checkLoginStatus();
     })();
   </script>
 </body>
