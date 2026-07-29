@@ -6,7 +6,6 @@
 
 <!-- Main JS -->
 <script src="{{ asset('ui/js/app.js') }}"></script>
-<script src="/ui/js/app.js"></script>
 
 <!-- TinyMCE (if needed) -->
 @stack('editor-scripts')
