@@ -355,6 +355,112 @@
       font-weight: 500;
     }
 
+    /* Station list - scrollable radio cards */
+    .station-list {
+      max-height: 270px;
+      overflow-y: auto;
+      border: 2px solid #e9edf2;
+      border-radius: 20px;
+      padding: 0.75rem 0.25rem 0.25rem 0.25rem;
+      background: #fafcff;
+      scroll-behavior: smooth;
+    }
+
+    .station-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .station-list::-webkit-scrollbar-track {
+      background: #eef2f6;
+      border-radius: 10px;
+    }
+
+    .station-list::-webkit-scrollbar-thumb {
+      background: #b9c4d0;
+      border-radius: 10px;
+    }
+
+    .station-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      margin: 0 0.25rem 0.25rem 0.25rem;
+      border-radius: 16px;
+      background: white;
+      border: 1.5px solid transparent;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+
+    .station-item:hover {
+      background: #f2f7ff;
+      border-color: #dbe7f5;
+    }
+
+    .station-item.selected {
+      background: #e7f3e7;
+      border-color: #008f40;
+      box-shadow: 0 2px 8px rgba(0, 143, 64, 0.08);
+    }
+
+    .station-item .form-check-input {
+      margin-top: 4px;
+      flex-shrink: 0;
+      width: 1.2rem;
+      height: 1.2rem;
+      border-radius: 50%;
+      border: 2px solid #cbd5e1;
+      transition: 0.15s;
+      cursor: pointer;
+    }
+
+    .station-item .form-check-input:checked {
+      background-color: #008f40;
+      border-color: #008f40;
+    }
+
+    .station-item .station-info {
+      flex: 1;
+      line-height: 1.4;
+    }
+
+    .station-item .station-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #0b1e33;
+    }
+
+    .station-item .station-address {
+      font-size: 0.82rem;
+      color: #475569;
+      margin-top: 2px;
+    }
+
+    .station-item .station-meta {
+      font-size: 0.75rem;
+      color: #64748b;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.2rem;
+      margin-top: 6px;
+    }
+
+    .station-item .station-meta i {
+      margin-right: 4px;
+      width: 16px;
+    }
+
+    .station-item .badge-pickup {
+      background: #dff0d8;
+      color: #1e6f3f;
+      font-weight: 500;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.7rem;
+      border-radius: 30px;
+      margin-left: 0.25rem;
+    }
+
     @media (max-width: 640px) {
       .booking-container {
         padding: 1.5rem;
@@ -379,6 +485,10 @@
         flex-direction: column;
         gap: 0.5rem;
         text-align: center;
+      }
+
+      .station-item {
+        padding: 0.65rem 0.75rem;
       }
     }
   </style>
@@ -434,55 +544,100 @@
 
         <!-- STEP 1: Parcel details -->
         <div class="step-panel active" id="step1">
-          <h5 class="fw-semibold mb-3"><i class="bi bi-box me-2 text-primary"></i>Parcel information</h5>
-          <div class="row g-3">
+          <h5 class="fw-semibold mb-3"><i class="bi bi-geo-alt me-2 text-primary"></i>Pickup & dropoff locations</h5>
+          <div class="row g-4">
+
+            <!-- Pickup Section -->
             <div class="col-md-6">
-              <label class="form-label">From Town <span class="text-danger">*</span></label>
-              <input type="number" name="sender_town_id" value="{{ $fromTownId }}" class="d-none">
-              <select class="form-select" name="sender_town_id" id="fromTown" disabled required>
-                <option value="">Select pickup town</option>
-                @foreach($towns as $town)
-                <option value="{{ $town->id }}" {{ (isset($fromTownId) && $fromTownId == $town->id) ? 'selected' : '' }}>
-                  {{ $town->name }}
-                </option>
-                @endforeach
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">To Town <span class="text-danger">*</span></label>
-              <input type="number" name="receiver_town_id" value="{{ $toTownId }}" class="d-none">
-              <select class="form-select" name="receiver_town_id" id="toTown" disabled required>
-                <option value="">Select delivery town</option>
-                @foreach($towns as $town)
-                <option value="{{ $town->id }}" {{ (isset($toTownId) && $toTownId == $town->id) ? 'selected' : '' }}>
-                  {{ $town->name }}
-                </option>
-                @endforeach
-              </select>
+              <!-- From Town -->
+              <div class="mb-3">
+                <label class="form-label">From Town <span class="text-danger">*</span></label>
+                <input type="number" name="sender_town_id" value="{{ $fromTownId }}" class="d-none">
+                <select class="form-select" name="sender_town_id" id="fromTown" disabled required>
+                  <option value="">Select pickup town</option>
+                  @foreach($towns as $town)
+                  <option value="{{ $town->id }}" {{ (isset($fromTownId) && $fromTownId == $town->id) ? 'selected' : '' }}>
+                    {{ $town->name }}
+                  </option>
+                  @endforeach
+                </select>
+              </div>
+
+              <!-- Pickup Stations -->
+              <label class="fw-semibold mb-2"><i class="bi bi-box-arrow-up text-primary me-1"></i> Pickup Station <span class="text-danger">*</span></label>
+              <div class="station-list" id="pickupStationList">
+                <!-- Rendered directly from database via Blade -->
+                @if(isset($pickupPoints) && count($pickupPoints) > 0)
+                  @foreach($pickupPoints as $point)
+                  <div class="station-item" data-id="{{ $point->id }}" data-type="pickup">
+                    <input type="radio" class="form-check-input" name="pickupStation" value="{{ $point->id }}">
+                    <div class="station-info">
+                      <div class="station-name">{{ $point->name }} </div>
+                      <div class="station-address">{{ $point->address ?? $point->location ?? '' }}</div>
+                      <div class="station-meta">
+                        @if($point->contact_phone_number ?? false)
+                        <span><i class="bi bi-telephone"></i>{{ $point->contact_phone_number }}</span>
+                        @endif
+                        @if($point->hours ?? false)
+                        <span><i class="bi bi-clock"></i>{{ $point->hours }}</span>
+                        @endif
+                      </div>
+                    </div>
+                  </div>
+                  @endforeach
+                @else
+                  <div class="text-muted p-3">No pickup stations available</div>
+                @endif
+              </div>
+              <input type="hidden" name="sender_pick_up_drop_off_point_id" id="pickupPointHidden" value="">
             </div>
 
-            <!-- Pickup Point -->
+            <!-- Dropoff Section -->
             <div class="col-md-6">
-              <label class="form-label">Pickup Point <span class="text-danger">*</span></label>
-              <select class="form-select" name="sender_pick_up_drop_off_point_id" id="pickupPoint" required>
-                <option value="">Select pickup point</option>
-                @foreach($pickupPoints as $point)
-                <option value="{{ $point->id }}">{{ $point->name }} - {{ $point->town->name }}</option>
-                @endforeach
-              </select>
+              <!-- To Town -->
+              <div class="mb-3">
+                <label class="form-label">To Town <span class="text-danger">*</span></label>
+                <input type="number" name="receiver_town_id" value="{{ $toTownId }}" class="d-none">
+                <select class="form-select" name="receiver_town_id" id="toTown" disabled required>
+                  <option value="">Select delivery town</option>
+                  @foreach($towns as $town)
+                  <option value="{{ $town->id }}" {{ (isset($toTownId) && $toTownId == $town->id) ? 'selected' : '' }}>
+                    {{ $town->name }}
+                  </option>
+                  @endforeach
+                </select>
+              </div>
+
+              <!-- Dropoff Stations -->
+              <label class="fw-semibold mb-2"><i class="bi bi-box-arrow-down text-danger me-1"></i> Dropoff Station <span class="text-danger">*</span></label>
+              <div class="station-list" id="dropoffStationList">
+                <!-- Rendered directly from database via Blade -->
+                @if(isset($dropoffPoints) && count($dropoffPoints) > 0)
+                  @foreach($dropoffPoints as $point)
+                  <div class="station-item" data-id="{{ $point->id }}" data-type="dropoff">
+                    <input type="radio" class="form-check-input" name="dropoffStation" value="{{ $point->id }}">
+                    <div class="station-info">
+                      <div class="station-name">{{ $point->name }}</div>
+                      <div class="station-address">{{ $point->address ?? $point->location ?? '' }}</div>
+                      <div class="station-meta">
+                        @if($point->contact_phone_number ?? false)
+                        <span><i class="bi bi-telephone"></i>{{ $point->contact_phone_number }}</span>
+                        @endif
+                        @if($point->hours ?? false)
+                        <span><i class="bi bi-clock"></i>{{ $point->hours }}</span>
+                        @endif
+                      </div>
+                    </div>
+                  </div>
+                  @endforeach
+                @else
+                  <div class="text-muted p-3">No dropoff stations available</div>
+                @endif
+              </div>
+              <input type="hidden" name="delivery_pick_up_drop_off_point_id" id="dropoffPointHidden" value="">
             </div>
 
-            <!-- Dropoff Point -->
-            <div class="col-md-6">
-              <label class="form-label">Dropoff Point <span class="text-danger">*</span></label>
-              <select class="form-select" name="delivery_pick_up_drop_off_point_id" id="dropoffPoint" required>
-                <option value="">Select dropoff point</option>
-                @foreach($dropoffPoints as $point)
-                <option value="{{ $point->id }}">{{ $point->name }} - {{ $point->town->name }}</option>
-                @endforeach
-              </select>
-            </div>
-
+            <!-- Parcel Details -->
             <div class="col-md-6">
               <label class="form-label">Parcel type <span class="text-danger">*</span></label>
               <select class="form-select" name="parcel_type" id="parcelType" required>
@@ -505,13 +660,11 @@
             </div>
             <div class="col-md-4">
               <label class="form-label">Weight (kg) <span class="text-danger">*</span></label>
-              <input type="number" class="form-control" name="weight" id="weight"
-                value="{{ $parcelWeight}}" readonly required>
+              <input type="number" class="form-control" name="weight" id="weight" value="{{ $parcelWeight}}" readonly required>
             </div>
             <div class="col-md-4">
               <label class="form-label">Declared Value (KES)</label>
-              <input type="number" class="form-control" name="declared_value" id="declaredValue"
-                placeholder="e.g., 5000" min="0" step="1" value="0">
+              <input type="number" class="form-control" name="declared_value" id="declaredValue" placeholder="e.g., 5000" min="0" step="1" value="0">
             </div>
             <div class="col-md-4">
               <label class="form-label">Insurance (2% of value)</label>
@@ -524,15 +677,13 @@
             </div>
             <div class="col-12">
               <label class="form-label">Content description <span class="text-danger">*</span> <span><a target="__blank" href="{{ route('prohibited-items') }}" class="text-primary">Please refer to our prohibited items.</a></span></label>
-              <input type="text" class="form-control" name="content_description" id="parcelContent"
-                placeholder="Describe what you are sending" required>
+              <input type="text" class="form-control" name="content_description" id="parcelContent" placeholder="Describe what you are sending" required>
             </div>
             <span class="text-muted small"> Karibu Parcels Limited and its agents has the right to reject the prohibited items</span>
 
             <div class="col-12">
               <label class="form-label">Special instructions (optional)</label>
-              <input type="text" class="form-control" name="special_instructions" id="instructions"
-                placeholder="Fragile, handle with care">
+              <input type="text" class="form-control" name="special_instructions" id="instructions" placeholder="Fragile, handle with care">
             </div>
 
             <!-- Price Display -->
@@ -592,6 +743,7 @@
           </div>
         </div>
 
+        <!-- STEP 3: Review & Confirm -->
         <div class="step-panel" id="step3">
           <h5 class="fw-semibold mb-3"><i class="bi bi-clipboard-check me-2 text-primary"></i>Review & Confirm</h5>
 
@@ -614,10 +766,10 @@
           <div class="review-summary">
             <h6><i class="bi bi-box me-2"></i>Parcel Details</h6>
             <div class="row">
+              <div class="col-md-6"><span class="label">Pickup Station:</span> <span class="value" id="revPickup">-</span></div>
+              <div class="col-md-6"><span class="label">Dropoff Station:</span> <span class="value" id="revDropoff">-</span></div>
               <div class="col-md-6"><span class="label">From:</span> <span class="value" id="revFrom">-</span></div>
               <div class="col-md-6"><span class="label">To:</span> <span class="value" id="revTo">-</span></div>
-              <div class="col-md-6"><span class="label">Pickup Point:</span> <span class="value" id="revPickup">-</span></div>
-              <div class="col-md-6"><span class="label">Dropoff Point:</span> <span class="value" id="revDropoff">-</span></div>
               <div class="col-md-6"><span class="label">Parcel Type:</span> <span class="value" id="revType">-</span></div>
               <div class="col-md-6"><span class="label">Package Type:</span> <span class="value" id="revPackageType">-</span></div>
               <div class="col-md-6"><span class="label">Weight:</span> <span class="value" id="revWeight">-</span></div>
@@ -681,6 +833,7 @@
     <a href="#" class="whatsapp-button" target="_blank"><i class="fab fa-whatsapp"></i></a>
   </div>
 
+  <!-- Login Modal -->
   <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -719,6 +872,7 @@
     </div>
   </div>
 
+  <!-- Register Modal -->
   <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -775,6 +929,8 @@
       let currentStep = 1;
       let isLoggedIn = false;
       let currentUser = null;
+      let selectedPickup = null;
+      let selectedDropoff = null;
 
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
@@ -832,20 +988,113 @@
 
       async function parseResponse(response) {
         const contentType = response.headers.get('content-type') ?? '';
-        const payload = contentType.includes('application/json')
-          ? await response.json()
-          : { message: await response.text() };
+        const payload = contentType.includes('application/json') ?
+          await response.json() :
+          { message: await response.text() };
 
         if (!response.ok) {
           if (payload.errors) {
             const messages = Object.values(payload.errors).flat();
             throw new Error(messages.join(' '));
           }
-
           throw new Error(payload.message || `Request failed with status ${response.status}.`);
         }
-
         return payload;
+      }
+
+      // ---- Initialize station selection from Blade-rendered HTML ----
+      function initializeStations() {
+        // Setup pickup stations
+        const pickupItems = document.querySelectorAll('#pickupStationList .station-item');
+        pickupItems.forEach((item) => {
+          const radio = item.querySelector('input[type="radio"]');
+          if (!radio) return;
+
+          // Click on whole item toggles radio
+          item.addEventListener('click', function(e) {
+            if (e.target.tagName === 'INPUT' && e.target.type === 'radio') return;
+            const radioInput = this.querySelector('input[type="radio"]');
+            if (radioInput) {
+              radioInput.checked = true;
+              radioInput.dispatchEvent(new Event('change'));
+            }
+          });
+
+          // Radio change event
+          radio.addEventListener('change', function(e) {
+            e.stopPropagation();
+            const parent = this.closest('.station-list');
+            parent.querySelectorAll('.station-item').forEach(it => it.classList.remove('selected'));
+            const item = this.closest('.station-item');
+            if (this.checked) {
+              item.classList.add('selected');
+              const id = parseInt(this.value);
+              selectedPickup = id;
+              element('pickupPointHidden').value = id;
+            } else {
+              item.classList.remove('selected');
+              selectedPickup = null;
+              element('pickupPointHidden').value = '';
+            }
+            calculateTotal();
+            if (currentStep === 3) updateReviewDetails();
+          });
+        });
+
+        // Setup dropoff stations
+        const dropoffItems = document.querySelectorAll('#dropoffStationList .station-item');
+        dropoffItems.forEach((item) => {
+          const radio = item.querySelector('input[type="radio"]');
+          if (!radio) return;
+
+          item.addEventListener('click', function(e) {
+            if (e.target.tagName === 'INPUT' && e.target.type === 'radio') return;
+            const radioInput = this.querySelector('input[type="radio"]');
+            if (radioInput) {
+              radioInput.checked = true;
+              radioInput.dispatchEvent(new Event('change'));
+            }
+          });
+
+          radio.addEventListener('change', function(e) {
+            e.stopPropagation();
+            const parent = this.closest('.station-list');
+            parent.querySelectorAll('.station-item').forEach(it => it.classList.remove('selected'));
+            const item = this.closest('.station-item');
+            if (this.checked) {
+              item.classList.add('selected');
+              const id = parseInt(this.value);
+              selectedDropoff = id;
+              element('dropoffPointHidden').value = id;
+            } else {
+              item.classList.remove('selected');
+              selectedDropoff = null;
+              element('dropoffPointHidden').value = '';
+            }
+            calculateTotal();
+            if (currentStep === 3) updateReviewDetails();
+          });
+        });
+
+        // Auto-select first station if available
+        setTimeout(() => {
+          const firstPickup = document.querySelector('#pickupStationList .station-item');
+          if (firstPickup) {
+            const radio = firstPickup.querySelector('input[type="radio"]');
+            if (radio && !radio.checked) {
+              radio.checked = true;
+              radio.dispatchEvent(new Event('change'));
+            }
+          }
+          const firstDropoff = document.querySelector('#dropoffStationList .station-item');
+          if (firstDropoff) {
+            const radio = firstDropoff.querySelector('input[type="radio"]');
+            if (radio && !radio.checked) {
+              radio.checked = true;
+              radio.dispatchEvent(new Event('change'));
+            }
+          }
+        }, 100);
       }
 
       function updateUIForLoggedInUser(customer) {
@@ -1135,11 +1384,27 @@
         return select.options[select.selectedIndex]?.text?.trim() || '—';
       }
 
+      function getStationName(id) {
+        if (!id) return '—';
+        const allStations = [...document.querySelectorAll('#pickupStationList .station-item, #dropoffStationList .station-item')];
+        for (let item of allStations) {
+          if (parseInt(item.dataset.id) === id) {
+            const nameEl = item.querySelector('.station-name');
+            if (nameEl) {
+              const badgeEl = nameEl.querySelector('.badge-pickup');
+              if (badgeEl) badgeEl.remove();
+              return nameEl.textContent.trim() || '—';
+            }
+          }
+        }
+        return '—';
+      }
+
       function updateReviewDetails() {
         element('revFrom').textContent = selectedText('fromTown');
         element('revTo').textContent = selectedText('toTown');
-        element('revPickup').textContent = selectedText('pickupPoint');
-        element('revDropoff').textContent = selectedText('dropoffPoint');
+        element('revPickup').textContent = getStationName(selectedPickup);
+        element('revDropoff').textContent = getStationName(selectedDropoff);
         element('revType').textContent = selectedText('parcelType');
         element('revPackageType').textContent = selectedText('packageType');
         element('revWeight').textContent = element('weight').value ? `${element('weight').value} kg` : '—';
@@ -1173,18 +1438,8 @@
         element('logoutBtnTop').addEventListener('click', handleLogout);
 
         element('toStep2').addEventListener('click', () => {
-          const requiredValues = [
-            element('fromTown').value,
-            element('toTown').value,
-            element('pickupPoint').value,
-            element('dropoffPoint').value,
-            element('parcelType').value,
-            element('packageType').value,
-            element('weight').value,
-          ];
-
-          if (requiredValues.some((value) => !value) || Number(element('weight').value) <= 0) {
-            alert('Please complete all required parcel details.');
+          if (!selectedPickup || !selectedDropoff) {
+            alert('Please select both a pickup and a dropoff station.');
             return;
           }
 
@@ -1227,7 +1482,7 @@
           'senderName', 'senderPhone', 'senderEmail',
           'receiverName', 'receiverPhone', 'receiverEmail',
           'parcelContent', 'instructions', 'fromTown', 'toTown',
-          'pickupPoint', 'dropoffPoint', 'parcelType', 'packageType',
+          'parcelType', 'packageType',
           'weight', 'declaredValue', 'insuranceRequired',
         ];
 
@@ -1261,10 +1516,18 @@
         });
       }
 
-      bindEvents();
-      updateStep(1);
-      calculateTotal();
-      checkLoginStatus();
+      // ---- Initialize ----
+      function init() {
+        // Initialize stations from Blade-rendered HTML (no API call needed)
+        initializeStations();
+
+        bindEvents();
+        updateStep(1);
+        calculateTotal();
+        checkLoginStatus();
+      }
+
+      document.addEventListener('DOMContentLoaded', init);
     })();
   </script>
 </body>

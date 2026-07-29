@@ -21,7 +21,7 @@ class ParcelController extends Controller
     {
         $fromTownId = $request->query('from_town_id');
         $toTownId = $request->query('to_town_id');
-        $parcelWeight = $request->query('parcel_weight');
+        $parcelWeight = $request->query('weight');
         $price = $request->query('price');
 
         $pickupPoints = PickUpAndDropOffPoint::with('town')->where('status', 'active')->where('town_id', $fromTownId)->get();
