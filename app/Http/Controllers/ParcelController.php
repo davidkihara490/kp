@@ -161,6 +161,7 @@ class ParcelController extends Controller
                 'total_amount' => $request->total_amount,
                 'payment_method' => 'mpesa',
                 'payment_status' => 'pending',
+                'current_status' => Parcel::STATUS_CREATED,
 
                 // Creator
                 'creator_id' => Auth::guard('customer')->user()->id,

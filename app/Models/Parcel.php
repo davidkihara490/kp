@@ -138,7 +138,7 @@ class Parcel extends Model
      * @var array<string, mixed>
      */
     protected $attributes = [
-        'current_status' => 'pending',
+        'current_status' => 'created',
         'payment_status' => 'pending',
         'parcel_type' => 'package',
         'package_type' => 'regular',

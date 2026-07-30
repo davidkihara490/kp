@@ -360,7 +360,6 @@ class ViewParcel extends Component
         // Check if user is destination PUDO (delivery partner)
         $this->isDestinationPudo = false;
         if ($this->isPha || $this->isPickupDropoff) {
-            dd([$this->isPha, $this->isPickupDropoff]);
             $userPartnerId = $user->parcelHandlingAssistant?->partner?->id ?? $user->partner?->id;
             $this->isDestinationPudo = $userPartnerId === $parcel->delivery_partner_id;
         }
@@ -1340,10 +1339,6 @@ class ViewParcel extends Component
 
     public function shouldShowAcceptButton()
     {
-
-        Log::info("Parcel Owner" . $this->isOriginPudo &&
-            $this->parcel->current_status === Parcel::STATUS_CREATED &&
-            $this->parcel->payment_status === 'paid');
         return $this->isOriginPudo &&
             $this->parcel->current_status === Parcel::STATUS_CREATED &&
             $this->parcel->payment_status === 'paid';
