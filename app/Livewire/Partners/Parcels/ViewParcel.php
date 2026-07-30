@@ -320,7 +320,7 @@ class ViewParcel extends Component
     {
         $this->loggedUser = Auth::guard('partner')->user();
         $this->loggedUserType = $this->loggedUser->user_type ?? 'unknown';
-        
+
         $this->parcelId = $id;
         $this->loadParcel();
         $this->latestStatus = $this->parcel->statuses()
@@ -340,13 +340,13 @@ class ViewParcel extends Component
 
         // Check if user is driver
         $this->isDriver = $user->user_type === 'driver';
-        
+
         // Check if user is transport partner
         $this->isTransportPartner = $user->user_type === 'transport';
-        
+
         // Check if user is PHA
         $this->isPha = $user->user_type === 'pha';
-        
+
         // Check if user is pickup-dropoff
         $this->isPickupDropoff = $user->user_type === 'pickup-dropoff';
 
@@ -1322,14 +1322,14 @@ class ViewParcel extends Component
 
     public function shouldShowParcelReceiving()
     {
-        return $this->isDestinationPudo && 
-               $this->parcel->current_status === Parcel::STATUS_IN_TRANSIT;
+        return $this->isDestinationPudo &&
+            $this->parcel->current_status === Parcel::STATUS_IN_TRANSIT;
     }
 
     public function shouldShowPickupVerification()
     {
-        return $this->isDestinationPudo && 
-               $this->parcel->current_status === Parcel::STATUS_ARRIVED_AT_DESTINATION;
+        return $this->isDestinationPudo &&
+            $this->parcel->current_status === Parcel::STATUS_ARRIVED_AT_DESTINATION;
     }
 
     public function shouldShowPaymentSection()
@@ -1339,9 +1339,13 @@ class ViewParcel extends Component
 
     public function shouldShowAcceptButton()
     {
-        return $this->isOriginPudo && 
-               $this->parcel->current_status === Parcel::STATUS_CREATED &&
-               $this->parcel->payment_status === 'paid';
+
+        Log::info("Parcel Owner" . $this->isOriginPudo &&
+            $this->parcel->current_status === Parcel::STATUS_CREATED &&
+            $this->parcel->payment_status === 'paid');
+        return $this->isOriginPudo &&
+            $this->parcel->current_status === Parcel::STATUS_CREATED &&
+            $this->parcel->payment_status === 'paid';
     }
 
     public function shouldShowDriverInfo()
