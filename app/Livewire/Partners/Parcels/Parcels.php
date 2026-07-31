@@ -272,7 +272,8 @@ class Parcels extends Component
         } elseif ($this->loggedUser->parcelHandlingAssistant) {
             $query = Parcel::where(function ($q) {
                 $q->where('pha_id', $this->loggedUser->parcelHandlingAssistant->id)
-                    ->orWhere('delivery_partner_id', $this->loggedUser->parcelHandlingAssistant->partner->id);
+                    ->orWhere('delivery_partner_id', $this->loggedUser->parcelHandlingAssistant->partner->id)
+                    ->orWhere('sender_partner_id', $this->loggedUser->parcelHandlingAssistant->partner->id);
             });
         }
 
