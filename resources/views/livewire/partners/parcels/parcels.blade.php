@@ -1873,7 +1873,7 @@
             }
 
             .location-col {
-                min-width: 120px;
+                min-width: 40px;
             }
 
             .status-col {
@@ -2351,7 +2351,7 @@
 
                 .location-col,
                 .contact-col {
-                    min-width: 100px;
+                    min-width: 40px;
                 }
             }
 
