@@ -2624,7 +2624,7 @@
                 }
 
                 .location-col {
-                    min-width: 80px;
+                    min-width: 4cqh;
                 }
 
                 .payment-col {

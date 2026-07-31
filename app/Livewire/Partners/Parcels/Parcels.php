@@ -273,6 +273,7 @@ class Parcels extends Component
             $query = Parcel::where(function ($q) {
                 $q->where('pha_id', $this->loggedUser->parcelHandlingAssistant->id)
                     ->orWhere('delivery_partner_id', $this->loggedUser->parcelHandlingAssistant->partner->id)
+                    //Added this to allow a parcel handling assistant to view parcels booked online
                     ->orWhere('sender_partner_id', $this->loggedUser->parcelHandlingAssistant->partner->id);
             });
         }
