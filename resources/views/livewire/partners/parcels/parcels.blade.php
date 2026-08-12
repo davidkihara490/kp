@@ -187,7 +187,6 @@
                 <span class="stat-value">{{ $totalParcels }}</span>
                 @endif
 
-                {{--Earnings_--}}
                 @if(auth()->guard('partner')->user()->user_type == 'transport')
                 <div class="stat-card revenue">
                     <div class="stat-icon">

@@ -995,6 +995,10 @@ public function receivedStatus()
         });
     }
 
+    public function isVerified(){
+        $isVerified = true;
+    }
+
     public function generateDeliveryOtp(int $length = 6): string
     {
         $otp = '';
