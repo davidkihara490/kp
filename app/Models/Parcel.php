@@ -812,42 +812,19 @@ class Parcel extends Model
         return $statuses->map(function ($status) {
 
             $message = match ($status->status) {
-
-                self::STATUS_CREATED =>
-                'Parcel booked into system',
-
-                self::STATUS_ACCEPTED =>
-                'Transport partner accepted parcel',
-
-                self::STATUS_ASSIGNED =>
-                'Driver assigned',
-
-                self::STATUS_IN_TRANSIT =>
-                'Parcel in transit',
-
-                self::STATUS_PENDING =>
-                'Parcel pending',
-
-                self::STATUS_WAREHOUSE =>
-                'Parcel received at warehouse',
-
-                self::STATUS_ARRIVED_AT_DESTINATION =>
-                'Parcel arrived at destination branch',
-
-                self::STATUS_PICKED =>
-                'Parcel picked for final delivery',
-
-                self::STATUS_DELIVERED =>
-                'Parcel delivered',
-
-                self::STATUS_FAILED =>
-                'Delivery failed',
-
-                self::STATUS_RETURNED =>
-                'Parcel returned',
-
-                default =>
-                'Unknown status',
+                self::STATUS_CREATED => 'Parcel created in the system', 
+                self::STATUS_BOOKED => 'Parcel paid for and booked into the system', 
+                self::STATUS_ACCEPTED => 'Transport partner accepted parcel', 
+                self::STATUS_ASSIGNED => 'Driver assigned', 
+                self::STATUS_IN_TRANSIT => 'Parcel in transit', 
+                self::STATUS_PENDING => 'Parcel pending', 
+                self::STATUS_WAREHOUSE => 'Parcel received at warehouse', 
+                self::STATUS_ARRIVED_AT_DESTINATION => 'Parcel arrived at destination branch', 
+                self::STATUS_PICKED => 'Parcel picked for final delivery', 
+                self::STATUS_DELIVERED => 'Parcel delivered', 
+                self::STATUS_FAILED => 'Delivery failed', 
+                self::STATUS_RETURNED => 'Parcel returned', 
+                default => 'Unknown status',
             };
 
             return [
@@ -867,16 +844,16 @@ class Parcel extends Model
         return $this->hasOne(ParcelStatus::class)->latestOfMany();
     }
 
-public function receivedStatus()
-{
-    return $this->statuses()
-        ->whereIn('status', [
-            self::STATUS_WAREHOUSE,
-            self::STATUS_ARRIVED_AT_DESTINATION,
-        ])
-        ->latest()
-        ->first();
-}
+    public function receivedStatus()
+    {
+        return $this->statuses()
+            ->whereIn('status', [
+                self::STATUS_WAREHOUSE,
+                self::STATUS_ARRIVED_AT_DESTINATION,
+            ])
+            ->latest()
+            ->first();
+    }
 
     public function transitStatus(): bool
     {
@@ -995,7 +972,8 @@ public function receivedStatus()
         });
     }
 
-    public function isVerified(){
+    public function isVerified()
+    {
         $isVerified = true;
     }
 

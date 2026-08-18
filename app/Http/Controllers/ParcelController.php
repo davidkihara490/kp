@@ -44,7 +44,6 @@ class ParcelController extends Controller
     {
         // Validate the request
         $validated =  Validator::make($request->all(), [
-
             // Sender Information
             'sender_name' => 'required|string|max:255',
             'sender_phone' => 'required|string',

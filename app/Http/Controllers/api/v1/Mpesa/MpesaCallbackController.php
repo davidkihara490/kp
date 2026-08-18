@@ -27,6 +27,11 @@ class MpesaCallbackController extends Controller
      */
     public function stkCallback(Request $request, SMSService $smsService)
     {
+        Log::info("+++++++++++++++++++++++++++++++++++++");
+        Log::info('M-Pesa STK Callback Received', $request->all());
+        Log::info("+++++++++++++++++++++++++++++++++++++");
+
+
         // Get the callback data from request and decode it
         $callbackData = $request->json()->all();
 
@@ -125,31 +130,6 @@ class MpesaCallbackController extends Controller
                         'stack' => $th->getTraceAsString(),
                     ]);
                 }
-
-                //Send SMS to transport partners
-                // try {
-                //     $transportPartners = Partner::where('partner_type', 'transport')->where('verification_status', 'verified')->with('owner')->get();
-                //     Log::info('Sending SMS to Transport Partner Start');
-
-                //     foreach ($transportPartners as $partner) {
-
-                //         // Send to owner phone
-                //         if (!empty($partner->owner?->phone_number)) {
-                //             $smsService->sendTransportParnerParcelBookedSMS(
-                //                 formatKenyaNumber($partner->owner?->phone_number),
-                //                 $parcel->senderTown->name,
-                //                 $parcel->receiverTown->name
-                //             );
-                //         }
-                //     }
-
-                //     Log::info('Sending SMS to Transport Partner End');
-                // } catch (\Throwable $th) {
-                //     Log::error('Failed to send SMS to transport partners: ', [
-                //         'error' => $th->getMessage(),
-                //         'stack' => $th->getTraceAsString(),
-                //     ]);
-                // }
 
                 Log::info('Callback processed successfully');
 

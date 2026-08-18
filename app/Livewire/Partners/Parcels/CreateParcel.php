@@ -832,7 +832,7 @@ class CreateParcel extends Component
             ]);
 
             $parcel->updateParcelStatus(
-                Parcel::STATUS_BOOKED,
+                Parcel::STATUS_CREATED,
                 $this->sender_pick_up_drop_off_point_id,
                 Auth::guard('partner')->user()->id,
                 current_user_type(),

@@ -47,6 +47,14 @@ class MpesaService
             'shortcode' => $this->shortcode,
             'callback_url' => $this->callbackUrl
         ]);
+        Log::info('MPESA CONFIG LOADED', [
+            'shortcode' => $this->shortcode,
+            'callback_url' => $this->callbackUrl,
+            'environment' => $this->environment,
+            'consumer_key_set' => !empty($this->consumerKey),
+            'consumer_secret_set' => !empty($this->consumerSecret),
+            'passkey_set' => !empty($this->passkey),
+        ]);
     }
 
     /**
@@ -183,6 +191,13 @@ class MpesaService
                 ->post($url, $payload);
 
             $responseData = $response->json();
+
+            Log::info('MPESA STK PUSH RESPONSE', [
+                'http_status' => $response->status(),
+                'successful' => $response->successful(),
+                'body' => $response->json(),
+                'raw' => $response->body(),
+            ]);
 
             // Step 6: Create M-Pesa transaction record
             $transaction = MpesaTransaction::create([
@@ -389,7 +404,7 @@ class MpesaService
                     } else {
                         if ($status === MpesaTransaction::STATUS_COMPLETED) {
                             $payment = Payment::create([
-                                'reference_number' => $mpesaReceiptNumber,
+                                'reference_number' => $mpesaReceiptNumber . '400',
                                 'parcel_id' => $transaction->parcel_id,
                                 'amount' => $amountPaid ?? $transaction->amount,
                                 'payment_method' => 'mpesa',
@@ -527,14 +542,15 @@ class MpesaService
     /**
      * Check STK Push status
      */
+
     public function checkStkStatus($checkoutRequestId)
     {
-        Log::info('Checking STK status', ['checkout_request_id' => $checkoutRequestId]);
+        Log::info('=== MPESA STK QUERY START ===', [
+            'checkout_request_id' => $checkoutRequestId,
+        ]);
 
         try {
             $accessToken = $this->generateAccessToken();
-
-            Log::info("Token generated for checking status: " . ($accessToken ? 'Yes' : 'No'));
 
             if (!$accessToken) {
                 throw new Exception('Failed to generate access token');
@@ -550,28 +566,40 @@ class MpesaService
                 'CheckoutRequestID' => $checkoutRequestId,
             ];
 
-            Log::info('Status query payload prepared', ['payload' => $payload]);
-
             $url = $this->getBaseUrl() . '/mpesa/stkpushquery/v1/query';
 
+            Log::info('MPESA STK QUERY REQUEST', [
+                'url' => $url,
+                'BusinessShortCode' => $payload['BusinessShortCode'],
+                'Timestamp' => $payload['Timestamp'],
+                'CheckoutRequestID' => $payload['CheckoutRequestID'],
+            ]);
+
             $response = Http::withToken($accessToken)
-                ->withHeaders(['Content-Type' => 'application/json'])
+                ->acceptJson()
                 ->timeout(30)
                 ->post($url, $payload);
 
-            Log::info('STK status response received', [
-                'status' => $response->status(),
-                'body' => $response->json()
-            ]);
-
             $responseData = $response->json();
 
-            // Get result code and user-friendly message
-            $resultCode = $responseData['ResultCode'] ?? null;
-            $statusData = $this->getStatusFromResultCode($resultCode);
+            Log::info('MPESA STK QUERY RESPONSE', [
+                'checkout_request_id' => $checkoutRequestId,
+                'http_status' => $response->status(),
+                'successful' => $response->successful(),
+                'body' => $responseData,
+                'raw' => $response->body(),
+            ]);
 
-            // Check if the transaction has a final status
-            if (in_array($resultCode, [
+            $resultCode = $responseData['ResultCode'] ?? null;
+
+            $statusData = $resultCode !== null
+                ? $this->getStatusFromResultCode($resultCode)
+                : [
+                    'status' => MpesaTransaction::STATUS_PENDING,
+                    'user_message' => 'Transaction is still being processed.',
+                ];
+
+            if ($resultCode !== null && in_array((int) $resultCode, [
                 self::RESULT_SUCCESS,
                 self::RESULT_INSUFFICIENT_FUNDS,
                 self::RESULT_CANCELLED_BY_USER,
@@ -580,34 +608,119 @@ class MpesaService
                 self::RESULT_REJECTED,
                 self::RESULT_INVALID_TRANSACTION,
                 self::RESULT_WRONG_PIN,
-                self::RESULT_REQUEST_CANCELLED
-            ])) {
-                // Update transaction from status check
-                $this->updateTransactionFromStatusCheck($checkoutRequestId, $responseData, $statusData['user_message']);
+                self::RESULT_REQUEST_CANCELLED,
+            ], true)) {
+                $this->updateTransactionFromStatusCheck(
+                    $checkoutRequestId,
+                    $responseData,
+                    $statusData['user_message']
+                );
             }
 
             return [
-                'success' => isset($responseData['ResponseCode']) && $responseData['ResponseCode'] == '0',
+                'success' => $response->successful(),
                 'result_code' => $resultCode,
                 'result_desc' => $responseData['ResultDesc'] ?? null,
                 'user_message' => $statusData['user_message'],
                 'status' => $statusData['status'],
                 'response' => $responseData,
             ];
-        } catch (Exception $e) {
-            Log::error('STK status check failed', [
+        } catch (\Throwable $e) {
+            Log::error('MPESA STK QUERY FAILED', [
+                'checkout_request_id' => $checkoutRequestId,
                 'error' => $e->getMessage(),
-                'checkout_request_id' => $checkoutRequestId
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
                 'success' => false,
                 'message' => 'System error: ' . $e->getMessage(),
-                'user_message' => 'Unable to check payment status. Please try again.',
+                'user_message' => 'Unable to check payment status.',
                 'status' => MpesaTransaction::STATUS_UNKNOWN,
             ];
         }
     }
+    // public function checkStkStatus($checkoutRequestId)
+    // {
+    //     Log::info('Checking STK status', ['checkout_request_id' => $checkoutRequestId]);
+
+    //     try {
+    //         $accessToken = $this->generateAccessToken();
+
+    //         Log::info("Token generated for checking status: " . ($accessToken ? 'Yes' : 'No'));
+
+    //         if (!$accessToken) {
+    //             throw new Exception('Failed to generate access token');
+    //         }
+
+    //         $timestamp = date('YmdHis');
+    //         $password = $this->generatePassword($timestamp);
+
+    //         $payload = [
+    //             'BusinessShortCode' => (int) $this->shortcode,
+    //             'Password' => $password,
+    //             'Timestamp' => $timestamp,
+    //             'CheckoutRequestID' => $checkoutRequestId,
+    //         ];
+
+    //         Log::info('Status query payload prepared', ['payload' => $payload]);
+
+    //         $url = $this->getBaseUrl() . '/mpesa/stkpushquery/v1/query';
+
+    //         $response = Http::withToken($accessToken)
+    //             ->withHeaders(['Content-Type' => 'application/json'])
+    //             ->timeout(30)
+    //             ->post($url, $payload);
+
+    //         Log::info('STK status response received', [
+    //             'status' => $response->status(),
+    //             'body' => $response->json()
+    //         ]);
+
+    //         $responseData = $response->json();
+
+    //         // Get result code and user-friendly message
+    //         $resultCode = $responseData['ResultCode'] ?? null;
+    //         $statusData = $this->getStatusFromResultCode($resultCode);
+
+    //         // Check if the transaction has a final status
+    //         if (in_array($resultCode, [
+    //             self::RESULT_SUCCESS,
+    //             self::RESULT_INSUFFICIENT_FUNDS,
+    //             self::RESULT_CANCELLED_BY_USER,
+    //             self::RESULT_TIMEOUT,
+    //             self::RESULT_TRANSACTION_FAILED,
+    //             self::RESULT_REJECTED,
+    //             self::RESULT_INVALID_TRANSACTION,
+    //             self::RESULT_WRONG_PIN,
+    //             self::RESULT_REQUEST_CANCELLED
+    //         ])) {
+    //             // Update transaction from status check
+    //             $this->updateTransactionFromStatusCheck($checkoutRequestId, $responseData, $statusData['user_message']);
+    //         }
+
+    //         return [
+    //             'success' => isset($responseData['ResponseCode']) && $responseData['ResponseCode'] == '0',
+    //             'result_code' => $resultCode,
+    //             'result_desc' => $responseData['ResultDesc'] ?? null,
+    //             'user_message' => $statusData['user_message'],
+    //             'status' => $statusData['status'],
+    //             'response' => $responseData,
+    //         ];
+    //     } catch (Exception $e) {
+    //         Log::error('STK status check failed', [
+    //             'error' => $e->getMessage(),
+    //             'checkout_request_id' => $checkoutRequestId
+    //         ]);
+
+    //         return [
+    //             'success' => false,
+    //             'message' => 'System error: ' . $e->getMessage(),
+    //             'user_message' => 'Unable to check payment status. Please try again.',
+    //             'status' => MpesaTransaction::STATUS_UNKNOWN,
+    //         ];
+    //     }
+    // }
 
     /**
      * Update transaction from status check

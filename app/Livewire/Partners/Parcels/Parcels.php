@@ -2,67 +2,89 @@
 
 namespace App\Livewire\Partners\Parcels;
 
-use App\Models\Parcel;
-use App\Models\Driver;
 use App\Models\County;
-use App\Models\Partner;
 use App\Models\Customer;
+use App\Models\Driver;
+use App\Models\Parcel;
+use App\Models\Partner;
 use App\Services\SMSService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\Url;
 
 class Parcels extends Component
 {
     use WithPagination;
+
     protected $paginationTheme = 'bootstrap';
+
     #[Url]
     public $search = '';
+
     #[Url]
     public $statusFilter = '';
+
     #[Url]
     public $customerFilter = '';
+
     #[Url]
     public $driverFilter = '';
+
     #[Url]
     public $transportPartnerFilter = '';
+
     #[Url]
     public $pickupPartnerFilter = '';
+
     #[Url]
     public $deliveryPartnerFilter = '';
+
     #[Url]
     public $countyFilter = '';
-    #[Url]
-    public $subcountyFilter = '';
-    #[Url]
-    public $townFilter = '';
+
     #[Url]
     public $parcelTypeFilter = '';
+
     #[Url]
     public $paymentStatusFilter = '';
+
+    #[Url]
+    public $dateFrom = '';
+
+    #[Url]
+    public $dateTo = '';
+
     #[Url]
     public $sortField = 'created_at';
+
     #[Url]
     public $sortDirection = 'desc';
+
     public $showDeleteModal = false;
     public $parcelToDelete = null;
+
     public $showBulkActions = false;
     public $selectedParcels = [];
     public $selectAll = false;
+
     public $showAssignDriverModal = false;
     public $selectedParcelForAssignment = null;
     public $selectedDriver = '';
+
     public $showStatusUpdateModal = false;
     public $selectedParcelForStatusUpdate = null;
     public $newStatus = '';
+
     public $partnerType;
     public $partner;
     public $loggedDriver;
     public $loggedUser;
     public $loggedUserType;
+
     public $selectedParcelForDriver;
     public $selectedDriverId;
     public $driverSearch = '';
@@ -76,54 +98,489 @@ class Parcels extends Component
     protected $listeners = [
         'refreshParcels' => '$refresh',
         'driverAssigned' => '$refresh',
-        'modalClosed' => 'resetModalState'
+        'modalClosed' => 'resetModalState',
     ];
 
-    protected $queryString = [
-        'search' => ['except' => ''],
-        'statusFilter' => ['except' => ''],
-        'customerFilter' => ['except' => ''],
-        'driverFilter' => ['except' => ''],
-        'transportPartnerFilter' => ['except' => ''],
-        'pickupPartnerFilter' => ['except' => ''],
-        'deliveryPartnerFilter' => ['except' => ''],
-        'countyFilter' => ['except' => ''],
-        'subcountyFilter' => ['except' => ''],
-        'townFilter' => ['except' => ''],
-        'parcelTypeFilter' => ['except' => ''],
-        'paymentStatusFilter' => ['except' => ''],
-        'sortField' => ['except' => 'created_at'],
-        'sortDirection' => ['except' => 'desc'],
+    /**
+     * Fields that are safe to sort from the UI.
+     */
+    protected array $sortableFields = [
+        'parcel_id',
+        'current_status',
+        'payment_status',
+        'created_at',
+        'updated_at',
+        'total_amount',
     ];
 
     public function mount()
     {
-        $this->partner = Auth::guard('partner')->user()->partner ?? Auth::guard('partner')->user()->driver?->partner ?? Auth::guard('partner')->user()->parcelHandlingAssistant?->partner;
-        $this->partnerType = $this->partner->partner_type;
-        $this->estimatedDeliveryDate = now()->addDay()->format('Y-m-d');
-        $this->loggedDriver = Auth::guard('partner')->user()->driver;
         $this->loggedUser = Auth::guard('partner')->user();
+        $this->loggedDriver = $this->loggedUser?->driver;
 
-        $this->pointsCount = $this->partner->pickUpAndDropOffPoints()->count();
+        $this->partner =
+            $this->loggedUser?->partner
+            ?? $this->loggedUser?->driver?->partner
+            ?? $this->loggedUser?->parcelHandlingAssistant?->partner;
+
+        $this->partnerType = $this->partner?->partner_type;
+        $this->loggedUserType = $this->loggedUser?->user_type;
+
+        $this->estimatedDeliveryDate = now()->addDay()->format('Y-m-d');
+        $this->pointsCount = $this->partner?->pickUpAndDropOffPoints()->count() ?? 0;
+
+        // Prevent invalid sort values coming from URL query parameters.
+        if (! in_array($this->sortField, $this->sortableFields, true)) {
+            $this->sortField = 'created_at';
+        }
+
+        if (! in_array($this->sortDirection, ['asc', 'desc'], true)) {
+            $this->sortDirection = 'desc';
+        }
+    }
+
+    /**
+     * Reset pagination and selection whenever one of the parcel filters changes.
+     */
+    public function updated($property, $value)
+    {
+        $filters = [
+            'search',
+            'statusFilter',
+            'customerFilter',
+            'driverFilter',
+            'transportPartnerFilter',
+            'pickupPartnerFilter',
+            'deliveryPartnerFilter',
+            'countyFilter',
+            'parcelTypeFilter',
+            'paymentStatusFilter',
+            'dateFrom',
+            'dateTo',
+        ];
+
+        if (in_array($property, $filters, true)) {
+            $this->resetPage();
+            $this->clearSelection();
+        }
+    }
+
+    /**
+     * The Blade already calls this button. The filters are live, so this method
+     * mainly validates the date range and resets pagination.
+     */
+    public function applyDateRange(): void
+    {
+        $this->validate([
+            'dateFrom' => ['nullable', 'date'],
+            'dateTo' => ['nullable', 'date', 'after_or_equal:dateFrom'],
+        ], [
+            'dateTo.after_or_equal' => 'The To date must be the same as or later than the From date.',
+        ]);
+
+        $this->resetPage();
+        $this->clearSelection();
+    }
+
+    /**
+     * Restrict parcels to the records the logged-in partner user is allowed to see.
+     */
+    protected function roleScopedQuery(): Builder
+    {
+        $query = Parcel::query();
+
+        if (! $this->loggedUser) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        // Transport partner
+        if ($this->loggedUser->partner?->partner_type === 'transport') {
+            return $query->whereHas('parcelPayouts', function (Builder $q) {
+                $q->where('partner_id', $this->loggedUser->partner->id);
+            });
+        }
+
+        // Pickup / drop-off partner owner
+        if ($this->loggedUser->partner?->partner_type === 'pickup-dropoff') {
+            $partnerId = $this->loggedUser->partner->id;
+
+            return $query->where(function (Builder $q) use ($partnerId) {
+                $q->where('sender_partner_id', $partnerId)
+                    ->orWhere('delivery_partner_id', $partnerId);
+            });
+        }
+
+        // Driver
+        if ($this->loggedUser->driver) {
+            return $query->where('driver_id', $this->loggedUser->driver->id);
+        }
+
+        // Parcel handling assistant
+        if ($this->loggedUser->parcelHandlingAssistant) {
+            $pha = $this->loggedUser->parcelHandlingAssistant;
+            $partnerId = $pha->partner_id ?? $pha->partner?->id;
+
+            return $query->where(function (Builder $q) use ($pha, $partnerId) {
+                $q->where('pha_id', $pha->id);
+
+                if ($partnerId) {
+                    $q->orWhere('sender_partner_id', $partnerId)
+                        ->orWhere('delivery_partner_id', $partnerId);
+                }
+            });
+        }
+
+        return $query->whereRaw('1 = 0');
+    }
+
+    /**
+     * Apply every active filter in one place.
+     *
+     * This method is reused by:
+     * - the table
+     * - stats
+     * - select all
+     * - bulk actions
+     */
+    protected function filteredQuery(): Builder
+    {
+        $query = $this->roleScopedQuery();
+
+        $search = trim((string) $this->search);
+
+        if ($search !== '') {
+            $query->where(function (Builder $q) use ($search) {
+                $like = '%' . $search . '%';
+
+                $q->where('parcel_id', 'like', $like)
+                    ->orWhere('sender_name', 'like', $like)
+                    ->orWhere('sender_phone', 'like', $like)
+                    ->orWhere('sender_email', 'like', $like)
+                    ->orWhere('receiver_name', 'like', $like)
+                    ->orWhere('receiver_phone', 'like', $like)
+                    ->orWhere('receiver_email', 'like', $like)
+                    ->orWhere('content_description', 'like', $like);
+            });
+        }
+
+        if ($this->statusFilter !== '') {
+            $query->where('current_status', $this->statusFilter);
+        }
+
+        if ($this->paymentStatusFilter !== '') {
+            $query->where('payment_status', $this->paymentStatusFilter);
+        }
+
+        if ($this->parcelTypeFilter !== '') {
+            $query->where('parcel_type', $this->parcelTypeFilter);
+        }
+
+        if ($this->customerFilter !== '') {
+            $query->where('customer_id', $this->customerFilter);
+        }
+
+        if ($this->driverFilter !== '') {
+            $query->where('driver_id', $this->driverFilter);
+        }
+
+        /*
+         * A transport partner is linked to the parcel through parcel payouts
+         * in your existing transport-partner visibility logic.
+         */
+        if ($this->transportPartnerFilter !== '') {
+            $query->whereHas('parcelPayouts', function (Builder $q) {
+                $q->where('partner_id', $this->transportPartnerFilter)
+                    ->where('type', 'transport');
+            });
+        }
+
+        if ($this->pickupPartnerFilter !== '') {
+            $query->where('sender_partner_id', $this->pickupPartnerFilter);
+        }
+
+        if ($this->deliveryPartnerFilter !== '') {
+            $query->where('delivery_partner_id', $this->deliveryPartnerFilter);
+        }
+
+        if ($this->countyFilter !== '') {
+            $query->where(function (Builder $q) {
+                $q->where('sender_county_id', $this->countyFilter)
+                    ->orWhere('receiver_county_id', $this->countyFilter);
+            });
+        }
+
+        if ($this->dateFrom !== '') {
+            $query->whereDate('created_at', '>=', $this->dateFrom);
+        }
+
+        if ($this->dateTo !== '') {
+            $query->whereDate('created_at', '<=', $this->dateTo);
+        }
+
+        return $query;
+    }
+
+    public function render()
+    {
+        $filtered = $this->filteredQuery();
+
+        /*
+         * Eager load relations used repeatedly by the Blade to avoid N+1 queries.
+         * Remove any relation here only if your Parcel model uses a different name.
+         */
+        $parcels = (clone $filtered)
+            ->with([
+                'payments',
+                'statuses.driver',
+                'parcelPayouts',
+                // 'driver',
+                'senderTown',
+                'receiverTown',
+                'senderPickUpDropOffPoint',
+                'deliveryStation',
+                'warehouse',
+                'transportPartner',
+            ])
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->paginate(10);
+
+        /*
+         * The Blade statistics currently use the filtered collection, so all
+         * cards stay consistent with the filters currently applied.
+         */
+        $statParcels = (clone $filtered)
+            ->with(['parcelPayouts'])
+            ->get();
+
+        $totalParcels = $statParcels->count();
+
+        $pendingParcels = $statParcels
+            ->whereIn('current_status', [
+                Parcel::STATUS_CREATED,
+                Parcel::STATUS_BOOKED,
+                Parcel::STATUS_ACCEPTED,
+                Parcel::STATUS_ASSIGNED,
+                Parcel::STATUS_PENDING,
+            ])
+            ->count();
+
+        $inTransitParcels = $statParcels
+            ->whereIn('current_status', [
+                Parcel::STATUS_IN_TRANSIT,
+                Parcel::STATUS_WAREHOUSE,
+                Parcel::STATUS_ARRIVED_AT_DESTINATION,
+            ])
+            ->count();
+
+        $deliveredParcels = $statParcels
+            ->whereIn('current_status', [
+                Parcel::STATUS_PICKED,
+                Parcel::STATUS_DELIVERED,
+            ])
+            ->count();
+
+        /*
+         * Only show customers and drivers that occur in parcels available to
+         * the logged-in user. This keeps filter lists relevant and smaller.
+         */
+        $roleQuery = $this->roleScopedQuery();
+
+        $customerIds = (clone $roleQuery)
+            ->whereNotNull('customer_id')
+            ->distinct()
+            ->pluck('customer_id');
+
+        $driverIds = (clone $roleQuery)
+            ->whereNotNull('driver_id')
+            ->distinct()
+            ->pluck('driver_id');
+
+        return view('livewire.partners.parcels.parcels', [
+            'parcels' => $parcels,
+
+            'customers' => Customer::query()
+                ->whereIn('id', $customerIds)
+                ->orderBy('name')
+                ->get(),
+
+            'drivers' => Driver::query()
+                ->whereIn('id', $driverIds)
+                ->orderBy('first_name')
+                ->get(),
+
+            'transportPartners' => Partner::query()
+                ->where('partner_type', 'transport')
+                ->orderBy('company_name')
+                ->get(),
+
+            'pickupPartners' => Partner::query()
+                ->where('partner_type', 'pickup-dropoff')
+                ->orderBy('company_name')
+                ->get(),
+
+            'deliveryPartners' => Partner::query()
+                ->where('partner_type', 'pickup-dropoff')
+                ->orderBy('company_name')
+                ->get(),
+
+            'counties' => County::orderBy('name')->get(),
+
+            'parcelTypes' => [
+                '' => 'All Types',
+                'document' => 'Document',
+                'package' => 'Package',
+                'envelope' => 'Envelope',
+                'box' => 'Box',
+                'pallet' => 'Pallet',
+                'other' => 'Other',
+            ],
+
+            /*
+             * These statuses match the parcel workflow used elsewhere in your
+             * Karibu Parcels components.
+             */
+            'statuses' => [
+                '' => 'All Status',
+                Parcel::STATUS_CREATED => 'Created',
+                Parcel::STATUS_BOOKED => 'Booked',
+                Parcel::STATUS_ACCEPTED => 'Accepted',
+                Parcel::STATUS_ASSIGNED => 'Assigned',
+                Parcel::STATUS_IN_TRANSIT => 'In Transit',
+                Parcel::STATUS_PENDING => 'Pending',
+                Parcel::STATUS_WAREHOUSE => 'Warehouse',
+                Parcel::STATUS_ARRIVED_AT_DESTINATION => 'Arrived at Destination',
+                Parcel::STATUS_PICKED => 'Picked',
+                Parcel::STATUS_DELIVERED => 'Delivered',
+                Parcel::STATUS_FAILED => 'Failed',
+                Parcel::STATUS_RETURNED => 'Returned',
+            ],
+
+            'paymentStatuses' => [
+                '' => 'All Payment Status',
+                'pending' => 'Pending',
+                'paid' => 'Paid',
+                'failed' => 'Failed',
+                'refunded' => 'Refunded',
+                'partially_paid' => 'Partially Paid',
+            ],
+
+            'totalParcels' => $totalParcels,
+            'pendingParcels' => $pendingParcels,
+            'inTransitParcels' => $inTransitParcels,
+            'deliveredParcels' => $deliveredParcels,
+            'statParcels' => $statParcels,
+        ]);
+    }
+
+    public function sortBy($field)
+    {
+        if (! in_array($field, $this->sortableFields, true)) {
+            return;
+        }
+
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+
+        $this->resetPage();
+    }
+
+    public function resetFilters()
+    {
+        $this->reset([
+            'search',
+            'statusFilter',
+            'customerFilter',
+            'driverFilter',
+            'transportPartnerFilter',
+            'pickupPartnerFilter',
+            'deliveryPartnerFilter',
+            'countyFilter',
+            'parcelTypeFilter',
+            'paymentStatusFilter',
+            'dateFrom',
+            'dateTo',
+        ]);
+
+        $this->sortField = 'created_at';
+        $this->sortDirection = 'desc';
+
+        $this->clearSelection();
+        $this->resetPage();
+    }
+
+    protected function clearSelection(): void
+    {
+        $this->selectedParcels = [];
+        $this->selectAll = false;
+        $this->showBulkActions = false;
+    }
+
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            /*
+             * Select only parcels currently available through the user's role
+             * and active filters. This avoids selecting unrelated parcels.
+             */
+            $this->selectedParcels = $this->filteredQuery()
+                ->pluck('id')
+                ->map(fn($id) => (string) $id)
+                ->toArray();
+        } else {
+            $this->selectedParcels = [];
+        }
+
+        $this->showBulkActions = count($this->selectedParcels) > 0;
+    }
+
+    public function updatedSelectedParcels()
+    {
+        $this->selectAll = false;
+        $this->showBulkActions = count($this->selectedParcels) > 0;
+    }
+
+    public function hasActiveFilters(): bool
+    {
+        return trim((string) $this->search) !== ''
+            || $this->statusFilter !== ''
+            || $this->customerFilter !== ''
+            || $this->driverFilter !== ''
+            || $this->transportPartnerFilter !== ''
+            || $this->pickupPartnerFilter !== ''
+            || $this->deliveryPartnerFilter !== ''
+            || $this->countyFilter !== ''
+            || $this->parcelTypeFilter !== ''
+            || $this->paymentStatusFilter !== ''
+            || $this->dateFrom !== ''
+            || $this->dateTo !== '';
     }
 
     public function showAssignDriver($parcelId)
     {
-        $this->selectedParcelForDriver = Parcel::findOrFail($parcelId);
+        /*
+         * Use the role-scoped query so a manipulated parcel ID cannot open a
+         * parcel outside the logged-in user's permitted list.
+         */
+        $this->selectedParcelForDriver = $this->roleScopedQuery()->findOrFail($parcelId);
+
         $this->selectedDriverId = null;
         $this->driverSearch = '';
         $this->estimatedDeliveryDate = now()->addDay()->format('Y-m-d');
         $this->assignmentNotes = '';
-        $this->loadAvailableDrivers();
-        $this->showAssignDriverModal = true;
 
-        // Dispatch event to open modal
+        $this->loadAvailableDrivers();
+
+        $this->showAssignDriverModal = true;
         $this->dispatch('openAssignDriverModal');
     }
 
     public function loadAvailableDrivers()
     {
-        if (!$this->partner) {
+        if (! $this->partner) {
             $this->availableDrivers = collect();
             return;
         }
@@ -133,16 +590,23 @@ class Parcels extends Component
             ->where('status', 'active')
             ->where('is_available', true);
 
-        // Apply search filter
-        if (!empty($this->driverSearch)) {
-            $query->where(function ($q) {
-                $q->where('full_name', 'like', '%' . $this->driverSearch . '%')
-                    ->orWhere('phone', 'like', '%' . $this->driverSearch . '%')
-                    ->orWhere('email', 'like', '%' . $this->driverSearch . '%');
+        $search = trim((string) $this->driverSearch);
+
+        if ($search !== '') {
+            $query->where(function (Builder $q) use ($search) {
+                $like = '%' . $search . '%';
+
+                $q->where('first_name', 'like', $like)
+                    ->orWhere('second_name', 'like', $like)
+                    ->orWhere('last_name', 'like', $like)
+                    ->orWhere('phone_number', 'like', $like)
+                    ->orWhere('email', 'like', $like);
             });
         }
 
-        $this->availableDrivers = $query->orderBy('first_name')->get();
+        $this->availableDrivers = $query
+            ->orderBy('first_name')
+            ->get();
     }
 
     public function updatedDriverSearch()
@@ -158,85 +622,69 @@ class Parcels extends Component
     public function assignDriver(SMSService $smsService)
     {
         $this->validate([
-            'selectedDriverId' => 'required|exists:drivers,id',
+            'selectedDriverId' => ['required', 'exists:drivers,id'],
         ]);
 
-        if (!$this->selectedParcelForDriver) {
+        if (! $this->selectedParcelForDriver) {
             return;
         }
 
         try {
-            $driver = Driver::find($this->selectedDriverId);
+            $driver = Driver::query()
+                ->whereKey($this->selectedDriverId)
+                ->where('partner_id', $this->partner?->id)
+                ->where('status', 'active')
+                ->firstOrFail();
 
-            DB::beginTransaction();
+            DB::transaction(function () use ($driver, $smsService) {
+                $parcelCode = $this->selectedParcelForDriver->generateDeliveryOtp();
 
-            $parcelCode = $this->selectedParcelForDriver->generateDeliveryOtp();
-            $this->selectedParcelForDriver->updateParcelStatus(
-                Parcel::STATUS_ASSIGNED,
-                $this->selectedParcelForDriver->sender_pick_up_drop_off_point_id,
-                Auth::guard('partner')->user()->id,
-                current_user_type(),
-                'Parcel assigned to driver: ' . $driver->first_name . ' ' . $driver->last_name,
-                $driver->id,
-                $parcelCode,
-            );
-
-            $this->selectedParcelForDriver->current_status = Parcel::STATUS_ASSIGNED;
-            $this->selectedParcelForDriver->driver_id = $driver->id;
-            $this->selectedParcelForDriver->save();
-
-            DB::commit();
-
-            //Send Driver SMS notification
-            try {
-                Log::info('START::Sending SMS to driver after Asignment');
-                $smsService->sendDriverAssignmentSMS(
-                    formatKenyaNumber($driver->phone_number),
-                    $driver->first_name,
-                    $this->selectedParcelForDriver->parcel_id,
-                    $this->selectedParcelForDriver->senderTown->name,
-                    $this->selectedParcelForDriver->receiverTown->name,
-                    $parcelCode
+                $this->selectedParcelForDriver->updateParcelStatus(
+                    Parcel::STATUS_ASSIGNED,
+                    $this->selectedParcelForDriver->sender_pick_up_drop_off_point_id,
+                    Auth::guard('partner')->id(),
+                    current_user_type(),
+                    'Parcel assigned to driver: ' . $driver->full_name,
+                    $driver->id,
+                    $parcelCode,
                 );
-                Log::info('START::Sending SMS to driver after Asignment');
-            } catch (\Throwable $th) {
-                Log::error('Failed to send SMS to driver: ', [
-                    'error' => $th->getMessage(),
-                    'stack' => $th->getTraceAsString(),
+
+                $this->selectedParcelForDriver->update([
+                    'current_status' => Parcel::STATUS_ASSIGNED,
+                    'driver_id' => $driver->id,
                 ]);
-            }
 
+                try {
+                    $smsService->sendDriverAssignmentSMS(
+                        formatKenyaNumber($driver->phone_number ?? $driver->phone),
+                        $driver->first_name ?? $driver->full_name,
+                        $this->selectedParcelForDriver->parcel_id,
+                        $this->selectedParcelForDriver->senderTown->name,
+                        $this->selectedParcelForDriver->receiverTown->name,
+                        $parcelCode
+                    );
+                } catch (\Throwable $e) {
+                    Log::error('Failed to send SMS to driver', [
+                        'driver_id' => $driver->id,
+                        'parcel_id' => $this->selectedParcelForDriver->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            });
 
-            // Refresh statistics
-            $this->loadStatistics();
+            session()->flash('success', 'Parcel assigned to driver successfully.');
 
-            $this->dispatch('show-notification', [
-                'type' => 'success',
-                'message' => 'Driver assigned successfully!'
+            $this->dispatch('closeAssignDriverModal');
+            $this->resetModalState();
+            $this->dispatch('refreshParcels');
+        } catch (\Throwable $e) {
+            Log::error('Failed to assign driver', [
+                'parcel_id' => $this->selectedParcelForDriver?->id,
+                'driver_id' => $this->selectedDriverId,
+                'error' => $e->getMessage(),
             ]);
 
-            $this->closeDriverModal();
-        } catch (\Exception $e) {
-            $this->dispatch('show-notification', [
-                'type' => 'error',
-                'message' => 'Failed to assign driver: ' . $e->getMessage()
-            ]);
-        }
-
-        session()->flash('success', "Parcel assigned to driver successfully.");
-
-        $this->dispatch('closeAssignDriverModal');
-        $this->resetModalState();
-        $this->dispatch('refreshParcels');
-    }
-
-    private function sendDriverNotification($driver, $parcel)
-    {
-        // Implement your notification logic here
-        if ($driver->phone) {
-            // Send SMS
-            $message = "New delivery assignment: Parcel #{$parcel->parcel_number} from {$parcel->sender_address} to {$parcel->receiver_address}";
-            // Your SMS sending logic here
+            session()->flash('error', 'Failed to assign driver: ' . $e->getMessage());
         }
     }
 
@@ -252,327 +700,196 @@ class Parcels extends Component
         $this->assignmentNotes = '';
     }
 
-    public function render()
-    {
-        $query = Parcel::query();
-
-        if ($this->loggedUser->partner && $this->loggedUser->partner->partner_type ==  "transport") {
-            $query = Parcel::whereHas('parcelPayouts', function ($query) {
-                $query->where('partner_id', $this->loggedUser->partner->id);
-            })->with([
-                'parcelPayouts' => function ($query) {
-                    $query->where('partner_id', $this->loggedUser->partner->id);
-                }
-            ]);
-        } elseif ($this->loggedUser->partner && $this->loggedUser->partner->partner_type ==  "pickup-dropoff") {
-            $query = Parcel::where('sender_partner_id', $this->loggedUser->partner->id)
-                ->orWhere('delivery_partner_id', $this->loggedUser->partner->id);
-        } elseif ($this->loggedUser->driver && $this->loggedUser->driver) {
-            $query = Parcel::where('driver_id', $this->loggedUser->driver->id);
-        } elseif ($this->loggedUser->parcelHandlingAssistant) {
-            $query = Parcel::where(function ($q) {
-                $q->where('pha_id', $this->loggedUser->parcelHandlingAssistant->id)
-                    ->orWhere('delivery_partner_id', $this->loggedUser->parcelHandlingAssistant->partner->id)
-                    //Added this to allow a parcel handling assistant to view parcels booked online
-                    ->orWhere('sender_partner_id', $this->loggedUser->parcelHandlingAssistant->partner->id);
-            });
-        }
-
-        // Apply filters
-        $query = $query->when($this->search, function ($query) {
-            $query->where(function ($q) {
-                $q->where('parcel_number', 'like', '%' . $this->search . '%')
-                    ->orWhere('sender_name', 'like', '%' . $this->search . '%')
-                    ->orWhere('sender_phone', 'like', '%' . $this->search . '%')
-                    ->orWhere('receiver_name', 'like', '%' . $this->search . '%')
-                    ->orWhere('receiver_phone', 'like', '%' . $this->search . '%')
-                    ->orWhere('content_description', 'like', '%' . $this->search . '%');
-            });
-        })
-            ->when($this->statusFilter, function ($query) {
-                $query->where('current_status', $this->statusFilter);
-            })
-            ->when($this->countyFilter, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('sender_county_id', $this->countyFilter)
-                        ->orWhere('receiver_county_id', $this->countyFilter);
-                });
-            })
-            ->when($this->parcelTypeFilter, function ($query) {
-                $query->where('parcel_type', $this->parcelTypeFilter);
-            })
-            ->when($this->paymentStatusFilter, function ($query) {
-                $query->where('payment_status', $this->paymentStatusFilter);
-            });
-        $statParcels = clone $query;
-
-
-        // Stats calculations
-        $totalParcels = $query->count();
-        $pendingParcels = Parcel::where('current_status', 'pending')->count();
-        $inTransitParcels = Parcel::whereIn('current_status', ['in_transit', 'at_warehouse', 'out_for_delivery'])->count();
-        $deliveredParcels = Parcel::where('current_status', 'delivered')->count();
-
-        $parcels = $query->orderBy($this->sortField, $this->sortDirection)->paginate(10);
-
-
-        return view('livewire.partners.parcels.parcels', [
-            'parcels' => $parcels,
-            'customers' => [],
-            'drivers' => Driver::orderBy('first_name')->get(),
-            'transportPartners' => Partner::orderBy('company_name')->get(),
-            'pickupPartners' => Partner::orderBy('company_name')->get(),
-            'deliveryPartners' => Partner::orderBy('company_name')->get(),
-            'counties' => County::orderBy('name')->get(),
-            'parcelTypes' => [
-                '' => 'All Types',
-                'document' => 'Document',
-                'package' => 'Package',
-                'envelope' => 'Envelope',
-                'box' => 'Box',
-                'pallet' => 'Pallet',
-                'other' => 'Other',
-            ],
-            'statuses' => [
-                '' => 'All Status',
-                'pending' => 'Pending',
-                'confirmed' => 'Confirmed',
-                'processing' => 'Processing',
-                'assigned' => 'Assigned',
-                'picked_up' => 'Picked Up',
-                'in_transit' => 'In Transit',
-                'at_warehouse' => 'At Warehouse',
-                'out_for_delivery' => 'Out for Delivery',
-                'delivered' => 'Delivered',
-                'failed' => 'Failed',
-                'returned' => 'Returned',
-                'cancelled' => 'Cancelled',
-            ],
-            'paymentStatuses' => [
-                '' => 'All Payment Status',
-                'pending' => 'Pending',
-                'paid' => 'Paid',
-                'failed' => 'Failed',
-                'refunded' => 'Refunded',
-                'partially_paid' => 'Partially Paid',
-            ],
-            'totalParcels' => $totalParcels,
-            'pendingParcels' => $pendingParcels,
-            'inTransitParcels' => $inTransitParcels,
-            'deliveredParcels' => $deliveredParcels,
-            'statParcels' => $statParcels->get()
-        ]);
-    }
-
-    public function sortBy($field)
-    {
-        if ($this->sortField === $field) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sortField = $field;
-            $this->sortDirection = 'asc';
-        }
-    }
-
     public function confirmDelete($parcelId)
     {
-        $this->parcelToDelete = Parcel::find($parcelId);
+        $this->parcelToDelete = $this->roleScopedQuery()->findOrFail($parcelId);
         $this->showDeleteModal = true;
     }
 
     public function delete()
     {
-        if ($this->parcelToDelete) {
-            $parcelNumber = $this->parcelToDelete->parcel_number;
-            $this->parcelToDelete->delete();
-
-            session()->flash('success', "Parcel #{$parcelNumber} deleted successfully.");
-            $this->showDeleteModal = false;
-            $this->parcelToDelete = null;
+        if (! $this->parcelToDelete) {
+            return;
         }
+
+        $parcel = $this->roleScopedQuery()->findOrFail($this->parcelToDelete->id);
+        $parcelNumber = $parcel->parcel_id;
+
+        $parcel->delete();
+
+        session()->flash('success', "Parcel #{$parcelNumber} deleted successfully.");
+
+        $this->showDeleteModal = false;
+        $this->parcelToDelete = null;
+        $this->resetPage();
     }
 
     public function markAsPickedUp($parcelId)
     {
-        $parcel = Parcel::find($parcelId);
-        if ($parcel) {
-            $parcel->markAsPickedUp(Auth::id(), 'Marked as picked up from admin panel');
-            session()->flash('success', "Parcel #{$parcel->parcel_number} marked as picked up.");
-        }
+        $parcel = $this->roleScopedQuery()->findOrFail($parcelId);
+
+        $parcel->markAsPickedUp(
+            Auth::guard('partner')->id(),
+            'Marked as picked up from partner panel'
+        );
+
+        session()->flash('success', "Parcel #{$parcel->parcel_id} marked as picked up.");
     }
 
     public function markAsDelivered($parcelId)
     {
-        $parcel = Parcel::find($parcelId);
-        if ($parcel) {
-            $parcel->markAsDelivered(Auth::id());
-            session()->flash('success', "Parcel #{$parcel->parcel_number} marked as delivered.");
-        }
+        $parcel = $this->roleScopedQuery()->findOrFail($parcelId);
+        $parcel->markAsDelivered(Auth::guard('partner')->id());
+
+        session()->flash('success', "Parcel #{$parcel->parcel_id} marked as delivered.");
     }
 
     public function showUpdateStatus($parcelId)
     {
-        $this->selectedParcelForStatusUpdate = Parcel::find($parcelId);
+        $this->selectedParcelForStatusUpdate = $this->roleScopedQuery()->findOrFail($parcelId);
         $this->newStatus = $this->selectedParcelForStatusUpdate->current_status;
         $this->showStatusUpdateModal = true;
     }
 
     public function updateStatus()
     {
+        $allowedStatuses = [
+            Parcel::STATUS_CREATED,
+            Parcel::STATUS_BOOKED,
+            Parcel::STATUS_ACCEPTED,
+            Parcel::STATUS_ASSIGNED,
+            Parcel::STATUS_IN_TRANSIT,
+            Parcel::STATUS_PENDING,
+            Parcel::STATUS_WAREHOUSE,
+            Parcel::STATUS_ARRIVED_AT_DESTINATION,
+            Parcel::STATUS_PICKED,
+            Parcel::STATUS_DELIVERED,
+            Parcel::STATUS_FAILED,
+            Parcel::STATUS_RETURNED,
+        ];
+
         $this->validate([
-            'newStatus' => 'required|in:pending,confirmed,processing,assigned,picked_up,in_transit,at_warehouse,out_for_delivery,delivered,failed,returned,cancelled',
+            'newStatus' => ['required', 'in:' . implode(',', $allowedStatuses)],
         ]);
 
-        if ($this->selectedParcelForStatusUpdate) {
-            $oldStatus = $this->selectedParcelForStatusUpdate->current_status;
-
-            $this->selectedParcelForStatusUpdate->updateStatus(
-                $this->newStatus,
-                'Status updated from admin panel',
-                Auth::id()
-            );
-
-            session()->flash('success', "Parcel status updated from {$oldStatus} to {$this->newStatus}");
-            $this->showStatusUpdateModal = false;
-            $this->selectedParcelForStatusUpdate = null;
-            $this->newStatus = '';
+        if (! $this->selectedParcelForStatusUpdate) {
+            return;
         }
-    }
 
-    public function resetFilters()
-    {
-        $this->search = '';
-        $this->statusFilter = '';
-        $this->customerFilter = '';
-        $this->driverFilter = '';
-        $this->transportPartnerFilter = '';
-        $this->pickupPartnerFilter = '';
-        $this->deliveryPartnerFilter = '';
-        $this->countyFilter = '';
-        $this->subcountyFilter = '';
-        $this->townFilter = '';
-        $this->parcelTypeFilter = '';
-        $this->paymentStatusFilter = '';
-        $this->sortField = 'created_at';
-        $this->sortDirection = 'desc';
-        $this->selectedParcels = [];
-        $this->selectAll = false;
-        $this->showBulkActions = false;
-    }
+        $parcel = $this->roleScopedQuery()
+            ->findOrFail($this->selectedParcelForStatusUpdate->id);
 
-    public function updatedSelectAll($value)
-    {
-        if ($value) {
-            $query = Parcel::query();
+        $oldStatus = $parcel->current_status;
 
-            if ($this->statusFilter) {
-                $query->where('current_status', $this->statusFilter);
-            }
+        $parcel->updateStatus(
+            $this->newStatus,
+            'Status updated from partner panel',
+            Auth::guard('partner')->id()
+        );
 
-            $this->selectedParcels = $query->pluck('id')->map(fn($id) => (string)$id)->toArray();
-        } else {
-            $this->selectedParcels = [];
-        }
-        $this->showBulkActions = count($this->selectedParcels) > 0;
-    }
+        session()->flash(
+            'success',
+            "Parcel status updated from {$oldStatus} to {$this->newStatus}"
+        );
 
-    public function updatedSelectedParcels()
-    {
-        $this->selectAll = false;
-        $this->showBulkActions = count($this->selectedParcels) > 0;
+        $this->showStatusUpdateModal = false;
+        $this->selectedParcelForStatusUpdate = null;
+        $this->newStatus = '';
     }
 
     public function bulkDelete()
     {
-        if (count($this->selectedParcels) > 0) {
-            $parcels = Parcel::whereIn('id', $this->selectedParcels)->get();
-
-            foreach ($parcels as $parcel) {
-                $parcel->delete();
-            }
-
-            session()->flash('success', count($this->selectedParcels) . ' parcels deleted.');
-
-            $this->selectedParcels = [];
-            $this->selectAll = false;
-            $this->showBulkActions = false;
+        if (count($this->selectedParcels) === 0) {
+            return;
         }
+
+        $parcels = $this->roleScopedQuery()
+            ->whereIn('id', $this->selectedParcels)
+            ->get();
+
+        foreach ($parcels as $parcel) {
+            $parcel->delete();
+        }
+
+        session()->flash('success', $parcels->count() . ' parcels deleted.');
+        $this->clearSelection();
+        $this->resetPage();
     }
 
     public function bulkMarkAsDelivered()
     {
-        if (count($this->selectedParcels) > 0) {
-            DB::transaction(function () {
-                $parcels = Parcel::whereIn('id', $this->selectedParcels)->get();
-
-                foreach ($parcels as $parcel) {
-                    $parcel->markAsDelivered(Auth::id());
-                }
-            });
-
-            session()->flash('success', count($this->selectedParcels) . ' parcels marked as delivered.');
-
-            $this->selectedParcels = [];
-            $this->selectAll = false;
-            $this->showBulkActions = false;
+        if (count($this->selectedParcels) === 0) {
+            return;
         }
+
+        $count = 0;
+
+        DB::transaction(function () use (&$count) {
+            $parcels = $this->roleScopedQuery()
+                ->whereIn('id', $this->selectedParcels)
+                ->get();
+
+            foreach ($parcels as $parcel) {
+                $parcel->markAsDelivered(Auth::guard('partner')->id());
+                $count++;
+            }
+        });
+
+        session()->flash('success', $count . ' parcels marked as delivered.');
+        $this->clearSelection();
     }
 
     public function bulkCancel()
     {
-        if (count($this->selectedParcels) > 0) {
-            DB::transaction(function () {
-                $parcels = Parcel::whereIn('id', $this->selectedParcels)->get();
-
-                foreach ($parcels as $parcel) {
-                    if ($parcel->canBeCancelled()) {
-                        $parcel->cancel('Bulk cancellation from admin panel', Auth::id());
-                    }
-                }
-            });
-
-            session()->flash('warning', count($this->selectedParcels) . ' parcels cancelled.');
-
-            $this->selectedParcels = [];
-            $this->selectAll = false;
-            $this->showBulkActions = false;
+        if (count($this->selectedParcels) === 0) {
+            return;
         }
-    }
 
-    public function hasActiveFilters()
-    {
-        return $this->search ||
-            $this->statusFilter ||
-            $this->customerFilter ||
-            $this->driverFilter ||
-            $this->transportPartnerFilter ||
-            $this->pickupPartnerFilter ||
-            $this->deliveryPartnerFilter ||
-            $this->countyFilter ||
-            $this->subcountyFilter ||
-            $this->townFilter ||
-            $this->parcelTypeFilter ||
-            $this->paymentStatusFilter;
+        $cancelled = 0;
+
+        DB::transaction(function () use (&$cancelled) {
+            $parcels = $this->roleScopedQuery()
+                ->whereIn('id', $this->selectedParcels)
+                ->get();
+
+            foreach ($parcels as $parcel) {
+                if ($parcel->canBeCancelled()) {
+                    $parcel->cancel(
+                        'Bulk cancellation from partner panel',
+                        Auth::guard('partner')->id()
+                    );
+                    $cancelled++;
+                }
+            }
+        });
+
+        session()->flash('warning', $cancelled . ' parcels cancelled.');
+        $this->clearSelection();
     }
 
     public function getStatusBadge($status)
     {
         $badges = [
-            'pending' => ['color' => '#6b7280', 'text' => 'Pending', 'icon' => 'bi-clock'],
-            'confirmed' => ['color' => '#3b82f6', 'text' => 'Confirmed', 'icon' => 'bi-check-circle'],
-            'processing' => ['color' => '#8b5cf6', 'text' => 'Processing', 'icon' => 'bi-gear'],
-            'assigned' => ['color' => '#f59e0b', 'text' => 'Assigned', 'icon' => 'bi-person-check'],
-            'picked_up' => ['color' => '#3b82f6', 'text' => 'Picked Up', 'icon' => 'bi-box-arrow-in-down'],
-            'in_transit' => ['color' => '#8b5cf6', 'text' => 'In Transit', 'icon' => 'bi-truck'],
-            'at_warehouse' => ['color' => '#3b82f6', 'text' => 'At Warehouse', 'icon' => 'bi-building'],
-            'out_for_delivery' => ['color' => '#f59e0b', 'text' => 'Out for Delivery', 'icon' => 'bi-box-arrow-up'],
-            'delivered' => ['color' => '#10b981', 'text' => 'Delivered', 'icon' => 'bi-check-circle-fill'],
-            'failed' => ['color' => '#ef4444', 'text' => 'Failed', 'icon' => 'bi-x-circle'],
-            'returned' => ['color' => '#f59e0b', 'text' => 'Returned', 'icon' => 'bi-arrow-return-left'],
-            'cancelled' => ['color' => '#1f2937', 'text' => 'Cancelled', 'icon' => 'bi-x-octagon'],
+            Parcel::STATUS_CREATED => ['color' => '#6b7280', 'text' => 'Created', 'icon' => 'bi-plus-circle'],
+            Parcel::STATUS_BOOKED => ['color' => '#3b82f6', 'text' => 'Booked', 'icon' => 'bi-journal-check'],
+            Parcel::STATUS_ACCEPTED => ['color' => '#10b981', 'text' => 'Accepted', 'icon' => 'bi-check-circle'],
+            Parcel::STATUS_ASSIGNED => ['color' => '#f59e0b', 'text' => 'Assigned', 'icon' => 'bi-person-check'],
+            Parcel::STATUS_IN_TRANSIT => ['color' => '#8b5cf6', 'text' => 'In Transit', 'icon' => 'bi-truck'],
+            Parcel::STATUS_PENDING => ['color' => '#6b7280', 'text' => 'Pending', 'icon' => 'bi-clock'],
+            Parcel::STATUS_WAREHOUSE => ['color' => '#3b82f6', 'text' => 'Warehouse', 'icon' => 'bi-building'],
+            Parcel::STATUS_ARRIVED_AT_DESTINATION => ['color' => '#0ea5e9', 'text' => 'Arrived at Destination', 'icon' => 'bi-geo-alt'],
+            Parcel::STATUS_PICKED => ['color' => '#14b8a6', 'text' => 'Picked', 'icon' => 'bi-box-arrow-up'],
+            Parcel::STATUS_DELIVERED => ['color' => '#10b981', 'text' => 'Delivered', 'icon' => 'bi-check-circle-fill'],
+            Parcel::STATUS_FAILED => ['color' => '#ef4444', 'text' => 'Failed', 'icon' => 'bi-x-circle'],
+            Parcel::STATUS_RETURNED => ['color' => '#f59e0b', 'text' => 'Returned', 'icon' => 'bi-arrow-return-left'],
         ];
 
-        return $badges[$status] ?? ['color' => '#6b7280', 'text' => ucfirst($status), 'icon' => 'bi-question-circle'];
+        return $badges[$status]
+            ?? [
+                'color' => '#6b7280',
+                'text' => ucfirst(str_replace('_', ' ', (string) $status)),
+                'icon' => 'bi-question-circle',
+            ];
     }
 
     public function getPaymentStatusBadge($paymentStatus)
@@ -585,7 +902,12 @@ class Parcels extends Component
             'partially_paid' => ['color' => '#8b5cf6', 'text' => 'Partially Paid', 'icon' => 'bi-percent'],
         ];
 
-        return $badges[$paymentStatus] ?? ['color' => '#6b7280', 'text' => ucfirst($paymentStatus), 'icon' => 'bi-question-circle'];
+        return $badges[$paymentStatus]
+            ?? [
+                'color' => '#6b7280',
+                'text' => ucfirst(str_replace('_', ' ', (string) $paymentStatus)),
+                'icon' => 'bi-question-circle',
+            ];
     }
 
     public function getParcelTypeBadge($parcelType)
@@ -599,7 +921,8 @@ class Parcels extends Component
             'other' => ['color' => '#6b7280', 'text' => 'Other', 'icon' => 'bi-question-circle'],
         ];
 
-        return $badges[$parcelType] ?? ['color' => '#6b7280', 'text' => ucfirst($parcelType), 'icon' => 'bi-question-circle'];
+        return $badges[$parcelType]
+            ?? ['color' => '#6b7280', 'text' => ucfirst((string) $parcelType), 'icon' => 'bi-question-circle'];
     }
 
     public function getPackageTypeBadge($packageType)
@@ -613,6 +936,7 @@ class Parcels extends Component
             'oversized' => ['color' => '#1f2937', 'text' => 'Oversized', 'icon' => 'bi-aspect-ratio'],
         ];
 
-        return $badges[$packageType] ?? ['color' => '#6b7280', 'text' => ucfirst($packageType), 'icon' => 'bi-box'];
+        return $badges[$packageType]
+            ?? ['color' => '#6b7280', 'text' => ucfirst((string) $packageType), 'icon' => 'bi-box'];
     }
 }
