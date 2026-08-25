@@ -13,12 +13,10 @@ class EnsureAdmin
     {
         // If not logged in as admin → redirect to login
         if (!Auth::guard('admin')->check()) {
-            return redirect()->route('admin.login'); // change to your login route name
+            return redirect()->route('admin.login'); 
         }
 
         $user = Auth::guard('admin')->user();
-
-        // dd($user->user_type);
 
         // If logged in but not admin → 403
         if ($user->user_type !== "admin") {

@@ -3,12 +3,33 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ config('app.name') }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="icon" type="image/png" href="{{ asset('logo.jpeg') }}"> 
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>{{ config('app.name') }}</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Favicon -->
+    <link
+        rel="icon"
+        type="image/jpeg"
+        href="{{ asset('logo.jpeg') }}"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+    >
+
     <style>
         :root {
             --primary-color: #008f40;
@@ -29,13 +50,23 @@
             overflow-x: hidden;
         }
 
-        /* Layout */
+        /*
+        |--------------------------------------------------------------------------
+        | Layout
+        |--------------------------------------------------------------------------
+        */
+
         .app-container {
             display: flex;
             min-height: 100vh;
         }
 
-        /* Sidebar */
+        /*
+        |--------------------------------------------------------------------------
+        | Sidebar
+        |--------------------------------------------------------------------------
+        */
+
         .sidebar {
             width: var(--sidebar-width);
             background: white;
@@ -54,7 +85,11 @@
         .sidebar-header {
             padding: 20px;
             border-bottom: 1px solid var(--border-color);
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            background: linear-gradient(
+                135deg,
+                var(--primary-color),
+                var(--primary-dark)
+            );
         }
 
         .brand-logo {
@@ -87,7 +122,12 @@
             color: rgba(255, 255, 255, 0.9);
         }
 
-        /* Sidebar Navigation */
+        /*
+        |--------------------------------------------------------------------------
+        | Sidebar Navigation
+        |--------------------------------------------------------------------------
+        */
+
         .sidebar-nav {
             flex: 1;
             padding: 20px 0;
@@ -128,7 +168,11 @@
         }
 
         .nav-link.active {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            background: linear-gradient(
+                135deg,
+                var(--primary-color),
+                var(--primary-dark)
+            );
             color: white;
             box-shadow: 0 4px 12px rgba(0, 143, 64, 0.2);
         }
@@ -150,7 +194,12 @@
             text-align: center;
         }
 
-        /* Sidebar Footer */
+        /*
+        |--------------------------------------------------------------------------
+        | Sidebar Footer
+        |--------------------------------------------------------------------------
+        */
+
         .sidebar-footer {
             padding: 20px;
             border-top: 1px solid var(--border-color);
@@ -166,7 +215,11 @@
             align-items: center;
             gap: 5px;
             padding: 4px 12px;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            background: linear-gradient(
+                135deg,
+                var(--primary-color),
+                var(--primary-dark)
+            );
             color: white;
             border-radius: 20px;
             font-size: 0.8rem;
@@ -195,14 +248,24 @@
             }
         }
 
-        /* Main Content */
+        /*
+        |--------------------------------------------------------------------------
+        | Main Content
+        |--------------------------------------------------------------------------
+        */
+
         .main-content {
             flex: 1;
             margin-left: var(--sidebar-width);
             min-height: 100vh;
         }
 
-        /* Header */
+        /*
+        |--------------------------------------------------------------------------
+        | Header
+        |--------------------------------------------------------------------------
+        */
+
         .main-header {
             height: var(--header-height);
             background: white;
@@ -257,7 +320,7 @@
             font-weight: 500;
         }
 
-        .breadcrumb-item+.breadcrumb-item::before {
+        .breadcrumb-item + .breadcrumb-item::before {
             content: "›";
             padding: 0 5px;
         }
@@ -268,7 +331,12 @@
             gap: 20px;
         }
 
-        /* Header Icons */
+        /*
+        |--------------------------------------------------------------------------
+        | Header Icons
+        |--------------------------------------------------------------------------
+        */
+
         .header-icon {
             position: relative;
             background: none;
@@ -301,7 +369,12 @@
             justify-content: center;
         }
 
-        /* User Profile */
+        /*
+        |--------------------------------------------------------------------------
+        | User Profile
+        |--------------------------------------------------------------------------
+        */
+
         .user-profile {
             display: flex;
             align-items: center;
@@ -309,18 +382,29 @@
             cursor: pointer;
             padding: 5px 10px;
             border-radius: 8px;
+            border: 0;
+            background: transparent;
             transition: background-color 0.2s ease;
         }
 
-        .user-profile:hover {
+        .user-profile:hover,
+        .user-profile:focus {
             background-color: var(--primary-light);
+        }
+
+        .user-profile::after {
+            display: none;
         }
 
         .user-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            background: linear-gradient(
+                135deg,
+                var(--primary-color),
+                var(--primary-dark)
+            );
             display: flex;
             align-items: center;
             justify-content: center;
@@ -332,6 +416,7 @@
         .user-info {
             display: flex;
             flex-direction: column;
+            text-align: left;
         }
 
         .user-name {
@@ -344,15 +429,54 @@
             color: var(--text-light);
         }
 
-        /* Content Area */
+        .profile-dropdown {
+            position: relative;
+        }
+
+        .profile-menu {
+            min-width: 260px;
+            padding: 8px;
+            margin-top: 10px !important;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .profile-menu .dropdown-item {
+            padding: 10px 12px;
+            border-radius: 7px;
+        }
+
+        .profile-menu .dropdown-item:hover {
+            background-color: var(--primary-light);
+        }
+
+        .profile-menu .dropdown-item.text-danger:hover {
+            background-color: #fbeaec;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Content Area
+        |--------------------------------------------------------------------------
+        */
+
         .content-wrapper {
             padding: 30px;
         }
 
-        /* Stats Cards */
+        /*
+        |--------------------------------------------------------------------------
+        | Stats Cards
+        |--------------------------------------------------------------------------
+        */
+
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(250px, 1fr)
+            );
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -363,7 +487,9 @@
             padding: 25px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             border: 1px solid var(--border-color);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition:
+                transform 0.3s ease,
+                box-shadow 0.3s ease;
         }
 
         .stat-card:hover {
@@ -445,7 +571,12 @@
             color: #dc3545;
         }
 
-        /* Recent Activity */
+        /*
+        |--------------------------------------------------------------------------
+        | Dashboard Sections
+        |--------------------------------------------------------------------------
+        */
+
         .dashboard-section {
             background: white;
             border-radius: 12px;
@@ -480,7 +611,12 @@
             text-decoration: underline;
         }
 
-        /* Activity List */
+        /*
+        |--------------------------------------------------------------------------
+        | Activity
+        |--------------------------------------------------------------------------
+        */
+
         .activity-list {
             list-style: none;
             padding: 0;
@@ -543,7 +679,12 @@
             color: var(--text-light);
         }
 
-        /* Recent Parcels Table */
+        /*
+        |--------------------------------------------------------------------------
+        | Tables
+        |--------------------------------------------------------------------------
+        */
+
         .table-container {
             overflow-x: auto;
         }
@@ -595,10 +736,18 @@
             color: #155724;
         }
 
-        /* Quick Actions */
+        /*
+        |--------------------------------------------------------------------------
+        | Quick Actions
+        |--------------------------------------------------------------------------
+        */
+
         .quick-actions {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(200px, 1fr)
+            );
             gap: 15px;
         }
 
@@ -624,7 +773,11 @@
             width: 60px;
             height: 60px;
             border-radius: 12px;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            background: linear-gradient(
+                135deg,
+                var(--primary-color),
+                var(--primary-dark)
+            );
             color: white;
             display: flex;
             align-items: center;
@@ -644,7 +797,33 @@
             margin: 0;
         }
 
-        /* Responsive Design */
+        /*
+        |--------------------------------------------------------------------------
+        | Mobile Sidebar Overlay
+        |--------------------------------------------------------------------------
+        */
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Responsive
+        |--------------------------------------------------------------------------
+        */
+
         @media (max-width: 992px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -702,76 +881,192 @@
                 font-size: 0.9rem;
             }
         }
-
-        /* Dark overlay for mobile sidebar */
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
-
-        .sidebar-overlay.active {
-            display: block;
-        }
     </style>
 </head>
 
 <body>
+
     <div class="app-container">
+
         <!-- Sidebar -->
         @include('pages.partners.layouts.sidebar')
 
-        <!-- Sidebar Overlay (Mobile) -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <!-- Sidebar Overlay -->
+        <div
+            class="sidebar-overlay"
+            id="sidebarOverlay"
+        ></div>
 
         <!-- Main Content -->
         <div class="main-content">
+
             <!-- Header -->
             @include('pages.partners.layouts.header')
 
-
-            <!-- Content Area -->
+            <!-- Content -->
             <div class="content-wrapper">
                 @yield('dashboard-content')
             </div>
+
         </div>
+
     </div>
 
+
+    <!-- Bootstrap JS Bundle -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+
     <script>
-        // Mobile sidebar toggle
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.getElementById('menuToggle');
-            const sidebar = document.querySelector('.sidebar');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
+        document.addEventListener('DOMContentLoaded', function () {
 
-            menuToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('active');
-                sidebarOverlay.classList.toggle('active');
-            });
+            /*
+            |--------------------------------------------------------------------------
+            | Mobile Sidebar
+            |--------------------------------------------------------------------------
+            */
 
-            sidebarOverlay.addEventListener('click', function() {
-                sidebar.classList.remove('active');
-                sidebarOverlay.classList.remove('active');
-            });
+            const menuToggle =
+                document.getElementById('menuToggle');
 
-            // Set active nav link
-            const currentPath = window.location.pathname;
-            const navLinks = document.querySelectorAll('.nav-link');
+            const sidebar =
+                document.querySelector('.sidebar');
 
-            navLinks.forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
+            const sidebarOverlay =
+                document.getElementById('sidebarOverlay');
+
+
+            if (
+                menuToggle &&
+                sidebar &&
+                sidebarOverlay
+            ) {
+
+                menuToggle.addEventListener(
+                    'click',
+                    function () {
+
+                        sidebar.classList.toggle(
+                            'active'
+                        );
+
+                        sidebarOverlay.classList.toggle(
+                            'active'
+                        );
+
+                    }
+                );
+
+
+                sidebarOverlay.addEventListener(
+                    'click',
+                    function () {
+
+                        sidebar.classList.remove(
+                            'active'
+                        );
+
+                        sidebarOverlay.classList.remove(
+                            'active'
+                        );
+
+                    }
+                );
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Active Navigation
+            |--------------------------------------------------------------------------
+            */
+
+            const currentPath =
+                window.location.pathname;
+
+
+            const navLinks =
+                document.querySelectorAll(
+                    '.sidebar .nav-link'
+                );
+
+
+            navLinks.forEach(
+                function (link) {
+
+                    const href =
+                        link.getAttribute('href');
+
+
+                    if (!href || href === '#') {
+                        return;
+                    }
+
+
+                    try {
+
+                        const url =
+                            new URL(
+                                href,
+                                window.location.origin
+                            );
+
+
+                        if (
+                            url.pathname === currentPath
+                        ) {
+
+                            link.classList.add(
+                                'active'
+                            );
+
+                        } else {
+
+                            link.classList.remove(
+                                'active'
+                            );
+
+                        }
+
+                    } catch (error) {
+
+                        console.warn(
+                            'Could not parse nav URL:',
+                            href
+                        );
+
+                    }
+
                 }
-            });
+            );
 
-            // Update current time
+
+            /*
+            |--------------------------------------------------------------------------
+            | Current Time
+            |--------------------------------------------------------------------------
+            */
+
+            const currentTimeElement =
+                document.querySelector(
+                    '.current-time'
+                );
+
+
             function updateTime() {
-                const now = new Date();
+
+                if (!currentTimeElement) {
+                    return;
+                }
+
+
+                const now =
+                    new Date();
+
+
                 const options = {
                     weekday: 'long',
                     year: 'numeric',
@@ -780,15 +1075,59 @@
                     hour: '2-digit',
                     minute: '2-digit'
                 };
-                document.querySelector('.current-time').textContent =
-                    now.toLocaleDateString('en-US', options);
+
+
+                currentTimeElement.textContent =
+                    now.toLocaleDateString(
+                        'en-US',
+                        options
+                    );
+
             }
 
-            // Update every minute
-            updateTime();
-            setInterval(updateTime, 60000);
+
+            if (currentTimeElement) {
+
+                updateTime();
+
+                setInterval(
+                    updateTime,
+                    60000
+                );
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Bootstrap Profile Dropdown
+            |--------------------------------------------------------------------------
+            */
+
+            const profileDropdown =
+                document.getElementById(
+                    'profileDropdown'
+                );
+
+
+            if (
+                profileDropdown &&
+                typeof bootstrap !== 'undefined'
+            ) {
+
+                bootstrap.Dropdown
+                    .getOrCreateInstance(
+                        profileDropdown
+                    );
+
+            }
+
         });
     </script>
+
+
+    @stack('scripts')
+
 </body>
 
 </html>

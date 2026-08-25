@@ -42,7 +42,7 @@ class SMSService
     {
         return $this->sendMessage(
             $phoneNumber,
-            "Hi {$name}! You have been assinged as a parcel for tramsporting. Log into your portal and assign a driver"
+            "Hi {$name}! You have been assinged as a parcel for transporting. Log into your portal and assign a driver"
         );
     }
 

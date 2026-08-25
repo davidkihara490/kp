@@ -39,10 +39,18 @@
                 </li>
             </ul>
 
-            <div class="d-none d-lg-block">
-                <a href="{{ url('/') }}#tracking" class="btn btn-outline-success btn-sm rounded-pill px-3">
-                    <i class="bi bi-box-seam me-1"></i> Track
+            <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
+                <a href="{{ url('/') }}#tracking"
+                    class="btn btn-outline-success btn-sm rounded-pill px-3">
+                    <i class="bi bi-box-seam me-1"></i>
+                    Track
                 </a>
+
+                <a href="{{ route('pudo.login') }}" class="btn btn-success btn-sm rounded-pill px-3">
+                    <i class="bi bi-person-circle me-1"></i>
+                    Client Area
+                </a>
+
             </div>
         </div>
     </div>

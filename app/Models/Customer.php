@@ -25,6 +25,9 @@ class Customer extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'first_name',
+        'last_name',
+        'account_type',
         'email',
         'phone',
         'password',
@@ -34,6 +37,8 @@ class Customer extends Authenticatable
         'email_verified_at',
         'phone_verified_at',
         'last_login_at',
+        'company_name',
+        'company_registration_number',
     ];
 
     /**
@@ -89,5 +94,27 @@ class Customer extends Authenticatable
     public function updateLastLogin()
     {
         $this->update(['last_login_at' => now()]);
+    }
+
+    // Accessors
+    public function getFullNameAttribute()
+    {
+        return $this->first_name . ' ' . $this->last_name;
+    }
+
+    public function getAccountTypeLabelAttribute()
+    {
+        return $this->account_type === 'corporate' ? 'Corporate' : 'Individual';
+    }
+
+    // Scopes
+    public function scopeIndividual($query)
+    {
+        return $query->where('account_type', 'individual');
+    }
+
+    public function scopeCorporate($query)
+    {
+        return $query->where('account_type', 'corporate');
     }
 }

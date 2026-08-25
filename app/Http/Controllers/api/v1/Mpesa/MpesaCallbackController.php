@@ -8,7 +8,9 @@ use Illuminate\Http\Request;
 use App\Services\MpesaService;
 use Illuminate\Support\Facades\Log;
 use App\Mail\NewParcel;
+use App\Models\Parcel;
 use App\Services\SMSService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
 
@@ -52,16 +54,25 @@ class MpesaCallbackController extends Controller
         }
 
         try {
-
             Log::info('Processing M-Pesa STK Callback', ['MerchantRequestID' => $callbackData['Body']['stkCallback']['MerchantRequestID']]);
             // Process the callback
             $response = $this->mpesaService->handleCallback($callbackData);
 
             if ($response['success']) {
-
                 $payment = $response['payment'];
-
                 $parcel = $payment->parcel;
+
+                $parcel->updateParcelStatus(
+                    Parcel::STATUS_BOOKED,
+                    null,
+                    null,
+                    null,
+                    // Auth::guard('customer')->user()->id,
+                    // Customer::class,
+                    'Parcel paid and booked',
+                    null,
+                    null,
+                );
                 //Sending email to admins
                 try {
                     Log::info('Created Parcel. Sending notification to admin');

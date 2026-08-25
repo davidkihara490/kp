@@ -91,6 +91,11 @@ class ViewParcel extends Component
     public $isPha = false;
     public $isPickupDropoff = false;
 
+    public $canViewParcelReceiving = false;
+
+    public $canViewParcelReceipient = false;
+
+
     public function startPolling()
     {
         $this->pollingEnabled = true;
@@ -116,7 +121,6 @@ class ViewParcel extends Component
         $this->selectedPayment = null;
         $this->receiptData = [];
     }
-
     protected function prepareReceiptData()
     {
         $payment = $this->selectedPayment;
@@ -166,7 +170,6 @@ class ViewParcel extends Component
             ]
         ];
     }
-
     protected function generateReceiptNumber($payment)
     {
         $prefix = 'RCP';
@@ -174,7 +177,6 @@ class ViewParcel extends Component
         $sequence = str_pad($payment->id, 6, '0', STR_PAD_LEFT);
         return $prefix . $date . $sequence;
     }
-
     protected function getCompanyDetails()
     {
         return [
@@ -331,6 +333,22 @@ class ViewParcel extends Component
 
         // Determine user roles and permissions
         $this->determineUserRoles();
+        $this->determineParcelRoles();
+    }
+
+    public function determineParcelRoles()
+    {
+
+
+        Log::info('User roles determined', [
+            'user_type' => $this->loggedUserType,
+            'is_driver' => $this->isDriver,
+            'is_transport_partner' => $this->isTransportPartner,
+            'is_origin_pudo' => $this->isOriginPudo,
+            'is_destination_pudo' => $this->isDestinationPudo,
+            'is_pha' => $this->isPha,
+            'is_pickup_dropoff' => $this->isPickupDropoff,
+        ]);
     }
 
     protected function determineUserRoles()
@@ -364,6 +382,15 @@ class ViewParcel extends Component
             $this->isDestinationPudo = $userPartnerId === $parcel->delivery_partner_id;
         }
 
+        if ($this->isPha || $this->isPickupDropoff) {
+            $userPartnerId = $user->parcelHandlingAssistant?->partner?->id ?? $user->partner?->id;
+            $this->canViewParcelReceiving = $userPartnerId === $this->parcel->delivery_partner_id;
+        }
+        if ($this->isPha || $this->isPickupDropoff) {
+            $userPartnerId = $user->parcelHandlingAssistant?->partner?->id ?? $user->partner?->id;
+            $this->canViewParcelReceipient = $userPartnerId === $this->parcel->delivery_partner_id &&  $this->parcel->current_status == Parcel::STATUS_ARRIVED_AT_DESTINATION;
+        }
+
         Log::info('User roles determined', [
             'user_type' => $this->loggedUserType,
             'is_driver' => $this->isDriver,
@@ -372,6 +399,8 @@ class ViewParcel extends Component
             'is_destination_pudo' => $this->isDestinationPudo,
             'is_pha' => $this->isPha,
             'is_pickup_dropoff' => $this->isPickupDropoff,
+            'canViewParcelReceiving' => $this->canViewParcelReceiving,
+            'canViewParcelReceipient' => $this->canViewParcelReceipient
         ]);
     }
 

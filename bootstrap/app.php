@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'partner.auth' => \App\Http\Middleware\EnsurePartnerAuthenticated::class,
             'admin.auth' => \App\Http\Middleware\EnsureAdmin::class,
+            'pudo.auth' => \App\Http\Middleware\EnsureCustomer::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

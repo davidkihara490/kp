@@ -287,22 +287,5 @@
             </ul>
         </nav>
 
-        {{-- Logout Button Section --}}
-        <div class="sidebar-bottom mt-auto p-3" style="position: absolute; bottom: 0; width: 100%;">
-            <ul class="nav nav-pills nav-sidebar flex-column">
-                <li class="nav-item">
-                    <form method="POST" action="{{ route('admin.logout') }}" id="logout-form">
-                        @csrf
-                        <button type="submit" class="nav-link w-100 text-start border-0 bg-transparent"
-                            style="cursor: pointer; color: #c2c7d0;"
-                            onmouseover="this.style.backgroundColor='rgba(255,255,255,.1)'"
-                            onmouseout="this.style.backgroundColor='transparent'">
-                            <i class="nav-icon fas fa-sign-out-alt"></i>
-                            <p>{{ __('Logout') }}</p>
-                        </button>
-                    </form>
-                </li>
-            </ul>
-        </div>
     </div>
 </aside>
