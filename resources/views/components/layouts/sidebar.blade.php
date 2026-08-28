@@ -185,7 +185,40 @@
                     <ul class="nav nav-treeview" style="{{ request()->routeIs('admin.categories*') || request()->routeIs('admin.sub-categories*') || request()->routeIs('admin.items*') || request()->routeIs('admin.weight-ranges*') || request()->routeIs('admin.pricing*') || request()->routeIs('admin.payment-structure*') || request()->routeIs('admin.towns*') || request()->routeIs('admin.zones*') || request()->routeIs('admin.faqs*') ? 'display: block;' : '' }}">
 
                         @if($admin->can('items.view'))
+                                                {{-- Items Submenu --}}
                         <li class="nav-item {{ request()->routeIs('admin.categories*') || request()->routeIs('admin.sub-categories*') || request()->routeIs('admin.items*') ? 'menu-open' : '' }}">
+                            <a href="#" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>
+                                    Items
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.categories.index') }}" 
+                                       class="nav-link {{ request()->routeIs('admin.categories*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon text-danger"></i>
+                                        <p>Categories</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.sub-categories.index') }}" 
+                                       class="nav-link {{ request()->routeIs('admin.sub-categories*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon text-danger"></i>
+                                        <p>Sub Categories</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.items.index') }}" 
+                                       class="nav-link {{ request()->routeIs('admin.items*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon text-danger"></i>
+                                        <p>Items</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <!-- <li class="nav-item {{ request()->routeIs('admin.categories*') || request()->routeIs('admin.sub-categories*') || request()->routeIs('admin.items*') ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>
@@ -202,7 +235,7 @@
                                     </a>
                                 </li>
                             </ul>
-                        </li>
+                        </li> -->
                         @endif
 
                         @if($admin->can('weight-ranges.view'))
