@@ -87,11 +87,38 @@
                                 </div>
                             </div>
 
-                            <!-- Parcel Weight -->
+                            <!-- Categories -->
                             <div class="booking-field">
+                                <label><i class="bi bi-box-fill me-1 text-success"></i> Parcel Category</label>
+                                <div class="searchable-select-container">
+                                    <div class="searchable-select" id="parcelCategorySelect">
+                                        <div class="searchable-select-display" data-target="parcelCategory">
+                                            <span class="selected-text">Select parcel category</span>
+                                            <i class="bi bi-chevron-down"></i>
+                                        </div>
+                                        <div class="searchable-select-dropdown" id="parcelCategoryDropDown">
+                                            <div class="search-box">
+                                                <i class="bi bi-search"></i>
+                                                <input type="text" class="search-input" placeholder="Search categories..." id="parcelCategoriesSearch">
+                                            </div>
+                                            <div class="options-list" id="parcelCategoryOptions">
+                                                @foreach($categories ?? [] as $category)
+                                                <div class="option-item" data-value="{{ $category->id }}">
+                                                    <i class="bi bi-box-fill me-2"></i>
+                                                    <span class="town-name">{{ $category->name }}</span>
+                                                </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="parcelCategory" name="parcelCategory" required>
+                                </div>
+                            </div>
+
+                            {{--<div class="booking-field">
                                 <label><i class="bi bi-box me-1"></i> Parcel Weight (KGS)</label>
                                 <input type="number" class="form-control compact-select" id="parcelWeight" placeholder="Enter weight" required>
-                            </div>
+                            </div>--}}
 
                             <div class="booking-action">
                                 <button class="btn btn-primary quote-btn" type="submit">
@@ -120,5 +147,3 @@
         </div>
     </div>
 </section>
-
-

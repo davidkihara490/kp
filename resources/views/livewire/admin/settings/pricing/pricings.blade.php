@@ -32,7 +32,9 @@
                                     <i class="fas fa-chevron-right mr-2 collapse-icon" id="icon{{ $pricing->id }}"></i>
                                     <div>
                                         <h5 class="mb-0 font-weight-bold">
-                                            <i class="fas fa-box mr-2 text-primary"></i>
+                                            Pricing Type: {{ $pricing->type}}
+                                        </h5>
+                                        <h5 class="mb-0 font-weight-bold">
                                             {{ $pricing->item->name ?? 'Unknown Item' }}
                                         </h5>
                                         <small class="text-muted text-bold">

@@ -7,8 +7,23 @@
             @include('components.alerts.response-alerts')
 
             <form wire:submit.prevent="submit">
+
                 <div class="row">
-                    <div class="col-4">
+                    <div class="col-3">
+                        <div class="form-group">
+                            <label>Select Type <span class="text-danger">*</span></label>
+                            <select class="form-control" wire:model="type" style="width: 100%;">
+                                <option value="">Select Type</option>
+                                @foreach ($types as $type)
+                                <option value="{{ $type }}">{{ ucfirst($type)}}</option>
+                                @endforeach
+                            </select>
+                            @error('type')
+                            <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-3">
                         <div class="form-group">
                             <label>Select Item <span class="text-danger">*</span></label>
                             <select class="form-control" wire:model="selected_item_id" style="width: 100%;">
@@ -23,7 +38,7 @@
                         </div>
                     </div>
 
-                    <div class="col-4">
+                    <div class="col-3">
                         <div class="form-group">
                             <label>Select Weight Range <span class="text-danger">*</span></label>
                             <select class="form-control" wire:model="selected_weight_range_id" style="width: 100%;">
@@ -39,8 +54,7 @@
                             @enderror
                         </div>
                     </div>
-
-                    <div class="col-4">
+                    <div class="col-3">
                         <div class="form-group">
                             <label>Select Status <span class="text-danger">*</span></label>
                             <select class="form-control" wire:model="status" style="width: 100%;">

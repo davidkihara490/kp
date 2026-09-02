@@ -7,23 +7,54 @@
             @include('components.alerts.response-alerts')
             <form wire:submit.prevent="submit">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-group">
-                            <label>Item Name</label>
-                            <input type="text" class="form-control" wire:model="name" placeholder="Enter town name">
-                            @error('name')
+                            <label>Category</label>
+                            <select class="form-control" wire:model.live="category_id">
+                                <option value="">Select Category</option>
+                                @foreach ($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('category_id')
                             <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
-                    <div class="col-md-6">
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Sub Category</label>
+                            <select class="form-control" wire:model="sub_category_id">
+                                <option value="">Select Sub Category</option>
+                                @foreach ($subCategories as $subCategory)
+                                <option value="{{ $subCategory->id }}">{{ $subCategory->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('sub_category_id')
+                            <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label>Status</label>
-                            <select class="form-control" wire:model="status" style="width: 100%;">
+                            <select class="form-control" wire:model="status">
                                 <option value=true>Active</option>
                                 <option value="0">Inactive</option>
                             </select>
                             @error('status')
+                            <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Item Name</label>
+                            <input type="text" class="form-control" wire:model="name" placeholder="Enter item name">
+                            @error('name')
                             <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Item;
 use App\Models\Parcel;
 use App\Models\ParcelPayout;
 use App\Models\Partner;
@@ -23,12 +24,15 @@ class ParcelController extends Controller
         $toTownId = $request->query('to_town_id');
         $parcelWeight = $request->query('weight');
         $price = $request->query('price');
+        $parcelCategoryId = $request->query('category');
 
         $pickupPoints = PickUpAndDropOffPoint::with('town')->where('status', 'active')->where('town_id', $fromTownId)->get();
         $dropoffPoints = PickUpAndDropOffPoint::with('town')->where('status', 'active')->where('town_id', $toTownId)->get();
 
+        $categories = Item::where('status', true)->get();
+
         $towns = Town::with('subCounty.county')->orderBy('name')->get();
-        return view('frontend.book', compact('towns', 'fromTownId', 'toTownId', 'parcelWeight', 'price', 'pickupPoints', 'dropoffPoints'));
+        return view('frontend.book', compact('parcelCategoryId', 'categories', 'towns', 'fromTownId', 'toTownId', 'parcelWeight', 'price', 'pickupPoints', 'dropoffPoints'));
     }
 
     // In your controller method
@@ -43,7 +47,7 @@ class ParcelController extends Controller
     public function store(Request $request)
     {
         // Validate the request
-        $validated =  Validator::make($request->all(), [
+        $validated = Validator::make($request->all(), [
             // Sender Information
             'sender_name' => 'required|string|max:255',
             'sender_phone' => 'required|string',
@@ -62,32 +66,28 @@ class ParcelController extends Controller
             'receiver_notes' => 'nullable|string|max:500',
             'delivery_pick_up_drop_off_point_id' => 'required|exists:pick_up_and_drop_off_points,id',
 
-            // Parcel Details
-            'parcel_type' => 'required|in:document,package,envelope,box,pallet',
-            'package_type' => 'required|in:regular,fragile,perishable,valuable,hazardous',
-            'weight' => 'required|numeric|min:0.1',
-            'length' => 'nullable|numeric|min:0',
-            'width' => 'nullable|numeric|min:0',
-            'height' => 'nullable|numeric|min:0',
-            'dimension_unit' => 'nullable|in:cm,inches',
-            'weight_unit' => 'nullable|in:kg,g,lb',
-            'declared_value' => 'nullable|numeric|min:0',
-            'insurance_required' => 'boolean',
-            'content_description' => 'required|string|max:500',
-            'special_instructions' => 'nullable|string|max:500',
-
-            // Booking Type
-            'booking_type' => 'nullable|in:instant,scheduled,bulk',
-            'booking_source' => 'nullable|string',
+            // Items (Multiple parcels)
+            'items' => 'required|array|min:1',
+            'items.*.parcel_category_id' => 'required|exists:items,id',
+            'items.*.parcel_type' => 'required|string',
+            'items.*.package_type' => 'required|string',
+            'items.*.declared_value' => 'nullable|numeric|min:0',
+            'items.*.insurance_required' => 'nullable|boolean',
+            'items.*.content_description' => 'required|string|max:500',
+            'items.*.special_notes' => 'nullable|string|max:500',
+            'items.*.base_price' => 'nullable|numeric|min:0',
+            'items.*.item_insurance_amount' => 'nullable|numeric|min:0',
+            'items.*.tax_amount' => 'nullable|numeric|min:0',
+            'items.*.item_total' => 'nullable|numeric|min:0',
 
             // Payment
-            'insuarance_amount' => 'nullable|numeric',
+            'insurance_amount' => 'nullable|numeric',
             'total_amount' => 'nullable|numeric|min:0',
+            'total_insurance_amount' => 'nullable|numeric|min:0',
 
             // Terms
             'terms' => 'required|accepted',
         ]);
-
 
         if ($validated->fails()) {
             return response()->json([
@@ -96,6 +96,7 @@ class ParcelController extends Controller
                 'errors' => $validated->errors()
             ], 422);
         }
+
         // Begin transaction
         DB::beginTransaction();
 
@@ -103,102 +104,135 @@ class ParcelController extends Controller
             $senderPoint = PickUpAndDropOffPoint::findOrFail($request->sender_pick_up_drop_off_point_id);
             $receivingPoint = PickUpAndDropOffPoint::findOrFail($request->delivery_pick_up_drop_off_point_id);
 
-            $parcelData = [
-                // Basic Information
-                'customer_id' => Auth::guard('customer')->user()->id,
-                'booking_type' => $request->booking_type ?? 'instant',
-                'booking_source' => 'web',
+            $customer = Auth::guard('customer')->user();
+            $totalDeclaredValue = 0;
+            $totalInsuranceAmount = 0;
+            $totalBasePrice = 0;
+            $totalTax = 0;
+            $grandTotal = 0;
+            $parcels = [];
 
-                // Sender Information
-                'sender_name' => $request->sender_name,
-                'sender_phone' => $request->sender_phone,
-                'sender_email' => $request->sender_email ?? null,
-                'sender_town_id' => $request->sender_town_id,
-                'sender_address' => $request->sender_address ?? null,
-                'sender_notes' => $request->sender_notes ?? null,
+            // Process each item
+            foreach ($request->items as $index => $itemData) {
+                // Use the base price from the form, or calculate fallback
+                $basePrice = $itemData['base_price'];
 
-                // Receiver Information
-                'receiver_name' => $request->receiver_name,
-                'receiver_phone' => $request->receiver_phone,
-                'receiver_email' => $request->receiver_email ?? null,
-                'receiver_town_id' => $request->receiver_town_id,
-                'receiver_address' => 'NULL',
-                'receiver_notes' => $request->receiver_notes ?? null,
+                $declaredValue = $itemData['declared_value'] ?? 0;
+                $insuranceRequired = isset($itemData['insurance_required']) && $itemData['insurance_required'] == 1;
+                $insuranceAmount = $itemData['item_insurance_amount'] ?? ($insuranceRequired ? ($declaredValue * 0.02) : 0);
+                $taxAmount = $itemData['tax_amount'] ?? round(($basePrice + $insuranceAmount) * 0.16);
+                $itemTotal = $itemData['item_total'] ?? ($basePrice + $insuranceAmount + $taxAmount);
 
-                // Pickup Information (default values)
-                'pha_id' => null,
-                'sender_partner_id' => $senderPoint->partner->id,
-                'sender_pick_up_drop_off_point_id' => $request->sender_pick_up_drop_off_point_id,
-                'date' => now(),
+                // Accumulate totals
+                $totalDeclaredValue += $declaredValue;
+                $totalInsuranceAmount += $insuranceAmount;
+                $totalBasePrice += $basePrice;
+                $totalTax += $taxAmount;
+                $grandTotal += $itemTotal;
 
-                // Parcel Details
-                'parcel_id' => Parcel::generateParcelNumber(),
-                'parcel_type' => $request->parcel_type,
-                'package_type' => $request->package_type,
-                'weight' => $request->weight,
-                'length' => $request->length ?? null,
-                'width' => $request->width ?? null,
-                'height' => $request->height ?? null,
-                'dimension_unit' => $request->dimension_unit ?? 'cm',
-                'weight_unit' => $request->weight_unit ?? 'kg',
-                'declared_value' => $request->declared_value ?? null,
-                'insurance_amount' => $request->insurance_required ? ($request->declared_value * 0.02) : 0,
-                'insurance_required' => $request->insurance_required ?? false,
-                'content_description' => $request->content_description,
-                'special_instructions' => $request->special_instructions ?? null,
+                $parcelData = [
+                    // Basic Information
+                    'customer_id' => $customer->id,
+                    'booking_type' => $request->booking_type ?? 'instant',
+                    'booking_source' => 'web',
 
-                // Delivery Information (default values)
-                'delivery_partner_id' => $receivingPoint->partner->id,
-                'delivery_pick_up_drop_off_point_id' => $request->delivery_pick_up_drop_off_point_id,
-                'delivery_flow' => null,
-                'warehouse_id' => null,
+                    // Sender Information
+                    'sender_name' => $request->sender_name,
+                    'sender_phone' => $request->sender_phone,
+                    'sender_email' => $request->sender_email ?? null,
+                    'sender_town_id' => $request->sender_town_id,
+                    'sender_address' => $request->sender_address ?? null,
+                    'sender_notes' => $request->sender_notes ?? null,
 
-                // Pricing
-                'base_price' => round($request->total_amount * 0.84),
-                'insurance_charge' => $request->insuarance_amount ?? 0,
-                'tax_amount' => round($request->total_amount * 0.16),
-                'total_amount' => $request->total_amount,
-                'payment_method' => 'mpesa',
-                'payment_status' => 'pending',
-                'current_status' => Parcel::STATUS_CREATED,
+                    // Receiver Information
+                    'receiver_name' => $request->receiver_name,
+                    'receiver_phone' => $request->receiver_phone,
+                    'receiver_email' => $request->receiver_email ?? null,
+                    'receiver_town_id' => $request->receiver_town_id,
+                    'receiver_address' => $request->receiver_address ?? 'NULL',
+                    'receiver_notes' => $request->receiver_notes ?? null,
 
-                // Creator
-                'creator_id' => Auth::guard('customer')->user()->id,
-                'creator_type' => Customer::class,
-            ];
+                    // Pickup Information
+                    'pha_id' => null,
+                    'sender_partner_id' => $senderPoint->partner->id,
+                    'sender_pick_up_drop_off_point_id' => $request->sender_pick_up_drop_off_point_id,
+                    'date' => now(),
 
-            // Create the parcel
-            $parcel = Parcel::create($parcelData);
-            $payout = $parcel->calculateParcelPayout((float)($parcel->base_price + $parcel->tax_amount), 'direct');
+                    // Parcel Details - From item
+                    'parcel_id' => Parcel::generateParcelNumber(),
+                    'parcel_category_id' => $itemData['parcel_category_id'],
+                    'parcel_type' => $itemData['parcel_type'],
+                    'package_type' => $itemData['package_type'],
+                    'declared_value' => $declaredValue,
+                    'insurance_amount' => $insuranceAmount,
+                    'insurance_required' => $insuranceRequired,
+                    'content_description' => $itemData['content_description'],
+                    'special_instructions' => $itemData['special_notes'] ?? null,
+                    'special_notes' => $itemData['special_notes'] ?? null,
 
-            $parcel->updateParcelStatus(
-                Parcel::STATUS_CREATED,
-                null,
-                Auth::guard('customer')->user()->id,
-                Customer::class,
-                'Parcel created',
-                null,
-                null,
-            );
+                    // Weight, dimensions - You might want to add these per item if needed
+                    'weight' => $itemData['weight'] ?? 0.1,
+                    'length' => $itemData['length'] ?? null,
+                    'width' => $itemData['width'] ?? null,
+                    'height' => $itemData['height'] ?? null,
+                    'dimension_unit' => $itemData['dimension_unit'] ?? 'cm',
+                    'weight_unit' => $itemData['weight_unit'] ?? 'kg',
 
-            // Create initial tracking record
-            if ($parcel) {
-                $parcel->addTracking(Parcel::STATUS_CREATED, Auth::guard('customer')->user()->id, Customer::class);
+                    // Delivery Information
+                    'delivery_partner_id' => $receivingPoint->partner->id,
+                    'delivery_pick_up_drop_off_point_id' => $request->delivery_pick_up_drop_off_point_id,
+                    'delivery_flow' => null,
+                    'warehouse_id' => null,
+
+                    // Pricing - Per item
+                    'base_price' => $basePrice,
+                    'insurance_charge' => $insuranceAmount,
+                    'tax_amount' => $taxAmount,
+                    'total_amount' => $itemTotal,
+                    'payment_method' => 'mpesa',
+                    'payment_status' => 'pending',
+                    'current_status' => Parcel::STATUS_CREATED,
+
+                    // Creator
+                    'creator_id' => $customer->id,
+                    'creator_type' => Customer::class,
+                ];
+
+                // Create the parcel
+                $parcel = Parcel::create($parcelData);
+                $parcels[] = $parcel;
+
+                // Calculate and update payout
+                $payout = $parcel->calculateParcelPayout(
+                    (float)($parcel->base_price + $parcel->tax_amount),
+                    'direct'
+                );
+
+                // Update parcel status
+                $parcel->updateParcelStatus(
+                    Parcel::STATUS_CREATED,
+                    null,
+                    $customer->id,
+                    Customer::class,
+                    'Parcel created',
+                    null,
+                    null,
+                );
+
+                // Create initial tracking record
+                $parcel->addTracking(Parcel::STATUS_CREATED, $customer->id, Customer::class);
             }
-
             DB::commit();
 
             // Redirect with success message
+            $parcelIds = collect($parcels)->pluck('parcel_id')->implode(', ');
             return redirect()
-                ->route('booking.success', $parcel->parcel_id)
-                ->with('success', 'Parcel booked successfully! Your tracking ID is: ' . $parcel->parcel_id);
+                ->route('pudo.dashboard')
+                ->with('success', count($parcels) . ' parcel(s) created successfully! Open each parcel to view details and make payment.');
         } catch (\Exception $e) {
             DB::rollBack();
 
-            dd($e->getMessage());
-
-            // Log the error
-            Log::info('Parcel booking failed: ' . $e->getMessage(), [
+            Log::error('Parcel booking failed: ' . $e->getMessage(), [
                 'request' => $request->all(),
                 'error' => $e
             ]);
@@ -209,6 +243,178 @@ class ParcelController extends Controller
                 ->with('error', 'An error occurred while processing your booking. Please try again.');
         }
     }
+
+    // public function store(Request $request)
+    // {
+
+    //     dd($request->all());
+    //     // Validate the request
+    //     $validated =  Validator::make($request->all(), [
+    //         // Sender Information
+    //         'sender_name' => 'required|string|max:255',
+    //         'sender_phone' => 'required|string',
+    //         'sender_email' => 'nullable|email|max:255',
+    //         'sender_town_id' => 'required|exists:towns,id',
+    //         'sender_address' => 'nullable|string|max:500',
+    //         'sender_notes' => 'nullable|string|max:500',
+    //         'sender_pick_up_drop_off_point_id' => 'required|exists:pick_up_and_drop_off_points,id',
+
+    //         // Receiver Information
+    //         'receiver_name' => 'required|string|max:255',
+    //         'receiver_phone' => 'required|string',
+    //         'receiver_email' => 'nullable|email|max:255',
+    //         'receiver_town_id' => 'required|exists:towns,id',
+    //         'receiver_address' => 'nullable|string|max:500',
+    //         'receiver_notes' => 'nullable|string|max:500',
+    //         'delivery_pick_up_drop_off_point_id' => 'required|exists:pick_up_and_drop_off_points,id',
+
+    //         // Parcel Details
+    //         'parcel_type' => 'required|in:document,package,envelope,box,pallet',
+    //         'package_type' => 'required|in:regular,fragile,perishable,valuable,hazardous',
+    //         'weight' => 'required|numeric|min:0.1',
+    //         'length' => 'nullable|numeric|min:0',
+    //         'width' => 'nullable|numeric|min:0',
+    //         'height' => 'nullable|numeric|min:0',
+    //         'dimension_unit' => 'nullable|in:cm,inches',
+    //         'weight_unit' => 'nullable|in:kg,g,lb',
+    //         'declared_value' => 'nullable|numeric|min:0',
+    //         'insurance_required' => 'boolean',
+    //         'content_description' => 'required|string|max:500',
+    //         'special_instructions' => 'nullable|string|max:500',
+
+    //         // Booking Type
+    //         'booking_type' => 'nullable|in:instant,scheduled,bulk',
+    //         'booking_source' => 'nullable|string',
+
+    //         // Payment
+    //         'insuarance_amount' => 'nullable|numeric',
+    //         'total_amount' => 'nullable|numeric|min:0',
+
+    //         // Terms
+    //         'terms' => 'required|accepted',
+    //     ]);
+
+
+    //     if ($validated->fails()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Validation failed',
+    //             'errors' => $validated->errors()
+    //         ], 422);
+    //     }
+    //     // Begin transaction
+    //     DB::beginTransaction();
+
+    //     try {
+    //         $senderPoint = PickUpAndDropOffPoint::findOrFail($request->sender_pick_up_drop_off_point_id);
+    //         $receivingPoint = PickUpAndDropOffPoint::findOrFail($request->delivery_pick_up_drop_off_point_id);
+
+    //         $parcelData = [
+    //             // Basic Information
+    //             'customer_id' => Auth::guard('customer')->user()->id,
+    //             'booking_type' => $request->booking_type ?? 'instant',
+    //             'booking_source' => 'web',
+
+    //             // Sender Information
+    //             'sender_name' => $request->sender_name,
+    //             'sender_phone' => $request->sender_phone,
+    //             'sender_email' => $request->sender_email ?? null,
+    //             'sender_town_id' => $request->sender_town_id,
+    //             'sender_address' => $request->sender_address ?? null,
+    //             'sender_notes' => $request->sender_notes ?? null,
+
+    //             // Receiver Information
+    //             'receiver_name' => $request->receiver_name,
+    //             'receiver_phone' => $request->receiver_phone,
+    //             'receiver_email' => $request->receiver_email ?? null,
+    //             'receiver_town_id' => $request->receiver_town_id,
+    //             'receiver_address' => 'NULL',
+    //             'receiver_notes' => $request->receiver_notes ?? null,
+
+    //             // Pickup Information (default values)
+    //             'pha_id' => null,
+    //             'sender_partner_id' => $senderPoint->partner->id,
+    //             'sender_pick_up_drop_off_point_id' => $request->sender_pick_up_drop_off_point_id,
+    //             'date' => now(),
+
+    //             // Parcel Details
+    //             'parcel_id' => Parcel::generateParcelNumber(),
+    //             'parcel_type' => $request->parcel_type,
+    //             'package_type' => $request->package_type,
+    //             'weight' => $request->weight,
+    //             'length' => $request->length ?? null,
+    //             'width' => $request->width ?? null,
+    //             'height' => $request->height ?? null,
+    //             'dimension_unit' => $request->dimension_unit ?? 'cm',
+    //             'weight_unit' => $request->weight_unit ?? 'kg',
+    //             'declared_value' => $request->declared_value ?? null,
+    //             'insurance_amount' => $request->insurance_required ? ($request->declared_value * 0.02) : 0,
+    //             'insurance_required' => $request->insurance_required ?? false,
+    //             'content_description' => $request->content_description,
+    //             'special_instructions' => $request->special_instructions ?? null,
+
+    //             // Delivery Information (default values)
+    //             'delivery_partner_id' => $receivingPoint->partner->id,
+    //             'delivery_pick_up_drop_off_point_id' => $request->delivery_pick_up_drop_off_point_id,
+    //             'delivery_flow' => null,
+    //             'warehouse_id' => null,
+
+    //             // Pricing
+    //             'base_price' => round($request->total_amount * 0.84),
+    //             'insurance_charge' => $request->insuarance_amount ?? 0,
+    //             'tax_amount' => round($request->total_amount * 0.16),
+    //             'total_amount' => $request->total_amount,
+    //             'payment_method' => 'mpesa',
+    //             'payment_status' => 'pending',
+    //             'current_status' => Parcel::STATUS_CREATED,
+
+    //             // Creator
+    //             'creator_id' => Auth::guard('customer')->user()->id,
+    //             'creator_type' => Customer::class,
+    //         ];
+
+    //         // Create the parcel
+    //         $parcel = Parcel::create($parcelData);
+    //         $payout = $parcel->calculateParcelPayout((float)($parcel->base_price + $parcel->tax_amount), 'direct');
+
+    //         $parcel->updateParcelStatus(
+    //             Parcel::STATUS_CREATED,
+    //             null,
+    //             Auth::guard('customer')->user()->id,
+    //             Customer::class,
+    //             'Parcel created',
+    //             null,
+    //             null,
+    //         );
+
+    //         // Create initial tracking record
+    //         if ($parcel) {
+    //             $parcel->addTracking(Parcel::STATUS_CREATED, Auth::guard('customer')->user()->id, Customer::class);
+    //         }
+
+    //         DB::commit();
+
+    //         // Redirect with success message
+    //         return redirect()
+    //             ->route('booking.success', $parcel->parcel_id)
+    //             ->with('success', 'Parcel booked successfully! Your tracking ID is: ' . $parcel->parcel_id);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+
+    //         dd($e->getMessage());
+
+    //         // Log the error
+    //         Log::info('Parcel booking failed: ' . $e->getMessage(), [
+    //             'request' => $request->all(),
+    //             'error' => $e
+    //         ]);
+
+    //         return redirect()
+    //             ->back()
+    //             ->withInput()
+    //             ->with('error', 'An error occurred while processing your booking. Please try again.');
+    //     }
+    // }
 
     public function success($parcelId)
     {

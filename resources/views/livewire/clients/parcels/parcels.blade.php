@@ -163,7 +163,16 @@
                                 </td>
                                 <td>
                                     <span class="parcel-amount">KSh {{ number_format($parcel->total_amount ?? 0, 2) }}</span>
+                                    <br>
+                                    @php
+                                    $paymentBadge = $this->getPaymentStatusBadge($parcel->payment_status ?? 'pending');
+                                    @endphp
+                                    <span class="status-badge status-{{ $paymentBadge['color'] }}" style="font-size: 0.65rem;">
+                                        <i class="{{ $paymentBadge['icon'] }} me-1"></i>
+                                        {{ ucfirst(str_replace('_', ' ', $parcel->payment_status ?? 'Pending')) }}
+                                    </span>
                                 </td>
+
                                 <td>
                                     <span class="status-badge status-{{ $this->getStatusColor($parcel->current_status) }}">
                                         <i class="{{ $this->getStatusIcon($parcel->current_status) }} me-1"></i>
@@ -225,6 +234,14 @@
                         </h5>
                         <span class="parcel-id-display">{{ $selectedParcel->parcel_id }}</span>
                     </div>
+                    <!-- Payment Response Alert -->
+                    @if($paymentResponse)
+                    <div class="alert alert-{{ $paymentResponseType === 'success' ? 'success' : ($paymentResponseType === 'warning' ? 'warning' : ($paymentResponseType === 'info' ? 'info' : 'danger')) }} alert-dismissible fade show mb-3" role="alert">
+                        <i class="bi {{ $paymentResponseType === 'success' ? 'bi-check-circle-fill' : ($paymentResponseType === 'warning' ? 'bi-exclamation-triangle-fill' : ($paymentResponseType === 'info' ? 'bi-info-circle-fill' : 'bi-x-circle-fill')) }} me-2"></i>
+                        {{ $paymentResponseMessage }}
+                        <button type="button" class="btn-close" wire:click="$set('paymentResponse', null)"></button>
+                    </div>
+                    @endif
                     <div class="modal-header-actions">
                         <span class="status-badge status-{{ $this->getStatusColor($selectedParcel->current_status) }}">
                             <i class="{{ $this->getStatusIcon($selectedParcel->current_status) }} me-1"></i>
@@ -236,16 +253,16 @@
 
                 <!-- Tabs -->
                 <div class="modal-tabs">
-                    <button class="tab-btn {{ $activeTab === 'overview' ? 'active' : '' }}" 
-                            wire:click="setActiveTab('overview')">
+                    <button class="tab-btn {{ $activeTab === 'overview' ? 'active' : '' }}"
+                        wire:click="setActiveTab('overview')">
                         <i class="bi bi-info-circle me-2"></i>Overview
                     </button>
-                    <button class="tab-btn {{ $activeTab === 'payments' ? 'active' : '' }}" 
-                            wire:click="setActiveTab('payments')">
-                        <i class="bi bi-currency-dollar me-2"></i>Payments
+                    <button class="tab-btn {{ $activeTab === 'payment' ? 'active' : '' }}"
+                        wire:click="setActiveTab('payment')">
+                        <i class="bi bi-currency-dollar me-2"></i>Payment
                     </button>
-                    <button class="tab-btn {{ $activeTab === 'tracking' ? 'active' : '' }}" 
-                            wire:click="setActiveTab('tracking')">
+                    <button class="tab-btn {{ $activeTab === 'tracking' ? 'active' : '' }}"
+                        wire:click="setActiveTab('tracking')">
                         <i class="bi bi-map me-2"></i>Tracking
                     </button>
                 </div>
@@ -347,11 +364,11 @@
                                 </div>
                                 <div class="detail-row">
                                     <span class="label">Weight</span>
-                                    <span class="value">{{ $selectedParcel->weight }} {{ $selectedParcel->weight_unit }}</span>
+                                    <span class="value">{{ $selectedParcel->weight }} {{ $selectedParcel->weight_unit ?? 'kg' }}</span>
                                 </div>
                                 <div class="detail-row">
                                     <span class="label">Dimensions</span>
-                                    <span class="value">{{ $selectedParcel->parcel_dimensions }}</span>
+                                    <span class="value">{{ $selectedParcel->parcel_dimensions ?? 'N/A' }}</span>
                                 </div>
                                 @if($selectedParcel->content_description)
                                 <div class="detail-row">
@@ -394,23 +411,45 @@
                     </div>
                     @endif
 
-                    <!-- Tab Content: Payments -->
-                    @if($activeTab === 'payments')
+                    <!-- Tab Content: Payment -->
+                    @if($activeTab === 'payment')
                     <div class="tab-content active">
-                        <div class="payment-summary">
-                            <div class="payment-total-card">
-                                <div class="payment-total-label">Total Amount</div>
-                                <div class="payment-total-value">KSh {{ number_format($selectedParcel->total_amount ?? 0, 2) }}</div>
-                                <div class="payment-status-label">
-                                    Status: 
-                                    <span class="badge bg-{{ $selectedParcel->payment_status === 'paid' ? 'success' : ($selectedParcel->payment_status === 'pending' ? 'warning' : 'danger') }}">
-                                        {{ ucfirst($selectedParcel->payment_status) }}
-                                    </span>
+                        <div class="payment-section">
+                            <!-- Payment Status Header -->
+                            <div class="payment-status-header mb-4">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                                    <div>
+                                        <h6 class="fw-bold mb-1">Payment Status</h6>
+                                        @php
+                                        $paymentBadge = $this->getPaymentStatusBadge($selectedParcel->payment_status ?? 'pending');
+                                        @endphp
+                                        <span class="status-badge status-{{ $paymentBadge['color'] }}">
+                                            <i class="{{ $paymentBadge['icon'] }} me-1"></i>
+                                            {{ ucfirst(str_replace('_', ' ', $selectedParcel->payment_status ?? 'Pending')) }}
+                                        </span>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="payment-amount-large">
+                                            <span class="text-muted">Total Amount</span>
+                                            <h4 class="fw-bold text-success">KSh {{ number_format($selectedParcel->total_amount ?? 0, 2) }}</h4>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="payment-breakdown">
-                                <h6 class="fw-bold mb-3">Payment Breakdown</h6>
+                            <!-- Payment Button -->
+                            @if($selectedParcel->payment_status !== 'paid')
+                            <div class="text-center mb-4">
+                                <button class="btn btn-primary btn-lg px-5" wire:click="openPaymentModal">
+                                    <i class="bi bi-credit-card me-2"></i>
+                                    Make Payment
+                                </button>
+                            </div>
+                            @endif
+
+                            <!-- Payment Breakdown -->
+                            <div class="payment-breakdown mb-4">
+                                <h6 class="fw-bold mb-3"><i class="bi bi-receipt me-2"></i>Payment Breakdown</h6>
                                 <div class="breakdown-item">
                                     <span>Base Price</span>
                                     <span>KSh {{ number_format($selectedParcel->base_price ?? 0, 2) }}</span>
@@ -457,9 +496,10 @@
                                 </div>
                             </div>
 
+                            <!-- Payment History -->
                             @if($selectedParcel->payments && $selectedParcel->payments->count() > 0)
-                            <div class="payment-history mt-3">
-                                <h6 class="fw-bold mb-3">Payment History</h6>
+                            <div class="payment-history mt-4">
+                                <h6 class="fw-bold mb-3"><i class="bi bi-clock-history me-2"></i>Payment History</h6>
                                 @foreach($selectedParcel->payments as $payment)
                                 <div class="payment-history-item">
                                     <div class="payment-history-icon">
@@ -469,9 +509,12 @@
                                         <span class="payment-history-amount">KSh {{ number_format($payment->amount ?? 0, 2) }}</span>
                                         <span class="payment-history-method">{{ ucfirst($payment->payment_method ?? 'N/A') }}</span>
                                         <span class="payment-history-date">{{ $payment->created_at->format('M d, Y h:i A') }}</span>
+                                        @if($payment->mpesa_receipt_number)
+                                        <span class="payment-history-method">Receipt: {{ $payment->mpesa_receipt_number }}</span>
+                                        @endif
                                     </div>
                                     <div class="payment-history-status">
-                                        <span class="badge bg-{{ $payment->status === 'completed' ? 'success' : 'warning' }}">
+                                        <span class="badge bg-{{ $payment->status === 'completed' ? 'success' : ($payment->status === 'pending' ? 'warning' : 'danger') }}">
                                             {{ ucfirst($payment->status ?? 'pending') }}
                                         </span>
                                     </div>
@@ -491,43 +534,43 @@
                                 <i class="bi bi-map me-2"></i>Tracking History
                             </h6>
                             @php
-                                $statuses = $selectedParcel->statuses->reverse();
+                            $statuses = $selectedParcel->statuses->reverse();
                             @endphp
                             @if($statuses->count() > 0)
-                                <div class="timeline">
-                                    @foreach($statuses as $index => $status)
-                                    <div class="timeline-item {{ $loop->first ? 'active' : '' }}">
-                                        <div class="timeline-marker">
-                                            <div class="marker-dot {{ $loop->first ? 'active' : '' }}">
-                                                <i class="{{ $this->getStatusIcon($status->status) }}"></i>
-                                            </div>
-                                            @if(!$loop->last)
-                                            <div class="marker-line"></div>
-                                            @endif
+                            <div class="timeline">
+                                @foreach($statuses as $index => $status)
+                                <div class="timeline-item {{ $loop->first ? 'active' : '' }}">
+                                    <div class="timeline-marker">
+                                        <div class="marker-dot {{ $loop->first ? 'active' : '' }}">
+                                            <i class="{{ $this->getStatusIcon($status->status) }}"></i>
                                         </div>
-                                        <div class="timeline-content">
-                                            <div class="timeline-header">
-                                                <span class="timeline-status">{{ $this->getStatusLabel($status->status) }}</span>
-                                                <span class="timeline-date">{{ $status->created_at->format('M d, Y h:i A') }}</span>
-                                            </div>
-                                            @if($status->notes)
-                                            <p class="timeline-description">{{ $status->notes }}</p>
-                                            @endif
-                                            @if($status->driver)
-                                            <div class="timeline-driver">
-                                                <i class="bi bi-person-badge"></i>
-                                                Driver: {{ $status->driver->name ?? 'N/A' }}
-                                            </div>
-                                            @endif
-                                        </div>
+                                        @if(!$loop->last)
+                                        <div class="marker-line"></div>
+                                        @endif
                                     </div>
-                                    @endforeach
+                                    <div class="timeline-content">
+                                        <div class="timeline-header">
+                                            <span class="timeline-status">{{ $this->getStatusLabel($status->status) }}</span>
+                                            <span class="timeline-date">{{ $status->created_at->format('M d, Y h:i A') }}</span>
+                                        </div>
+                                        @if($status->notes)
+                                        <p class="timeline-description">{{ $status->notes }}</p>
+                                        @endif
+                                        @if($status->driver)
+                                        <div class="timeline-driver">
+                                            <i class="bi bi-person-badge"></i>
+                                            Driver: {{ $status->driver->name ?? 'N/A' }}
+                                        </div>
+                                        @endif
+                                    </div>
                                 </div>
+                                @endforeach
+                            </div>
                             @else
-                                <div class="text-center py-4">
-                                    <i class="bi bi-clock-history" style="font-size: 3rem; color: var(--text-light);"></i>
-                                    <p class="text-muted mt-2">No tracking history available yet.</p>
-                                </div>
+                            <div class="text-center py-4">
+                                <i class="bi bi-clock-history" style="font-size: 3rem; color: var(--text-light);"></i>
+                                <p class="text-muted mt-2">No tracking history available yet.</p>
+                            </div>
                             @endif
                         </div>
                     </div>
@@ -536,13 +579,249 @@
 
                 <div class="modal-footer">
                     <button class="btn btn-secondary" wire:click="closeParcelDetail">Close</button>
-                    <a href="#" class="btn btn-primary">
-                        <i class="bi bi-geo-alt me-2"></i>Track Parcel
+                    @if($selectedParcel->payment_status === 'paid')
+                    <a href="{{ route('print-customer-receipt', $selectedParcel->id) }}" target="_blank" class="btn btn-primary">
+                        <i class="bi bi-printer me-2"></i>Print Sticker
                     </a>
+                    @endif
                 </div>
             </div>
+            <!-- Payment Overlay -->
+            @if($showPaymentOverlay)
+            <div class="payment-overlay active">
+                <div class="spinner-container">
+                    <div id="paymentStatusIcon">
+                        @if($paymentOverlayStatus === 'loading')
+                        <div class="spinner-border" role="status"></div>
+                        @elseif($paymentOverlayStatus === 'success')
+                        <i class="bi bi-check-circle-fill status-icon success"></i>
+                        @elseif($paymentOverlayStatus === 'failed')
+                        <i class="bi bi-x-circle-fill status-icon failed"></i>
+                        @elseif($paymentOverlayStatus === 'waiting')
+                        <i class="bi bi-phone status-icon waiting"></i>
+                        @endif
+                    </div>
+                    <h5 class="mt-3">{{ $paymentOverlayTitle }}</h5>
+                    <p class="text-muted">{{ $paymentOverlayMessage }}</p>
+                    @if($paymentOverlayStatus === 'failed')
+                    <div class="mt-3">
+                        <button class="btn btn-primary" wire:click="retryPayment">
+                            <i class="bi bi-arrow-repeat me-2"></i>Try Again
+                        </button>
+                        <button class="btn btn-outline-secondary ms-2" wire:click="closePaymentOverlay">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </button>
+                    </div>
+                    @endif
+                    @if($paymentOverlayStatus === 'success')
+                    <div class="mt-3">
+                        <button class="btn btn-success" wire:click="closePaymentOverlay">
+                            <i class="bi bi-check-circle me-2"></i>Done
+                        </button>
+                    </div>
+                    @endif
+                    @if($paymentOverlayStatus === 'waiting')
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                            <span>Waiting for PIN...</span>
+                        </div>
+                        <button class="btn btn-outline-secondary mt-2" wire:click="closePaymentOverlay">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </button>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endif
+
+            <!-- Payment Modal -->
+            @if($showPaymentModal)
+            <div class="modal-overlay" wire:click.self="closePaymentModal">
+                <div class="modal-content modal-lg animate-fade-up" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <div class="modal-header-info">
+                            <h5 class="modal-title fw-bold">
+                                <i class="bi bi-credit-card me-2 text-primary"></i>
+                                Make Payment
+                            </h5>
+                            <span class="parcel-id-display">{{ $selectedParcel?->parcel_id ?? 'N/A' }}</span>
+                        </div>
+                        <div class="modal-header-actions">
+                            <button type="button" class="btn-close" wire:click="closePaymentModal"></button>
+                        </div>
+                    </div>
+
+                    <div class="modal-body">
+                        <!-- Payment Response Alert -->
+                        @if($paymentResponse)
+                        <div class="alert alert-{{ $paymentResponseType === 'success' ? 'success' : ($paymentResponseType === 'warning' ? 'warning' : ($paymentResponseType === 'info' ? 'info' : 'danger')) }} alert-dismissible fade show mb-3" role="alert">
+                            <i class="bi {{ $paymentResponseType === 'success' ? 'bi-check-circle-fill' : ($paymentResponseType === 'warning' ? 'bi-exclamation-triangle-fill' : ($paymentResponseType === 'info' ? 'bi-info-circle-fill' : 'bi-x-circle-fill')) }} me-2"></i>
+                            {{ $paymentResponseMessage }}
+                            <button type="button" class="btn-close" wire:click="$set('paymentResponse', null)"></button>
+                        </div>
+                        @endif
+
+                        <!-- M-Pesa Status -->
+                        @if($showMpesaStatus)
+                        <div class="alert alert-{{ $paymentStatusType }} mb-3">
+                            <i class="bi {{ $paymentStatusIcon }} me-2"></i>
+                            {{ $paymentStatusMessage }}
+                        </div>
+                        @endif
+
+                        <!-- Payment Details -->
+                        <div class="payment-summary mb-4">
+                            <div class="payment-total-card">
+                                <div class="payment-total-label">Total Amount</div>
+                                <div class="payment-total-value">KSh {{ number_format($selectedParcel?->total_amount ?? 0, 2) }}</div>
+                                <div class="payment-status-label">
+                                    @php
+                                    $paymentBadge = $this->getPaymentStatusBadge($selectedParcel?->payment_status ?? 'pending');
+                                    @endphp
+                                    Status:
+                                    <span class="badge bg-{{ $paymentBadge['color'] }}">
+                                        {{ ucfirst(str_replace('_', ' ', $selectedParcel?->payment_status ?? 'Pending')) }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="payment-breakdown">
+                                <h6 class="fw-bold mb-2">Payment Breakdown</h6>
+                                <div class="breakdown-item">
+                                    <span>Base Price</span>
+                                    <span>KSh {{ number_format($selectedParcel?->base_price ?? 0, 2) }}</span>
+                                </div>
+                                @if($selectedParcel?->weight_charge)
+                                <div class="breakdown-item">
+                                    <span>Weight Charge</span>
+                                    <span>KSh {{ number_format($selectedParcel->weight_charge, 2) }}</span>
+                                </div>
+                                @endif
+                                @if($selectedParcel?->distance_charge)
+                                <div class="breakdown-item">
+                                    <span>Distance Charge</span>
+                                    <span>KSh {{ number_format($selectedParcel->distance_charge, 2) }}</span>
+                                </div>
+                                @endif
+                                @if($selectedParcel?->insurance_charge)
+                                <div class="breakdown-item">
+                                    <span>Insurance Charge</span>
+                                    <span>KSh {{ number_format($selectedParcel->insurance_charge, 2) }}</span>
+                                </div>
+                                @endif
+                                @if($selectedParcel?->tax_amount)
+                                <div class="breakdown-item">
+                                    <span>Tax</span>
+                                    <span>KSh {{ number_format($selectedParcel->tax_amount, 2) }}</span>
+                                </div>
+                                @endif
+                                @if($selectedParcel?->discount_amount)
+                                <div class="breakdown-item text-success">
+                                    <span>Discount</span>
+                                    <span>-KSh {{ number_format($selectedParcel->discount_amount, 2) }}</span>
+                                </div>
+                                @endif
+                                <div class="breakdown-total">
+                                    <span class="fw-bold">Total</span>
+                                    <span class="fw-bold text-primary">KSh {{ number_format($selectedParcel?->total_amount ?? 0, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Form -->
+                        @if($selectedParcel?->payment_status !== 'paid')
+                        <form wire:submit.prevent="processPayment">
+                            <div class="mb-3">
+                                <label class="form-label">Amount (KES) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" wire:model="paymentAmount" min="1" step="1" required readonly>
+                                <small class="text-muted">Enter the amount you want to pay</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Payment Method <span class="text-danger">*</span></label>
+                                <select class="form-select" wire:model="paymentMethod">
+                                    <option value="mpesa">M-PESA</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" wire:model="paymentPhone" placeholder="0712345678" required>
+                                <small class="text-muted">Enter the M-PESA registered phone number</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Notes (optional)</label>
+                                <input type="text" class="form-control" wire:model="paymentNotes" placeholder="Any notes about this payment">
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-lg" wire:loading.attr="disabled">
+                                    <span wire:loading.remove>Pay KSh {{ number_format($paymentAmount ?? 0, 2) }}</span>
+                                    <span wire:loading><span class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Manual Payment Instructions -->
+                        <div class="manual-payment-card mt-4">
+                            <h6 class="fw-bold mb-2"><i class="bi bi-info-circle me-2"></i>Manual Payment</h6>
+                            <p class="text-muted small">Follow these steps to pay manually via M-PESA Paybill</p>
+                            <div class="manual-steps">
+                                <div class="manual-step">
+                                    <span class="step-num">1</span>
+                                    <span>Go to M-PESA <strong>Lipa Na M-PESA</strong> &amp; select <strong>Paybill</strong></span>
+                                </div>
+                                <div class="manual-step">
+                                    <span class="step-num">2</span>
+                                    <span>Enter Business number <strong class="text-primary">4563911</strong></span>
+                                </div>
+                                <div class="manual-step">
+                                    <span class="step-num">3</span>
+                                    <span>Enter Account number <strong class="text-primary">{{ $selectedParcel?->parcel_id ?? 'N/A' }}</strong></span>
+                                </div>
+                                <div class="manual-step">
+                                    <span class="step-num">4</span>
+                                    <span>Enter Amount <strong class="text-primary">KSh {{ number_format($selectedParcel?->total_amount ?? 0, 2) }}</strong></span>
+                                </div>
+                                <div class="manual-step">
+                                    <span class="step-num">5</span>
+                                    <span>Complete payment on your phone</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-primary w-100 mt-3" wire:click="checkPaymentStatus">
+                                <i class="bi bi-arrow-repeat me-2"></i>
+                                Check Payment Status
+                            </button>
+                        </div>
+                        @else
+                        <div class="payment-completed">
+                            <div class="text-center py-4">
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                                <h5 class="fw-bold mt-3">Payment Completed</h5>
+                                <p class="text-muted">This parcel has been paid for successfully.</p>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" wire:click="closePaymentModal">Close</button>
+                        @if($selectedParcel?->payment_status === 'paid')
+                        <a href="{{ route('print-customer-receipt', $selectedParcel->id) }}" target="_blank" class="btn btn-primary">
+                            <i class="bi bi-printer me-2"></i>Print Sticker
+                        </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endif
+
         </div>
         @endif
+
+        <!-- Payment Overlay -->
+
 
         <!-- Styles -->
         <style>
@@ -584,14 +863,38 @@
                 flex-shrink: 0;
             }
 
-            .bg-primary-light { background: var(--primary-light); }
-            .bg-warning-light { background: #fff8e1; }
-            .bg-success-light { background: #e8f5e9; }
-            .bg-danger-light { background: #ffebee; }
+            .bg-primary-light {
+                background: var(--primary-light);
+            }
 
-            .stat-info { flex: 1; }
-            .stat-number { font-size: 1.5rem; font-weight: 700; margin: 0; line-height: 1.2; }
-            .stat-label { font-size: 0.8rem; color: var(--text-light); font-weight: 500; }
+            .bg-warning-light {
+                background: #fff8e1;
+            }
+
+            .bg-success-light {
+                background: #e8f5e9;
+            }
+
+            .bg-danger-light {
+                background: #ffebee;
+            }
+
+            .stat-info {
+                flex: 1;
+            }
+
+            .stat-number {
+                font-size: 1.5rem;
+                font-weight: 700;
+                margin: 0;
+                line-height: 1.2;
+            }
+
+            .stat-label {
+                font-size: 0.8rem;
+                color: var(--text-light);
+                font-weight: 500;
+            }
 
             /* ===== FILTERS ===== */
             .filters-section {
@@ -602,7 +905,10 @@
                 border: 1px solid var(--border-color);
             }
 
-            .search-box { position: relative; }
+            .search-box {
+                position: relative;
+            }
+
             .search-box i {
                 position: absolute;
                 left: 16px;
@@ -611,11 +917,13 @@
                 color: var(--text-light);
                 font-size: 1.1rem;
             }
+
             .search-box .form-control {
                 padding-left: 45px;
                 border-radius: 12px;
                 border: 2px solid var(--border-color);
             }
+
             .search-box .form-control:focus {
                 border-color: var(--primary-color);
                 box-shadow: 0 0 0 0.2rem rgba(0, 143, 64, 0.1);
@@ -627,6 +935,7 @@
                 padding: 12px 16px;
                 font-size: 0.95rem;
             }
+
             .form-select-lg:focus {
                 border-color: var(--primary-color);
                 box-shadow: 0 0 0 0.2rem rgba(0, 143, 64, 0.1);
@@ -796,12 +1105,26 @@
             }
 
             /* ===== EMPTY STATE ===== */
-            .empty-state-icon { font-size: 6rem; color: var(--border-color); }
-            .empty-state-icon i { display: inline-block; animation: float 3s ease-in-out infinite; }
+            .empty-state-icon {
+                font-size: 6rem;
+                color: var(--border-color);
+            }
+
+            .empty-state-icon i {
+                display: inline-block;
+                animation: float 3s ease-in-out infinite;
+            }
 
             @keyframes float {
-                0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-15px); }
+
+                0%,
+                100% {
+                    transform: translateY(0);
+                }
+
+                50% {
+                    transform: translateY(-15px);
+                }
             }
 
             /* ===== MODAL ===== */
@@ -834,8 +1157,15 @@
             }
 
             @keyframes slideUp {
-                from { opacity: 0; transform: translateY(50px) scale(0.95); }
-                to { opacity: 1; transform: translateY(0) scale(1); }
+                from {
+                    opacity: 0;
+                    transform: translateY(50px) scale(0.95);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
             }
 
             /* ===== MODAL HEADER ===== */
@@ -932,8 +1262,15 @@
             }
 
             @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(10px); }
-                to { opacity: 1; transform: translateY(0); }
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
 
             /* ===== ROUTE SUMMARY ===== */
@@ -971,8 +1308,13 @@
                 flex-shrink: 0;
             }
 
-            .route-point-detail .point-icon.bg-success { background: var(--primary-color); }
-            .route-point-detail .point-icon.bg-danger { background: #dc3545; }
+            .route-point-detail .point-icon.bg-success {
+                background: var(--primary-color);
+            }
+
+            .route-point-detail .point-icon.bg-danger {
+                background: #dc3545;
+            }
 
             .route-point-detail .point-info {
                 display: flex;
@@ -1035,45 +1377,42 @@
                 font-size: 0.9rem;
             }
 
-            .detail-row:last-child { border-bottom: none; }
-            .detail-row .label { color: var(--text-light); font-weight: 500; }
-            .detail-row .value { color: var(--text-dark); font-weight: 500; text-align: right; }
+            .detail-row:last-child {
+                border-bottom: none;
+            }
+
+            .detail-row .label {
+                color: var(--text-light);
+                font-weight: 500;
+            }
+
+            .detail-row .value {
+                color: var(--text-dark);
+                font-weight: 500;
+                text-align: right;
+            }
 
             /* ===== PAYMENT SECTION ===== */
-            .payment-summary {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 20px;
+            .payment-section {
+                padding: 4px 0;
             }
 
-            .payment-total-card {
-                background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            .payment-status-header {
+                background: var(--light-bg);
                 border-radius: 16px;
-                padding: 24px;
-                color: white;
-                text-align: center;
+                padding: 16px 20px;
+                border: 1px solid var(--border-color);
             }
 
-            .payment-total-label {
-                font-size: 0.9rem;
-                opacity: 0.8;
-            }
-
-            .payment-total-value {
-                font-size: 2rem;
-                font-weight: 700;
-                margin: 8px 0;
-            }
-
-            .payment-status-label {
-                font-size: 0.85rem;
-                opacity: 0.9;
+            .payment-amount-large h4 {
+                margin: 0;
             }
 
             .payment-breakdown {
                 background: var(--light-bg);
                 border-radius: 16px;
                 padding: 20px;
+                border: 1px solid var(--border-color);
             }
 
             .breakdown-item {
@@ -1085,7 +1424,10 @@
                 color: var(--text-dark);
             }
 
-            .breakdown-item:last-child { border-bottom: none; }
+            .breakdown-item:last-child {
+                border-bottom: none;
+            }
+
             .breakdown-total {
                 display: flex;
                 justify-content: space-between;
@@ -1093,6 +1435,54 @@
                 border-top: 2px solid var(--border-color);
                 margin-top: 8px;
                 font-size: 1.1rem;
+            }
+
+            .payment-method-card {
+                background: white;
+                border: 2px solid var(--border-color);
+                border-radius: 16px;
+                padding: 20px;
+                height: 100%;
+            }
+
+            .manual-payment-card {
+                background: white;
+                border: 2px solid var(--border-color);
+                border-radius: 16px;
+                padding: 20px;
+                height: 100%;
+            }
+
+            .manual-steps {
+                margin-top: 12px;
+            }
+
+            .manual-step {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 6px 0;
+                font-size: 0.9rem;
+                color: var(--text-dark);
+                border-bottom: 1px solid #f1f5f9;
+            }
+
+            .manual-step:last-child {
+                border-bottom: none;
+            }
+
+            .manual-step .step-num {
+                background: var(--primary-light);
+                color: var(--primary-color);
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.7rem;
+                font-weight: 700;
+                flex-shrink: 0;
             }
 
             .payment-history-item {
@@ -1103,7 +1493,9 @@
                 border-bottom: 1px solid var(--border-color);
             }
 
-            .payment-history-item:last-child { border-bottom: none; }
+            .payment-history-item:last-child {
+                border-bottom: none;
+            }
 
             .payment-history-icon {
                 width: 40px;
@@ -1137,6 +1529,12 @@
             .payment-history-date {
                 font-size: 0.7rem;
                 color: var(--text-light);
+            }
+
+            .payment-completed {
+                background: var(--primary-light);
+                border-radius: 16px;
+                border: 2px solid var(--primary-color);
             }
 
             /* ===== TRACKING TIMELINE ===== */
@@ -1248,13 +1646,58 @@
                 flex-shrink: 0;
             }
 
+            /* ===== PAYMENT OVERLAY ===== */
+            .payment-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.6);
+                backdrop-filter: blur(8px);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 99999;
+                padding: 1.5rem;
+            }
+
+            .payment-overlay.active {
+                display: flex;
+            }
+
+            .spinner-container {
+                background: white;
+                padding: 2.8rem 2.5rem;
+                border-radius: 40px;
+                max-width: 420px;
+                width: 100%;
+                text-align: center;
+                box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.4);
+            }
+
+            .spinner-container .spinner-border {
+                width: 3.8rem;
+                height: 3.8rem;
+                color: #1a4d33;
+            }
+
+            .spinner-container .status-icon {
+                font-size: 4.2rem;
+            }
+
+            .spinner-container .status-icon.success {
+                color: #22c55e;
+            }
+
+            .spinner-container .status-icon.failed {
+                color: #ef4444;
+            }
+
+            .spinner-container .status-icon.waiting {
+                color: #f59e0b;
+            }
+
             /* ===== RESPONSIVE ===== */
             @media (max-width: 992px) {
                 .detail-grid {
-                    grid-template-columns: 1fr;
-                }
-
-                .payment-summary {
                     grid-template-columns: 1fr;
                 }
 

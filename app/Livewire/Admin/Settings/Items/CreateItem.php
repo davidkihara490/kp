@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Admin\Settings\Items;
 
+use App\Livewire\Admin\Settings\Categories\Categories;
+use App\Models\Category;
 use App\Models\Item;
 use App\Models\SubCategory;
 use Livewire\Component;
@@ -10,27 +12,36 @@ class CreateItem extends Component
 {
 
     public ?string $name;
+    public $categories = [];
     public $subCategories = [];
     public bool $status = true;
+    public $category_id;
     public $sub_category_id;
 
     public function mount()
     {
-        $this->subCategories = SubCategory::all();
+        $this->categories = Category::where('status', true)->get();
+    }
+
+    public function updatedCategoryId(int $id)
+    {
+        $this->subCategories = SubCategory::where('category_id', $id)->get();
     }
 
     public function submit()
     {
         $this->validate([
             'name' => 'required|string|max:255|unique:items,name',
-            // 'sub_category_id' => 'required|exists:sub_categories,id',
+            'category_id' => 'required|exists:categories,id',
+            'sub_category_id' => 'required|exists:sub_categories,id',
             'status' => 'boolean',
         ]);
 
         try {
             Item::create([
                 'name' => $this->name,
-                // 'sub_category_id' => $this->sub_category_id,
+                'category_id' => $this->category_id,
+                'sub_category_id' => $this->sub_category_id,
                 'status' => $this->status,
             ]);
 

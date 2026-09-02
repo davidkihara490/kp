@@ -41,13 +41,10 @@
         $(document).on('click', '#fromTownOptions .option-item', function() {
             const townId = $(this).data('value');
             const townName = $(this).find('.town-name').text();
-
             // 1. Update hidden input value (so form submission & JS read the ID)
             $('#fromTown').val(townId);
-
             // 2. Update display text in the select box
             $('#fromTownSelect .selected-text').text(townName);
-
             // 3. Close the dropdown menu
             $('#fromTownDropdown').removeClass('show'); // or hide it based on your toggle class
         });
@@ -55,15 +52,24 @@
         $(document).on('click', '#toTownOptions .option-item', function() {
             const townId = $(this).data('value');
             const townName = $(this).find('.town-name').text();
-
             // 1. Update hidden input value (so form submission & JS read the ID)
             $('#toTown').val(townId);
-
             // 2. Update display text in the select box
             $('#toTownSelect .selected-text').text(townName);
-
             // 3. Close the dropdown menu
             $('#toTownDropdown').removeClass('show'); // or hide it based on your toggle class
+        });
+
+        //Category
+        $(document).on('click', '#parcelCategoryOptions .option-item', function() {
+            const parcelCategoryId = $(this).data('value');
+            const parcelCategoryName = $(this).find('.town-name').text();
+            // 1. Update hidden input value (so form submission & JS read the ID)
+            $('#parcelCategory').val(parcelCategoryId);
+            // 2. Update display text in the select box
+            $('#parcelCategorySelect .selected-text').text(parcelCategoryName);
+            // 3. Close the dropdown menu
+            $('#parcelCategoryDropDown').removeClass('show'); // or hide it based on your toggle class
         });
 
         // ============================================
@@ -74,9 +80,9 @@
 
             const fromTown = $('#fromTown').val();
             const toTown = $('#toTown').val();
-            const weight = $('#parcelWeight').val();
+            const parcelCategory = $('#parcelCategory').val();
 
-            if (!fromTown || !toTown || !weight || weight <= 0) {
+            if (!fromTown || !toTown || !parcelCategory) {
                 showAlert('Please fill in all required fields', 'warning', '#quoteResult');
                 return;
             }
@@ -91,7 +97,7 @@
                 data: {
                     from_town_id: fromTown,
                     to_town_id: toTown,
-                    parcel_weight: weight,
+                    parcel_category_id: parcelCategory,
                     _token: $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function(response) {
@@ -117,7 +123,7 @@
             const fromText = $('#fromTownSelect .selected-text').text();
             const toText = $('#toTownSelect .selected-text').text();
 
-            const bookingUrl = `{{ route('online-booking') }}?from_town_id=${data.from_town_id}&to_town_id=${data.to_town_id}&weight=${data.weight}&price=${data.total}`;
+            const bookingUrl = `{{ route('online-booking') }}?from_town_id=${data.from_town_id}&to_town_id=${data.to_town_id}&category=${data.parcel_category_id}&price=${data.total}`;
 
             const html = `
             <div class="quote-result-card">

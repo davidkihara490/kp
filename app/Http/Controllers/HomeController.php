@@ -44,6 +44,9 @@ class HomeController extends Controller
         $parcelTypes = Item::all();
         $itemCategories = Item::where('status', true)->get();
 
+        $categories = Item::where('status', true)->get();
+
+
         $counties = County::whereHas('subCounties.towns.pickUpAndDropOffPoint')
             ->with(['subCounties.towns.pickUpAndDropOffPoint'])
             ->orderBy('name')
@@ -58,7 +61,7 @@ class HomeController extends Controller
         $countiesCovered = County::count();
         $totalPickUpPoints = PickUpAndDropOffPoint::where('status', 'active')->count();
 
-        return  view('frontend.home', compact('totalPickUpPoints', 'countiesCovered', 'towns', 'pickUpAndDropOffPoints', 'blogPosts', 'faqs', 'counties', 'parcelTypes', 'itemCategories'));
+        return  view('frontend.home', compact('categories', 'totalPickUpPoints', 'countiesCovered', 'towns', 'pickUpAndDropOffPoints', 'blogPosts', 'faqs', 'counties', 'parcelTypes', 'itemCategories'));
     }
 
 
@@ -68,8 +71,9 @@ class HomeController extends Controller
         $request->validate([
             'from_town_id' => 'required|exists:towns,id',
             'to_town_id' => 'required|exists:towns,id|different:from_town_id',
-            'parcel_weight' => 'required|numeric|min:0.1',
+            'parcel_category_id' => 'required|exists:items,id',
         ]);
+
 
         try {
             $fromTown = Town::findOrFail($request->from_town_id);
@@ -88,31 +92,11 @@ class HomeController extends Controller
             if (!$pricing) {
                 return;
             }
+
             $basePrice = (float) ($pricing->cost ?? 0);
-            $extraKgCost = (float) ($pricing->extra ?? 0);
-
-
-            if ($request->parcel_weight <= 5) {
-                $base_price = round($basePrice, 2);
-            } else {
-                $extraWeight = $request->parcel_weight - 5;
-                $base_price = round(
-                    $basePrice + ($extraWeight * $extraKgCost),
-                    2
-                );
-            }
-
-            $tax_amount = round(
-                $base_price * 0.16,
-                2
-            );
-
-            $total_amount = round(
-                $base_price +
-                    $tax_amount,
-                2
-            );
-
+            $tax_amount = round($basePrice * 0.16, 2);
+            // $total_amount = round($basePrice + $tax_amount, 2);
+            $total_amount = ceil($basePrice + $tax_amount);
             $calculatedPrice = $total_amount;
 
             return response()->json([
@@ -121,8 +105,7 @@ class HomeController extends Controller
                 'to_town' => $toTown->name,
                 'from_town_id' => $fromTown->id,
                 'to_town_id' => $toTown->id,
-                'weight' => $request->parcel_weight,
-                // 'item_category' => $item->name,
+                'parcel_category_id' => $request->parcel_category_id,
                 'total' => $calculatedPrice,
             ]);
         } catch (\Exception $e) {

@@ -8,7 +8,21 @@
 
             <form wire:submit.prevent="submit">
                 <div class="row">
-                    <div class="col-6">
+                    <div class="col-3">
+                        <div class="form-group">
+                            <label>Select Type <span class="text-danger">*</span></label>
+                            <select class="form-control" wire:model="type" style="width: 100%;">
+                                <option value="">Select Type</option>
+                                @foreach ($types as $type)
+                                <option value="{{ $type }}">{{ ucfirst($type)}}</option>
+                                @endforeach
+                            </select>
+                            @error('type')
+                            <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-3">
                         <div class="form-group">
                             <label>Select Item <span class="text-danger">*</span></label>
                             <select class="form-control" wire:model="selected_item_id" style="width: 100%;">
@@ -23,7 +37,7 @@
                         </div>
                     </div>
 
-                    <div class="col-6">
+                    <div class="col-3">
                         <div class="form-group">
                             <label>Select Weight Range <span class="text-danger">*</span></label>
                             <select class="form-control" wire:model="selected_weight_range_id" style="width: 100%;">
@@ -39,11 +53,31 @@
                             @enderror
                         </div>
                     </div>
+                    <div class="col-3">
+                        <div class="form-group">
+                            <label>Select Status <span class="text-danger">*</span></label>
+                            <select class="form-control" wire:model="status" style="width: 100%;">
+                                <option value="">Select Status</option>
+                                <option value="1">Active</option>
+                                <option value="0">Disabled</option>
+                            </select>
+                            @error('status')
+                            <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
                 </div>
 
                 @foreach($pricing_rows as $index => $row)
                 <div class="row mt-3 pricing-row" wire:key="pricing-row-{{ $index }}">
-                    <div class="col-md-4">
+                    <div class="col-1">
+                        <div class="form-group">
+                            <label>#</label>
+                            <p>{{ $loop->iteration }}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Source Zone @if($loop->first)<span class="text-danger">*</span>@endif</label>
                             <select class="form-control"
@@ -77,7 +111,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="form-group">
                             <label>Cost @if($loop->first)<span class="text-danger">*</span>@endif</label>
                             <div class="input-group">
@@ -99,12 +133,31 @@
 
                     <div class="col-md-2">
                         <div class="form-group">
+                            <label>Extra /Kg @if($loop->first)<span class="text-danger">*</span>@endif</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input type="number"
+                                    step="0.01"
+                                    min="0"
+                                    class="form-control"
+                                    wire:model="pricing_rows.{{ $index }}.extra"
+                                    placeholder="0.00">
+                            </div>
+                            @error('pricing_rows.' . $index . '.extra')
+                            <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <div class="form-group">
                             <label>&nbsp;</label>
                             <button type="button"
                                 class="btn btn-danger d-block w-100"
                                 wire:click="removePricingRow({{ $index }})"
                                 @if(count($pricing_rows) <=1) disabled @endif>
-                                <i class="fas fa-trash"></i> Remove
+                                <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </div>

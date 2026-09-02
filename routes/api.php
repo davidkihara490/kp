@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\v1\Mpesa\MpesaCallbackController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ParcelController;
+use Illuminate\Support\Facades\Log;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -31,7 +32,7 @@ Route::get('/track-parcel', [ParcelController::class, 'trackParcel']);
 
 
 Route::post('/mpesa/test-callback', function (Request $request) {
-    \Log::info('MPESA TEST CALLBACK', [
+    Log::info('MPESA TEST CALLBACK', [
         'time' => now()->toDateTimeString(),
         'ip' => $request->ip(),
         'headers' => $request->headers->all(),

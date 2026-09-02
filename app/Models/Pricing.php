@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Pricing extends Model
 {
     protected $fillable = [
+        'type',
         'item_id',
         'min_weight',
         'max_weight',
@@ -19,8 +20,8 @@ class Pricing extends Model
         return $this->hasMany(PricingItem::class);
     }
 
-    public function item(): BelongsTo{
+    public function item(): BelongsTo
+    {
         return $this->belongsTo(Item::class);
     }
-
 }
