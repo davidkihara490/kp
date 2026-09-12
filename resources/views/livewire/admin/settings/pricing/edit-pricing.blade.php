@@ -9,7 +9,7 @@
             <form wire:submit.prevent="submit">
 
                 <div class="row">
-                    <div class="col-3">
+                    {{--<div class="col-3">
                         <div class="form-group">
                             <label>Select Type <span class="text-danger">*</span></label>
                             <select class="form-control" wire:model="type" style="width: 100%;">
@@ -22,8 +22,8 @@
                             <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
-                    </div>
-                    <div class="col-3">
+                    </div>--}}
+                    <div class="col-6">
                         <div class="form-group">
                             <label>Select Item <span class="text-danger">*</span></label>
                             <select class="form-control" wire:model="selected_item_id" style="width: 100%;">
@@ -38,7 +38,7 @@
                         </div>
                     </div>
 
-                    <div class="col-3">
+                    {{--<div class="col-3">
                         <div class="form-group">
                             <label>Select Weight Range <span class="text-danger">*</span></label>
                             <select class="form-control" wire:model="selected_weight_range_id" style="width: 100%;">
@@ -53,8 +53,8 @@
                             <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
-                    </div>
-                    <div class="col-3">
+                    </div>--}}
+                    <div class="col-6">
                         <div class="form-group">
                             <label>Select Status <span class="text-danger">*</span></label>
                             <select class="form-control" wire:model="status" style="width: 100%;">
@@ -78,7 +78,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label>Source Zone @if($loop->first)<span class="text-danger">*</span>@endif</label>
                             <select class="form-control"
@@ -95,7 +95,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label>Destination Zone @if($loop->first)<span class="text-danger">*</span>@endif</label>
                             <select class="form-control"
@@ -132,7 +132,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-2">
+                    {{--<div class="col-md-2">
                         <div class="form-group">
                             <label>Extra /Kg @if($loop->first)<span class="text-danger">*</span>@endif</label>
                             <div class="input-group">
@@ -150,7 +150,7 @@
                             <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
-                    </div>
+                    </div>--}}
                     <div class="col-md-1">
                         <div class="form-group">
                             <label>&nbsp;</label>

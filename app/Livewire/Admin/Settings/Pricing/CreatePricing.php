@@ -11,7 +11,7 @@ use Livewire\Component;
 
 class CreatePricing extends Component
 {
-    public string $type;
+    public string $type = 'item';
     public $items = [];
     public $weightRanges = [];
     public $zones = [];
@@ -22,31 +22,32 @@ class CreatePricing extends Component
     public $status;
 
     protected $rules = [
-        'type' => 'required|in:item,weight',
+        // 'type' => 'required|in:item,weight',
         'selected_item_id' => 'required|exists:items,id',
-        'selected_weight_range_id' => 'required',
+        // 'selected_weight_range_id' => 'required',
         'pricing_rows.*.source_zone_id' => 'required|exists:zones,id',
         'pricing_rows.*.destination_zone_id' => 'required|exists:zones,id',
         'pricing_rows.*.cost' => 'required|numeric|min:0',
-        'pricing_rows.*.extra' => 'required|numeric|min:0',
+        // 'pricing_rows.*.extra' => 'required|numeric|min:0',
 
     ];
 
     protected $messages = [
-        'type.required' => 'Type is required',
+        // 'type.required' => 'Type is required',
         'status.required' => 'Status is required',
         'pricing_rows.*.source_zone_id.required' => 'The source zone is required.',
         'pricing_rows.*.destination_zone_id.required' => 'The destination zone is required.',
         'pricing_rows.*.cost.required' => 'The cost is required.',
         'pricing_rows.*.cost.numeric' => 'The cost must be a number.',
         'pricing_rows.*.cost.min' => 'The cost must be at least 0.',
-        'pricing_rows.*.extra.numeric' => 'The cost must be a number.',
-        'pricing_rows.*.extra.min' => 'The cost must be at least 0.',
+        // 'pricing_rows.*.extra.numeric' => 'The cost must be a number.',
+        // 'pricing_rows.*.extra.min' => 'The cost must be at least 0.',
     ];
 
     public function mount()
     {
-        $this->items = Item::all();
+        // $this->items = Item::all();
+        $this->items = Item::whereDoesntHave('pricing')->get();
         $this->weightRanges = WeightRange::all();
         $this->zones = Zone::all();
 
@@ -59,7 +60,7 @@ class CreatePricing extends Component
             'source_zone_id' => '',
             'destination_zone_id' => '',
             'cost' => '',
-            'extra' => '',
+            'extra' => 0,
             'id' => null,
         ];
     }
@@ -75,14 +76,14 @@ class CreatePricing extends Component
         $this->validate();
 
         try {
-            $weightRange = WeightRange::findOrFail($this->selected_weight_range_id);
+            // $weightRange = WeightRange::findOrFail($this->selected_weight_range_id);
 
             DB::beginTransaction();
             $pricing = Pricing::create([
                 'type' => $this->type,
                 'item_id' => $this->selected_item_id,
-                'min_weight' => $weightRange->min_weight,
-                'max_weight' => $weightRange->max_weight,
+                'min_weight' => 0,
+                'max_weight' => 0,
                 'status' => $this->status
 
             ]);

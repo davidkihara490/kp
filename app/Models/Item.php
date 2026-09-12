@@ -21,4 +21,8 @@ class Item extends Model
     public function subCategory(){
         return $this->belongsTo(SubCategory::class);
     }
+    public function pricing()
+{
+    return $this->hasOne(Pricing::class);
+}
 }

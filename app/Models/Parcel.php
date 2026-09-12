@@ -81,6 +81,9 @@ class Parcel extends Model
         'payment_status', // pending, paid, failed, refunded
         'paid_at',
 
+        'payment_on_delivery',
+        'payment_on_delivery_status',
+
         'payout',
         'transport_partner_id',
         'driver_id',
@@ -89,6 +92,14 @@ class Parcel extends Model
         'transporter_type',
         'creator_id',
         'creator_type',
+
+        'item_id',
+        'item_name',
+
+        'payment_on_delivery',
+        'payment_on_delivery_status',
+
+
 
     ];
 
@@ -812,18 +823,18 @@ class Parcel extends Model
         return $statuses->map(function ($status) {
 
             $message = match ($status->status) {
-                self::STATUS_CREATED => 'Parcel created in the system', 
-                self::STATUS_BOOKED => 'Parcel paid for and booked into the system', 
-                self::STATUS_ACCEPTED => 'Transport partner accepted parcel', 
-                self::STATUS_ASSIGNED => 'Driver assigned', 
-                self::STATUS_IN_TRANSIT => 'Parcel in transit', 
-                self::STATUS_PENDING => 'Parcel pending', 
-                self::STATUS_WAREHOUSE => 'Parcel received at warehouse', 
-                self::STATUS_ARRIVED_AT_DESTINATION => 'Parcel arrived at destination branch', 
-                self::STATUS_PICKED => 'Parcel picked for final delivery', 
-                self::STATUS_DELIVERED => 'Parcel delivered', 
-                self::STATUS_FAILED => 'Delivery failed', 
-                self::STATUS_RETURNED => 'Parcel returned', 
+                self::STATUS_CREATED => 'Parcel created in the system',
+                self::STATUS_BOOKED => 'Parcel paid for and booked into the system',
+                self::STATUS_ACCEPTED => 'Transport partner accepted parcel',
+                self::STATUS_ASSIGNED => 'Driver assigned',
+                self::STATUS_IN_TRANSIT => 'Parcel in transit',
+                self::STATUS_PENDING => 'Parcel pending',
+                self::STATUS_WAREHOUSE => 'Parcel received at warehouse',
+                self::STATUS_ARRIVED_AT_DESTINATION => 'Parcel arrived at destination branch',
+                self::STATUS_PICKED => 'Parcel picked for final delivery',
+                self::STATUS_DELIVERED => 'Parcel delivered',
+                self::STATUS_FAILED => 'Delivery failed',
+                self::STATUS_RETURNED => 'Parcel returned',
                 default => 'Unknown status',
             };
 

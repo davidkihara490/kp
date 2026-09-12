@@ -24,6 +24,9 @@ class ParcelController extends Controller
         $toTownId = $request->query('to_town_id');
         $parcelWeight = $request->query('weight');
         $price = $request->query('price');
+
+        $price = $price / 1.16;
+
         $parcelCategoryId = $request->query('category');
 
         $pickupPoints = PickUpAndDropOffPoint::with('town')->where('status', 'active')->where('town_id', $fromTownId)->get();
@@ -114,6 +117,8 @@ class ParcelController extends Controller
 
             // Process each item
             foreach ($request->items as $index => $itemData) {
+                $parcelItem = Item::findOrFail($itemData['parcel_category_id']);
+
                 // Use the base price from the form, or calculate fallback
                 $basePrice = $itemData['base_price'];
 
@@ -159,6 +164,8 @@ class ParcelController extends Controller
                     'date' => now(),
 
                     // Parcel Details - From item
+                    'item_id' => $parcelItem->id,
+                    'item_name' => $parcelItem->name,
                     'parcel_id' => Parcel::generateParcelNumber(),
                     'parcel_category_id' => $itemData['parcel_category_id'],
                     'parcel_type' => $itemData['parcel_type'],
@@ -169,6 +176,7 @@ class ParcelController extends Controller
                     'content_description' => $itemData['content_description'],
                     'special_instructions' => $itemData['special_notes'] ?? null,
                     'special_notes' => $itemData['special_notes'] ?? null,
+                    'payment_on_delivery' => $itemData['payment_on_delivery'],
 
                     // Weight, dimensions - You might want to add these per item if needed
                     'weight' => $itemData['weight'] ?? 0.1,

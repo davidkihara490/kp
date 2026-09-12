@@ -25,28 +25,28 @@ class EditPricing extends Component
     public $pricing_rows = [];
     public $types = ['item', 'weight'];
     protected $rules = [
-        'type' => 'required|in:item,weight',
+        // 'type' => 'required|in:item,weight',
         'selected_item_id' => 'required|exists:items,id',
-        'selected_weight_range_id' => 'required|exists:weight_ranges,id',
+        // 'selected_weight_range_id' => 'required|exists:weight_ranges,id',
         'status' => 'required',
         'pricing_rows.*.source_zone_id' => 'required|exists:zones,id',
         'pricing_rows.*.destination_zone_id' => 'required|exists:zones,id',
         'pricing_rows.*.cost' => 'required|numeric|min:0',
         'pricing_rows.*.id' => 'nullable|exists:pricing_items,id',
-        'pricing_rows.*.extra' => 'required|numeric|min:0',
+        // 'pricing_rows.*.extra' => 'required|numeric|min:0',
     ];
 
     protected $messages = [
-        'type.required' => 'Type is required',
+        // 'type.required' => 'Type is required',
         'status.required' => 'Status is required',
         'pricing_rows.*.source_zone_id.required' => 'The source zone is required.',
         'pricing_rows.*.destination_zone_id.required' => 'The destination zone is required.',
         'pricing_rows.*.cost.required' => 'The cost is required.',
         'pricing_rows.*.cost.numeric' => 'The cost must be a number.',
         'pricing_rows.*.cost.min' => 'The cost must be at least 0.',
-        'pricing_rows.*.extra.required' => 'The cost is required.',
-        'pricing_rows.*.extra.numeric' => 'The cost must be a number.',
-        'pricing_rows.*.extra.min' => 'The cost must be at least 0.',
+        // 'pricing_rows.*.extra.required' => 'The cost is required.',
+        // 'pricing_rows.*.extra.numeric' => 'The cost must be a number.',
+        // 'pricing_rows.*.extra.min' => 'The cost must be at least 0.',
     ];
 
     public function mount($id)
@@ -54,18 +54,18 @@ class EditPricing extends Component
         $this->pricing = Pricing::with('items')->findOrFail($id);
 
         $this->items = Item::all();
-        $this->weightRanges = WeightRange::all();
+        // $this->weightRanges = WeightRange::all();
         $this->zones = Zone::all();
 
         // Set the main pricing fields
         $this->selected_item_id = $this->pricing->item_id;
 
         // Find the weight range ID based on min_weight and max_weight
-        $weightRange = WeightRange::where('min_weight', $this->pricing->min_weight)
-            ->where('max_weight', $this->pricing->max_weight)
-            ->first();
+        // $weightRange = WeightRange::where('min_weight', $this->pricing->min_weight)
+        //     ->where('max_weight', $this->pricing->max_weight)
+        //     ->first();
 
-        $this->selected_weight_range_id = $weightRange ? $weightRange->id : null;
+        // $this->selected_weight_range_id = $weightRange ? $weightRange->id : null;
         $this->type = $this->pricing->type;
         $this->status = $this->pricing->status;
 
@@ -76,7 +76,7 @@ class EditPricing extends Component
                 'source_zone_id' => $zone->source_zone_id,
                 'destination_zone_id' => $zone->destination_zone_id,
                 'cost' => $zone->cost,
-                'extra' => $zone->extra,
+                // 'extra' => $zone->extra,
             ];
         })->toArray();
 
@@ -120,7 +120,7 @@ class EditPricing extends Component
         $this->validate();
 
         try {
-            $weightRange = WeightRange::findOrFail($this->selected_weight_range_id);
+            // $weightRange = WeightRange::findOrFail($this->selected_weight_range_id);
 
             DB::beginTransaction();
 
@@ -128,8 +128,8 @@ class EditPricing extends Component
             $this->pricing->update([
                 'type' => $this->type,
                 'item_id' => $this->selected_item_id,
-                'min_weight' => $weightRange->min_weight,
-                'max_weight' => $weightRange->max_weight,
+                'min_weight' => 0,
+                'max_weight' => 0,
                 'status' => $this->status,
             ]);
 
@@ -154,7 +154,8 @@ class EditPricing extends Component
                         'source_zone_id' => $row['source_zone_id'],
                         'destination_zone_id' => $row['destination_zone_id'],
                         'cost' => $row['cost'],
-                        'extra' => $row['extra'],
+                        'extra' => 0,
+                        // 'extra' => $row['extra'],
                     ]);
                 } else {
                     // Create new zone
@@ -162,7 +163,8 @@ class EditPricing extends Component
                         'source_zone_id' => $row['source_zone_id'],
                         'destination_zone_id' => $row['destination_zone_id'],
                         'cost' => $row['cost'],
-                        'extra' => $row['extra'],
+                        'extra' => 0
+                        // 'extra' => $row['extra'],
                     ]);
                 }
             }
