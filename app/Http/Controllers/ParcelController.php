@@ -135,7 +135,7 @@ class ParcelController extends Controller
                 $totalTax += $taxAmount;
                 $grandTotal += $itemTotal;
 
-                $parcelData = [
+                $parcelData = [ 
                     // Basic Information
                     'customer_id' => $customer->id,
                     'booking_type' => $request->booking_type ?? 'instant',
