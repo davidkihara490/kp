@@ -7,5 +7,17 @@
 <!-- Main JS -->
 <script src="{{ asset('ui/js/app.js') }}"></script>
 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NTT9P9FMQ4"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+    gtag('js', new Date());
+    gtag('config', 'G-NTT9P9FMQ4');
+</script>
+
 <!-- TinyMCE (if needed) -->
 @stack('editor-scripts')
