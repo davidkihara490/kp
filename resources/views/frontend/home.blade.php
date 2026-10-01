@@ -101,6 +101,7 @@
                     _token: $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function(response) {
+                console.log(response);
                     displayQuoteResult(response);
                 },
                 error: function(xhr) {

@@ -654,7 +654,7 @@
               <div class="mb-3">
                 <label class="form-label">From Town <span class="text-danger">*</span></label>
                 <input type="number" name="sender_town_id" value="{{ $fromTownId }}" class="d-none">
-                <select class="form-select" name="sender_town_id" id="fromTown" disabled required>
+                <select class="form-select" name="sender_town_id" id="fromTown" disabled>
                   <option value="">Select pickup town</option>
                   @foreach($towns as $town)
                   <option value="{{ $town->id }}" {{ (isset($fromTownId) && $fromTownId == $town->id) ? 'selected' : '' }}>
@@ -698,7 +698,7 @@
               <div class="mb-3">
                 <label class="form-label">To Town <span class="text-danger">*</span></label>
                 <input type="number" name="receiver_town_id" value="{{ $toTownId }}" class="d-none">
-                <select class="form-select" name="receiver_town_id" id="toTown" disabled required>
+                <select class="form-select" name="receiver_town_id" id="toTown" disabled>
                   <option value="">Select delivery town</option>
                   @foreach($towns as $town)
                   <option value="{{ $town->id }}" {{ (isset($toTownId) && $toTownId == $town->id) ? 'selected' : '' }}>
@@ -1105,6 +1105,10 @@
         register: @json(url('/customer/register')),
         checkAuth: @json(url('/customer/check-auth')),
         logout: @json(url('/customer/logout')),
+        // NOTE: Endpoint for fetching the price of a parcel category
+        // from one town to another. The backend returns the cost.
+        // We call this when a parcel category is selected (or changed).
+        getCost: @json(url('api/booking/get-cost')),
       };
 
       const element = (id) => document.getElementById(id);
@@ -1199,6 +1203,83 @@
           stars.forEach(s => s.style.display = 'none');
           if (hint) hint.style.display = 'none';
         }
+      }
+
+      // ============================================================
+      // FETCH PRICE FROM BACKEND FOR A SPECIFIC ITEM
+      // This function is called when a parcel category is selected
+      // or changed. It sends the selected category, fromTown and
+      // toTown to the backend and receives the cost.
+      // The backend response should contain { price: number }.
+      // ============================================================
+      async function fetchCategoryPrice(item) {
+        const categorySelect = item.querySelector('select[name*="parcel_category_id"]');
+        if (!categorySelect) return;
+
+        const categoryId = categorySelect.value;
+        const fromTown = document.getElementById('fromTown').value;
+        const toTown = document.getElementById('toTown').value;
+
+        // If missing any required data, fall back to the data-attribute price
+        if (!categoryId || !fromTown || !toTown) {
+          const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+          if (selectedOption && selectedOption.dataset.price) {
+            item.dataset.fetchedPrice = selectedOption.dataset.price;
+          }
+          return;
+        }
+
+        const itemIndex = item.dataset.itemIndex;
+        const basePriceEl = document.getElementById(`itemBasePrice${itemIndex}`);
+
+        try {
+          // Show a loading state on the base price element
+          if (basePriceEl) basePriceEl.textContent = '...';
+
+          // === BACKEND CALL ===
+          // Fetch the cost from the backend.
+          const response = await fetch(endpoints.getCost, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-CSRF-TOKEN': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+              parcel_category_id: categoryId,
+              from_town_id: fromTown,
+              to_town_id: toTown,
+            }),
+          });
+
+          const data = await parseResponse(response);
+
+          console.log("tytytyyt");
+          console.log(data);
+          console.log("tytytyyt");
+
+
+          // The backend returns { price: <number> }. We store it on the
+          // item element so calculateItemCost() can use it.
+          const fetchedPrice = Number(data.cost) || 0;
+          item.dataset.fetchedPrice = fetchedPrice;
+
+          // Update display
+          if (basePriceEl) basePriceEl.textContent = `KES ${fetchedPrice}`;
+        } catch (error) {
+          console.error('Error fetching category price:', error);
+          // Fall back to the data-attribute price
+          const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+          const fallback = selectedOption?.dataset?.price || basePrice;
+          item.dataset.fetchedPrice = fallback;
+          if (basePriceEl) basePriceEl.textContent = `KES ${fallback}`;
+        }
+
+        // Recalculate totals after price is fetched
+        calculateTotal();
+        if (currentStep === 3) updateReviewDetails();
       }
 
       // ---- Item Management ----
@@ -1337,10 +1418,17 @@
 
         [categorySelect, parcelTypeSelect, packageTypeSelect].forEach(select => {
           select.addEventListener('change', () => {
+            // When the category changes, fetch the price from the backend
+            if (select === categorySelect) {
+              fetchCategoryPrice(newItem);
+            }
             calculateTotal();
             if (currentStep === 3) updateReviewDetails();
           });
         });
+
+        // Fetch initial price for this new item from the backend
+        fetchCategoryPrice(newItem);
 
         // Show remove button if more than 1 item
         updateRemoveButtons();
@@ -1395,7 +1483,6 @@
             insuranceCheckbox.id = `insurance${idx}`;
             const label = item.querySelector(`label[for="insurance${idx}"]`);
             if (label) {
-              // Update the for attribute on the label
               const newLabel = item.querySelector(`label[for^="insurance"]`);
               if (newLabel) {
                 newLabel.setAttribute('for', `insurance${idx}`);
@@ -1796,15 +1883,19 @@
         const insuranceRequired = item.querySelector('.item-insurance')?.checked || false;
         const insuranceAmount = insuranceRequired ? declaredValue * 0.02 : 0;
 
-        // Get base price from the selected category's data attribute (NOT affected by declared value)
+        // Use the price fetched from the backend if available;
+        // otherwise fall back to the data-attribute price.
         let basePrice = 100; // Default fallback
-        const categorySelect = item.querySelector('select[name*="parcel_category_id"]');
-        if (categorySelect) {
-          const selectedOption = categorySelect.options[categorySelect.selectedIndex];
-          // Get price from data attribute
-          const categoryPrice = selectedOption?.dataset?.price;
-          if (categoryPrice && !isNaN(parseFloat(categoryPrice))) {
-            basePrice = parseFloat(categoryPrice);
+        if (item.dataset.fetchedPrice !== undefined) {
+          basePrice = Number(item.dataset.fetchedPrice) || 0;
+        } else {
+          const categorySelect = item.querySelector('select[name*="parcel_category_id"]');
+          if (categorySelect) {
+            const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+            const categoryPrice = selectedOption?.dataset?.price;
+            if (categoryPrice && !isNaN(parseFloat(categoryPrice))) {
+              basePrice = parseFloat(categoryPrice);
+            }
           }
         }
 
@@ -2056,6 +2147,16 @@
           });
         });
 
+        // Add event listeners to existing category selects
+        document.querySelectorAll('select[name*="parcel_category_id"]').forEach(select => {
+          select.addEventListener('change', () => {
+            const item = select.closest('.item-card');
+            if (item) {
+              fetchCategoryPrice(item);
+            }
+          });
+        });
+
         element('toStep2').addEventListener('click', () => {
           if (!selectedPickup || !selectedDropoff) {
             alert('Please select both a pickup and a dropoff station.');
@@ -2142,6 +2243,12 @@
         calculateTotal();
         checkLoginStatus();
         updateRemoveButtons();
+
+        // Fetch initial price for the first item from the backend
+        const firstItem = document.querySelector('.item-card');
+        if (firstItem) {
+          fetchCategoryPrice(firstItem);
+        }
       }
 
       document.addEventListener('DOMContentLoaded', init);

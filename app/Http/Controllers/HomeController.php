@@ -86,7 +86,10 @@ class HomeController extends Controller
             $toZoneId = $toZone->zone_id;
 
 
-            $pricing = PricingItem::where('source_zone_id', $fromZoneId)
+            $item = Item::findOrFail($request->parcel_category_id);
+            $pricing = Pricing::where('item_id', $item->id)->first();
+
+            $pricing = PricingItem::where('pricing_id', $pricing->id)->where('source_zone_id', $fromZoneId)
                 ->where('destination_zone_id', $toZoneId)->first();
 
             if (!$pricing) {
@@ -106,6 +109,60 @@ class HomeController extends Controller
                 'from_town_id' => $fromTown->id,
                 'to_town_id' => $toTown->id,
                 'parcel_category_id' => $request->parcel_category_id,
+                'cost' => $basePrice,
+                'total' => $calculatedPrice,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to calculate quote: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function getCost(Request $request)
+    {
+        $request->validate([
+            'from_town_id' => 'required|exists:towns,id',
+            'to_town_id' => 'required|exists:towns,id|different:from_town_id',
+            'parcel_category_id' => 'required|exists:items,id',
+        ]);
+
+        try {
+            $fromTown = Town::findOrFail($request->from_town_id);
+            $toTown = Town::findOrFail($request->to_town_id);
+
+            $fromZone = ZoneTown::where('town_id', $fromTown->id)->first();
+            $fromZoneId = $fromZone->zone_id;
+
+            $toZone = ZoneTown::where('town_id', $toTown->id)->first();
+            $toZoneId = $toZone->zone_id;
+
+            $item = Item::findOrFail($request->parcel_category_id);
+            $pricing = Pricing::where('item_id', $item->id)->first();
+
+            $pricing = PricingItem::where('pricing_id', $pricing->id)->where('source_zone_id', $fromZoneId)
+                ->where('destination_zone_id', $toZoneId)->first();
+
+            if (!$pricing) {
+                return;
+            }
+
+            $basePrice = (float) ($pricing->cost ?? 0);
+            $tax_amount = round($basePrice * 0.16, 2);
+            // $total_amount = round($basePrice + $tax_amount, 2);
+            $total_amount = ceil($basePrice + $tax_amount);
+            $calculatedPrice = $total_amount;
+
+            return response()->json([
+                'success' => true,
+                'from_town' => $fromTown->name,
+                'to_town' => $toTown->name,
+                'from_town_id' => $fromTown->id,
+                'to_town_id' => $toTown->id,
+                'parcel_category_id' => $request->parcel_category_id,
+                'cost' => $basePrice,
                 'total' => $calculatedPrice,
             ]);
         } catch (\Exception $e) {

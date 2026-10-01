@@ -32,7 +32,13 @@ class ParcelController extends Controller
         $pickupPoints = PickUpAndDropOffPoint::with('town')->where('status', 'active')->where('town_id', $fromTownId)->get();
         $dropoffPoints = PickUpAndDropOffPoint::with('town')->where('status', 'active')->where('town_id', $toTownId)->get();
 
-        $categories = Item::where('status', true)->get();
+        // $categories = Item::where('status', true)->get();
+        $categories = Item::where('status', true)
+            ->whereHas('pricing.items', function ($query) {
+                $query->whereNotNull('cost')
+                    ->where('cost', '>', 0);
+            })
+            ->get();
 
         $towns = Town::with('subCounty.county')->orderBy('name')->get();
         return view('frontend.book', compact('parcelCategoryId', 'categories', 'towns', 'fromTownId', 'toTownId', 'parcelWeight', 'price', 'pickupPoints', 'dropoffPoints'));
@@ -135,7 +141,7 @@ class ParcelController extends Controller
                 $totalTax += $taxAmount;
                 $grandTotal += $itemTotal;
 
-                $parcelData = [ 
+                $parcelData = [
                     // Basic Information
                     'customer_id' => $customer->id,
                     'booking_type' => $request->booking_type ?? 'instant',
@@ -176,7 +182,7 @@ class ParcelController extends Controller
                     'content_description' => $itemData['content_description'],
                     'special_instructions' => $itemData['special_notes'] ?? null,
                     'special_notes' => $itemData['special_notes'] ?? null,
-                    'payment_on_delivery' => $itemData['payment_on_delivery'],
+                    'payment_on_delivery' => $itemData['payment_on_delivery'] ?? false,
 
                     // Weight, dimensions - You might want to add these per item if needed
                     'weight' => $itemData['weight'] ?? 0.1,
