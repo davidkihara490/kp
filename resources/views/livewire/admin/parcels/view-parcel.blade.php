@@ -31,8 +31,8 @@
                 <div class="col-md-3 col-sm-6">
                     <div class="small-box bg-info">
                         <div class="inner">
-                            <h3>{{ $parcel->weight ?? 'N/A' }} {{ $parcel->weight_unit }}</h3>
-                            <p>Weight</p>
+                            <h3>{{ ucfirst($parcel->parcel_type) }} </h3>
+                            <p>Parcel Type</p>
                         </div>
                         <div class="icon">
                             <i class="fas fa-weight"></i>
@@ -43,8 +43,8 @@
                 <div class="col-md-3 col-sm-6">
                     <div class="small-box bg-success">
                         <div class="inner">
-                            <h3>{{ $parcel->parcel_dimensions ?? 'N/A' }}</h3>
-                            <p>Dimensions</p>
+                            <h3>{{ ucfirst($parcel->package_type) }}</h3>
+                            <p>Package Type</p>
                         </div>
                         <div class="icon">
                             <i class="fas fa-ruler-combined"></i>
@@ -184,18 +184,18 @@
                                                 </span>
                                             </td>
                                         </tr>
-                                        <tr>
+                                        <!-- <tr>
                                             <th>Weight:</th>
                                             <td>{{ $parcel->weight }} {{ $parcel->weight_unit }}</td>
                                             <th>Dimensions:</th>
                                             <td>{{ $parcel->parcel_dimensions }}</td>
-                                        </tr>
-                                        <tr>
+                                        </tr> -->
+                                        <!-- <tr>
                                             <th>Volume:</th>
                                             <td>{{ $parcel->parcel_volume }} cm³</td>
                                             <th>Size Category:</th>
                                             <td>{{ ucfirst($parcel->parcel_size_category) }}</td>
-                                        </tr>
+                                        </tr> -->
                                         <tr>
                                             <th>Declared Value:</th>
                                             <td>KES {{ number_format($parcel->declared_value, 2) }}</td>

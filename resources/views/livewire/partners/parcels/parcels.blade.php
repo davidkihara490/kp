@@ -89,8 +89,22 @@
                     </div>
                 </div>
                 @else
-                <span class="stat-value">{{ $totalParcels }}</span>
+                <div class="stat-card pending">
+                    <div class="stat-icon">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Pending</span>
+                        <span class="stat-value">{{ $statParcels->whereIn('current_status', ['created','accepted','assigned'])->count() }}</span>
+                    </div>
+                    <div class="stat-progress">
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" style="width: {{ ($statParcels->whereIn('current_status', ['created','accepted','assigned'])->count() / max($statParcels->count(), 1)) * 100 }}%"></div>
+                        </div>
+                    </div>
+                </div>
                 @endif
+
 
                 @if(auth()->guard('partner')->user()->user_type == 'driver')
                 <div class="stat-card transit">
@@ -138,7 +152,20 @@
                     </div>
                 </div>
                 @else
-                <span class="stat-value">{{ $totalParcels }}</span>
+                <div class="stat-card transit">
+                    <div class="stat-icon">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Received</span>
+                        <span class="stat-value">{{ $statParcels->whereIn('current_status', ['warehouse','arrived_at_destination','picked','delivered'])->count() }}</span>
+                    </div>
+                    <div class="stat-progress">
+                        <div class="progress">
+                            <div class="progress-bar bg-info" style="width: {{ ($statParcels->whereIn('current_status', ['warehouse','arrived_at_destination','picked','delivered'])->count() / max($statParcels->count(), 1)) * 100 }}%"></div>
+                        </div>
+                    </div>
+                </div>
                 @endif
 
                 @if(auth()->guard('partner')->user()->user_type == 'driver')
@@ -184,7 +211,19 @@
                     </div>
                 </div>
                 @else
-                <span class="stat-value">{{ $totalParcels }}</span>
+                 <div class="stat-card delivered">
+                    <div class="stat-icon">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Returned</span>
+                        <span class="stat-value">{{ $statParcels->whereIn('current_status', ['returned', 'failed'])->count() }}</span>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="bi bi-check"></i>
+                        {{ round(($statParcels->whereIn('current_status', ['returned', 'failed'])->count()  ?? 0) / max($statParcels->count(), 1) * 100) }}% success
+                    </div>
+                </div>
                 @endif
 
                 @if(auth()->guard('partner')->user()->user_type == 'transport')
@@ -404,11 +443,7 @@
                             <i class="bi bi-x-circle me-1"></i>
                             <span class="btn-label">Cancel</span>
                         </button>
-                        <button class="btn btn-sm btn-danger" wire:click="bulkDelete"
-                            wire:confirm="Are you sure you want to delete selected parcels?">
-                            <i class="bi bi-trash me-1"></i>
-                            <span class="btn-label">Delete</span>
-                        </button>
+
                         <button class="btn btn-sm btn-outline-secondary" wire:click="$set('selectedParcels', [])">
                             <i class="bi bi-x me-1"></i>
                             <span class="btn-label">Clear</span>
@@ -1046,13 +1081,13 @@
                                             <i class="bi bi-eye"></i>
                                         </a>
 
-                                        @if (!$parcel->payment_status =='paid')
+                                        {{-- @if (!$parcel->payment_status =='paid')
                                         <button class="action-btn danger"
                                             wire:click="confirmDelete({{ $parcel->id }})"
-                                            title="Delete Parcel">
-                                            <i class="bi bi-trash"></i>
+                                        title="Delete Parcel">
+                                        <i class="bi bi-trash"></i>
                                         </button>
-                                        @endif
+                                        @endif --}}
                                     </div>
                                 </td>
                             </tr>
@@ -1316,13 +1351,13 @@
                                         </button>
                                         @endif
 
-                                        @if ($parcel->canBeCancelled())
+                                        {{--@if ($parcel->canBeCancelled())
                                         <button class="action-btn danger"
                                             wire:click="confirmDelete({{ $parcel->id }})"
-                                            title="Delete Parcel">
-                                            <i class="bi bi-trash"></i>
+                                        title="Delete Parcel">
+                                        <i class="bi bi-trash"></i>
                                         </button>
-                                        @endif
+                                        @endif--}}
                                     </div>
                                 </td>
                             </tr>

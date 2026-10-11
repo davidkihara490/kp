@@ -210,19 +210,17 @@
                                 <div class="mb-3">
                                     <label for="capacity" class="form-label">
                                         <i class="bi bi-box-seam me-2"></i>
-                                        Storage Capacity
+                                        Storage Capacity <i><small>Indicate what your point can handle e.g. small or medium sized or large parcels or all. </small></i>
                                     </label>
                                     <div class="input-group">
-                                        <input type="number"
+                                        <input type="text"
                                             class="form-control @error('capacity') is-invalid @enderror"
-                                            id="capacity" wire:model="capacity"
-                                            placeholder="Enter maximum parcels capacity">
-                                        <span class="input-group-text">parcels</span>
+                                            id="capacity" wire:model="capacity">
                                     </div>
                                     @error('capacity')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div> 
+                                </div>
 
                                 <!-- Notes -->
                                 <div class="mb-3">

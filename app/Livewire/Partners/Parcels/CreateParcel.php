@@ -181,13 +181,19 @@ class CreateParcel extends Component
             default => null,
         };
 
+        if (!$partner) {
+            abort(403, 'You are not associated with a partner.');
+        }
+
+            $this->partner_id = $partner->id;
+
         $points = PickUpAndDropOffPoint::where('partner_id', $partner->id)
             ->where('status', true)
             ->with('town')
             ->orderBy('name')
             ->get();
 
-        $this->senderTowns = $points->pluck('town')->unique('id')->values();
+        $this->senderTowns = $points->pluck('town')->filter()->unique('id')->values();
 
         $this->counties = County::whereHas('towns.pickUpAndDropOffPoint', function ($query) {
             $query->where('status', true);
@@ -317,118 +323,122 @@ class CreateParcel extends Component
      * Resolve the weight for an item row. Pulls from Item catalogue
      * (weight column if present); falls back to 1 kg.
      */
-protected function resolveItemWeight(array $row): float
-{
-    $id = $row['parcel_category_id'] ?? null;
-    if (!$id) {
-        return 0.0;
-    }
-
-    $catalogue = collect($this->items)->firstWhere('id', (int) $id);
-    if (!$catalogue) {
-        return 0.0;
-    }
-
-    foreach (['weight', 'default_weight', 'unit_weight'] as $col) {
-        if (isset($catalogue->{$col}) && is_numeric($catalogue->{$col}) && $catalogue->{$col} > 0) {
-            return (float) $catalogue->{$col};
+    protected function resolveItemWeight(array $row): float
+    {
+        $id = $row['parcel_category_id'] ?? null;
+        if (!$id) {
+            return 0.0;
         }
+
+        $catalogue = collect($this->items)->firstWhere('id', (int) $id);
+        if (!$catalogue) {
+            return 0.0;
+        }
+
+        foreach (['weight', 'default_weight', 'unit_weight'] as $col) {
+            if (isset($catalogue->{$col}) && is_numeric($catalogue->{$col}) && $catalogue->{$col} > 0) {
+                return (float) $catalogue->{$col};
+            }
+        }
+        return 1.0;
     }
-    return 1.0;
-}
 
     /**
      * Price each item individually using zone pricing on resolved item weight.
      */
-protected function recalculateItems(): void
-{
-    $senderTown   = $this->sender_town_id ? Town::with('subCounty.county')->find($this->sender_town_id) : null;
-    $receiverTown = $this->receiver_town_id ? Town::with('subCounty.county')->find($this->receiver_town_id) : null;
+    protected function recalculateItems(): void
+    {
+        $senderTown   = $this->sender_town_id ? Town::with('subCounty.county')->find($this->sender_town_id) : null;
+        $receiverTown = $this->receiver_town_id ? Town::with('subCounty.county')->find($this->receiver_town_id) : null;
 
-    $senderZone   = $senderTown ? ZoneTown::where('town_id', $senderTown->id)->first() : null;
-    $receiverZone = $receiverTown ? ZoneTown::where('town_id', $receiverTown->id)->first() : null;
+        $senderZone   = $senderTown ? ZoneTown::where('town_id', $senderTown->id)->first() : null;
+        $receiverZone = $receiverTown ? ZoneTown::where('town_id', $receiverTown->id)->first() : null;
 
-    foreach ($this->parcelItems as &$row) {
+        foreach ($this->parcelItems as &$row) {
 
-        $declared = (float) ($row['declared_value'] ?? 0);
+            $declared = (float) ($row['declared_value'] ?? 0);
 
-        // Skip pricing if no item selected yet
-        if (empty($row['parcel_category_id'])) {
-            $row['base_price']            = 0;
-            $row['item_insurance_amount'] = 0;
-            $row['tax_amount']            = 0;
-            $row['item_total']            = 0;
-            continue;
+            // Skip pricing if no item selected yet
+            if (empty($row['parcel_category_id'])) {
+                $row['base_price']            = 0;
+                $row['item_insurance_amount'] = 0;
+                $row['tax_amount']            = 0;
+                $row['item_total']            = 0;
+                continue;
+            }
+
+            $item = Item::find($row['parcel_category_id']);
+
+            // Skip if item not found
+            if (!$item) {
+                $row['base_price']            = 0;
+                $row['item_insurance_amount'] = 0;
+                $row['tax_amount']            = 0;
+                $row['item_total']            = 0;
+                continue;
+            }
+
+            $pricing = Pricing::where('item_id', $item->id)->first();
+
+            // Skip if no pricing record or no zones resolved
+            if (!$pricing || !$senderZone || !$receiverZone) {
+                $row['base_price']            = 0;
+                $row['item_insurance_amount'] = 0;
+                $row['tax_amount']            = 0;
+                $row['item_total']            = 0;
+                continue;
+            }
+
+            $pricingItem = PricingItem::where('pricing_id', $pricing->id)
+                ->where('source_zone_id', $senderZone->zone_id)
+                ->where('destination_zone_id', $receiverZone->zone_id)
+                ->first();
+
+            // Skip if no matching pricing item for the route
+            if (!$pricingItem) {
+                $row['base_price']            = 0;
+                $row['item_insurance_amount'] = 0;
+                $row['tax_amount']            = 0;
+                $row['item_total']            = 0;
+                continue;
+            }
+
+            $basePrice = (float) ($pricingItem->cost ?? 0);
+            $tax_amount = round($basePrice * 0.16, 2);
+            $total_amount = ceil($basePrice + $tax_amount);
+            $calculatedPrice = $total_amount;
+
+            $basePrice = round($basePrice, 2);
+
+            $insurance = !empty($row['insurance_required'])
+                ? round($declared * 0.02, 2)
+                : 0;
+
+            $tax = round(($basePrice + $insurance) * 0.16, 2);
+
+            $row['base_price']            = $basePrice;
+            $row['item_insurance_amount'] = $insurance;
+            $row['tax_amount']            = $tax_amount;
+            $row['item_total']            = round($basePrice + $insurance + $tax, 2);
         }
-
-        $item = Item::find($row['parcel_category_id']);
-
-        // Skip if item not found
-        if (!$item) {
-            $row['base_price']            = 0;
-            $row['item_insurance_amount'] = 0;
-            $row['tax_amount']            = 0;
-            $row['item_total']            = 0;
-            continue;
-        }
-
-        $pricing = Pricing::where('item_id', $item->id)->first();
-
-        // Skip if no pricing record or no zones resolved
-        if (!$pricing || !$senderZone || !$receiverZone) {
-            $row['base_price']            = 0;
-            $row['item_insurance_amount'] = 0;
-            $row['tax_amount']            = 0;
-            $row['item_total']            = 0;
-            continue;
-        }
-
-        $pricingItem = PricingItem::where('pricing_id', $pricing->id)
-            ->where('source_zone_id', $senderZone->zone_id)
-            ->where('destination_zone_id', $receiverZone->zone_id)
-            ->first();
-
-        // Skip if no matching pricing item for the route
-        if (!$pricingItem) {
-            $row['base_price']            = 0;
-            $row['item_insurance_amount'] = 0;
-            $row['tax_amount']            = 0;
-            $row['item_total']            = 0;
-            continue;
-        }
-
-        $basePrice = (float) ($pricingItem->cost ?? 0);
-        $tax_amount = round($basePrice * 0.16, 2);
-        $total_amount = ceil($basePrice + $tax_amount);
-        $calculatedPrice = $total_amount;
-
-        $basePrice = round($basePrice, 2);
-
-        $insurance = !empty($row['insurance_required'])
-            ? round($declared * 0.02, 2)
-            : 0;
-
-        $tax = round(($basePrice + $insurance) * 0.16, 2);
-
-        $row['base_price']            = $basePrice;
-        $row['item_insurance_amount'] = $insurance;
-        $row['tax_amount']            = $tax_amount;
-        $row['item_total']            = round($basePrice + $insurance + $tax, 2);
+        unset($row);
     }
-    unset($row);
-}
 
     /* ============ Livewire "updated" hooks ============ */
 
     public function updatedSenderTownId($value)
     {
         try {
-            if ($value) {
-                $this->senderPickUpAndDropOffPoints = PickUpAndDropOffPoint::where('town_id', (int)$value)
+            $this->senderPickUpAndDropOffPoints = collect();
+
+            if ($value && $this->partner_id) {
+                $this->senderPickUpAndDropOffPoints = PickUpAndDropOffPoint::where('partner_id', $this->partner_id)
+                    ->where('town_id', (int) $value)
                     ->where('status', true)
                     ->orderBy('name')
                     ->get();
             }
+
             $this->recalculateParcelTotals();
         } catch (\Exception $e) {
             Log::error('Error updating sender details: ' . $e->getMessage());

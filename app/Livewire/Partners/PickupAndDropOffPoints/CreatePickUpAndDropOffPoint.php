@@ -50,7 +50,7 @@ class CreatePickUpAndDropOffPoint extends Component
             'contact_email' => 'required|email|max:255',
             'contact_phone_number' => 'required|string|max:20',
             'is_24_hours' => 'boolean',
-            'capacity' => 'nullable|integer|min:1',
+            'capacity' => 'nullable|string',
             'notes' => 'nullable|string|max:1000',
             // 'latitude' => 'nullable|numeric',
             // 'longitude' => 'nullable|numeric',

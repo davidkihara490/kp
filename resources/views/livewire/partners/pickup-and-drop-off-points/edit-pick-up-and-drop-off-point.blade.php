@@ -221,118 +221,117 @@
                                         id="longitude" wire:model="longitude"
                                         placeholder="Longitude">
                                     @error('longitude')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="latitude" class="form-label">
-                                        <i class="bi bi-globe me-2"></i>
-                                        Latitude <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="number" step="any"
-                                        class="form-control @error('latitude') is-invalid @enderror"
-                                        id="latitude" wire:model="latitude"
-                                        placeholder="Enter email address">
-                                    @error('latitude')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div> --}}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Column -->
-                    <div class="col-lg-6">
-                        <!-- Contact Information Card -->
-                        <div class="form-card">
-                            <div class="form-card-header">
-                                <h5><i class="bi bi-person-lines-fill me-2"></i>Contact Information</h5>
-                            </div>
-                            <div class="form-card-body">
-                                <!-- Contact Person -->
-                                <div class="mb-3">
-                                    <label for="contact_person" class="form-label">
-                                        <i class="bi bi-person me-2"></i>
-                                        Contact Person <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="text" class="form-control @error('contact_person') is-invalid @enderror"
-                                        id="contact_person" wire:model="contact_person"
-                                        placeholder="Enter contact person name">
-                                    @error('contact_person')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <!-- Contact Email -->
-                                <div class="mb-3">
-                                    <label for="contact_email" class="form-label">
-                                        <i class="bi bi-envelope me-2"></i>
-                                        Email Address <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="email" class="form-control @error('contact_email') is-invalid @enderror"
-                                        id="contact_email" wire:model="contact_email"
-                                        placeholder="Enter email address">
-                                    @error('contact_email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <!-- Contact Phone -->
-                                <div class="mb-3">
-                                    <label for="contact_phone_number" class="form-label">
-                                        <i class="bi bi-telephone me-2"></i>
-                                        Phone Number <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="text" class="form-control @error('contact_phone_number') is-invalid @enderror"
-                                        id="contact_phone_number" wire:model="contact_phone_number"
-                                        placeholder="Enter phone number">
-                                    @error('contact_phone_number')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Additional Information Card -->
-                        <div class="form-card mt-4">
-                            <div class="form-card-header">
-                                <h5><i class="bi bi-card-text me-2"></i>Additional Information</h5>
-                            </div>
-                            <div class="form-card-body">
-                                <!-- Capacity -->
-                                 <div class="mb-3">
-                                    <label for="capacity" class="form-label">
-                                        <i class="bi bi-box-seam me-2"></i>
-                                        Storage Capacity
-                                    </label>
-                                    <div class="input-group">
-                                        <input type="number" class="form-control @error('capacity') is-invalid @enderror"
-                                            id="capacity" wire:model="capacity"
-                                            placeholder="Enter maximum parcels capacity">
-                                        <span class="input-group-text">parcels</span>
-                                    </div>
-                                    @error('capacity')
                                     <div class="invalid-feedback">{{ $message }}
                             </div>
                             @enderror
                         </div>
-                    
-                        <!-- Notes -->
+
                         <div class="mb-3">
-                            <label for="notes" class="form-label">
-                                <i class="bi bi-sticky me-2"></i>
-                                Notes
+                            <label for="latitude" class="form-label">
+                                <i class="bi bi-globe me-2"></i>
+                                Latitude <span class="text-danger">*</span>
                             </label>
-                            <textarea class="form-control @error('notes') is-invalid @enderror"
-                                id="notes" wire:model="notes" rows="3"
-                                placeholder="Any additional notes or instructions"></textarea>
-                            @error('notes')
+                            <input type="number" step="any"
+                                class="form-control @error('latitude') is-invalid @enderror"
+                                id="latitude" wire:model="latitude"
+                                placeholder="Enter email address">
+                            @error('latitude')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-6">
+            <!-- Contact Information Card -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <h5><i class="bi bi-person-lines-fill me-2"></i>Contact Information</h5>
+                </div>
+                <div class="form-card-body">
+                    <!-- Contact Person -->
+                    <div class="mb-3">
+                        <label for="contact_person" class="form-label">
+                            <i class="bi bi-person me-2"></i>
+                            Contact Person <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control @error('contact_person') is-invalid @enderror"
+                            id="contact_person" wire:model="contact_person"
+                            placeholder="Enter contact person name">
+                        @error('contact_person')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Contact Email -->
+                    <div class="mb-3">
+                        <label for="contact_email" class="form-label">
+                            <i class="bi bi-envelope me-2"></i>
+                            Email Address <span class="text-danger">*</span>
+                        </label>
+                        <input type="email" class="form-control @error('contact_email') is-invalid @enderror"
+                            id="contact_email" wire:model="contact_email"
+                            placeholder="Enter email address">
+                        @error('contact_email')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Contact Phone -->
+                    <div class="mb-3">
+                        <label for="contact_phone_number" class="form-label">
+                            <i class="bi bi-telephone me-2"></i>
+                            Phone Number <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control @error('contact_phone_number') is-invalid @enderror"
+                            id="contact_phone_number" wire:model="contact_phone_number"
+                            placeholder="Enter phone number">
+                        @error('contact_phone_number')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information Card -->
+            <div class="form-card mt-4">
+                <div class="form-card-header">
+                    <h5><i class="bi bi-card-text me-2"></i>Additional Information</h5>
+                </div>
+                <div class="form-card-body">
+                    <!-- Capacity -->
+                    <div class="mb-3">
+                        <label for="capacity" class="form-label">
+                            <i class="bi bi-box-seam me-2"></i>
+                            Storage Capacity <i><small>Indicate what your point can handle e.g. small or medium sized or large parcels or all. </small></i>
+                        </label>
+                        <div class="input-group">
+                            <input type="text" class="form-control @error('capacity') is-invalid @enderror"
+                                id="capacity" wire:model="capacity">
+                        </div>
+                        @error('capacity')
+                        <div class="invalid-feedback">{{ $message }}
+                        </div>
+                        @enderror
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">
+                            <i class="bi bi-sticky me-2"></i>
+                            Notes
+                        </label>
+                        <textarea class="form-control @error('notes') is-invalid @enderror"
+                            id="notes" wire:model="notes" rows="3"
+                            placeholder="Any additional notes or instructions"></textarea>
+                        @error('notes')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

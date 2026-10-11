@@ -14,6 +14,7 @@
     @php
     // $partnerType = Auth::guard('partner')->user()->partner?->partner_type ?? Auth::guard('partner')->user()->driver?->partner ?? Auth::guard('partner')->user()->parcelHandlingAssistant?->partner;
     $partnerType = Auth::guard('partner')->user()->user_type;
+    // dd($partnerType);
     $dashboardRoute = match($partnerType) {
     'pick_up_and_drop_off' => 'partners.pd.dashboard',
     'transport' => 'partners.transport.dashboard',
@@ -43,10 +44,12 @@
             </a>
             @endif--}}
 
+            {{--@if ($partnerType == 'pickup-dropoff' || $partnerType == 'pha')
             <a href="{{ route('partners.commissions') }}" class="nav-link">
                 <i class="bi bi-bank"></i>
                 <span>Commission Structure</span>
             </a>
+            @endif--}}
         </div>
 
         @if (auth()->guard('partner')?->user()?->user_type == 'pickup-dropoff' || auth()->guard('partner')?->user()?->user_type == 'transport')
@@ -63,6 +66,7 @@
             </a>
             @endif
 
+
             @if (auth()->guard('partner')->user()->user_type == 'transport')
             <a href="{{ route('partners.fleet.index') }}" class="nav-link">
                 <i class="bi bi-box-seam"></i>
@@ -77,6 +81,8 @@
                 <span>Marketplace</span>
             </a> -->
             @endif
+
+            
         </div>
         @endif
 

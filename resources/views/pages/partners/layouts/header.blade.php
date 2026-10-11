@@ -49,11 +49,18 @@
                 <span>Parcels</span>
             </a>
 
-            <a href="{{ route('partners.commissions') }}"
-                class="nav-link {{ request()->routeIs('partners.commissions') ? 'active' : '' }}">
+            @if ($partnerType == 'pickup-dropoff' || $partnerType == 'pha')
+            <a href="{{ route('partners.commissions') }}" class="nav-link">
                 <i class="bi bi-bank"></i>
                 <span>Commission Structure</span>
             </a>
+            @endif
+
+            {{--<a href="{{ route('partners.commissions') }}"
+                class="nav-link {{ request()->routeIs('partners.commissions') ? 'active' : '' }}">
+                <i class="bi bi-bank"></i>
+                <span>Commission Structure</span>
+            </a>--}}
         </div>
 
         @if (in_array($partnerType, ['pickup-dropoff', 'pick_up_and_drop_off', 'transport']))

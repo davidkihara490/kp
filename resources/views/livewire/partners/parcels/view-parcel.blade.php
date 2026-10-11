@@ -78,11 +78,9 @@
                             <i class="bi bi-box-seam"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">{{ number_format($parcel->weight, 2) }} {{ $parcel->weight_unit }}</div>
-                            <div class="stat-label">Weight</div>
-                            @if($parcel->length && $parcel->width && $parcel->height)
-                            <div class="stat-subtext">{{ $parcel->length }}×{{ $parcel->width }}×{{ $parcel->height }} {{ $parcel->dimension_unit }}</div>
-                            @endif
+                            <div class="stat-value">{{ ucfirst($parcel->parcel_type) }} | {{ ucfirst($parcel->package_type) }}</div>
+                            <div class="stat-label">Parcel Type | Package Type</div>
+                        
                         </div>
                     </div>
                 </div>
@@ -92,13 +90,24 @@
                             <i class="bi bi-truck"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">{{ $parcel->driver?->full_name ?? 'Not Assigned' }}</div>
+                            @php
+                            $assinged = $parcel->statuses->where('status', 'assigned')->first()
+                            @endphp
+
+                            @if($assinged)
+                            <div class="stat-value">{{ $assinged->driver?->full_name}}</div>
                             <div class="stat-label">Driver</div>
+                            <div class="stat-subtext">{{ $assinged->driver->phone_number }}</div>
+
+                            @else
+                            <div class="stat-value">Not Assigned</div>
+                            @endif
+
                             @if($parcel->driver)
-                            <div class="stat-subtext">{{ $parcel->driver->phone_number }}</div>
                             @endif
                         </div>
                     </div>
+
                 </div>
                 <div class="col-xl-3 col-md-6 mb-3">
                     <div class="stat-card">
