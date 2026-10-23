@@ -66,8 +66,8 @@
             </a>
             @endif
 
-
             @if (auth()->guard('partner')->user()->user_type == 'transport')
+            
             <a href="{{ route('partners.fleet.index') }}" class="nav-link">
                 <i class="bi bi-box-seam"></i>
                 <span>Fleet</span>
@@ -75,6 +75,10 @@
             <a href="{{ route('partners.drivers.index') }}" class="nav-link">
                 <i class="bi bi-cash"></i>
                 <span>Drivers</span>
+            </a>
+            <a href="{{ route('partners.rates.index') }}" class="nav-link">
+                <i class="bi bi-cash"></i>
+                <span>Rates</span>
             </a>
             <!-- <a href="{{ route('partners.marketplace') }}" class="nav-link">
                 <i class="bi bi-bank"></i>

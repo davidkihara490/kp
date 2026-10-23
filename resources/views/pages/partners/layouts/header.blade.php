@@ -57,9 +57,9 @@
             @endif
 
             {{--<a href="{{ route('partners.commissions') }}"
-                class="nav-link {{ request()->routeIs('partners.commissions') ? 'active' : '' }}">
-                <i class="bi bi-bank"></i>
-                <span>Commission Structure</span>
+            class="nav-link {{ request()->routeIs('partners.commissions') ? 'active' : '' }}">
+            <i class="bi bi-bank"></i>
+            <span>Commission Structure</span>
             </a>--}}
         </div>
 
@@ -93,6 +93,12 @@
                 <i class="bi bi-people"></i>
                 <span>Drivers</span>
             </a>
+            <a href="{{ route('partners.rates.index') }}"
+                class="nav-link {{ request()->routeIs('partners.rates.*') ? 'active' : '' }}">
+                <i class="bi bi-bank"></i>
+                <span>Rates</span>
+            </a>
+
             @endif
         </div>
         @endif
