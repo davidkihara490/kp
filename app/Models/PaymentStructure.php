@@ -8,10 +8,13 @@ class PaymentStructure extends Model
 {
     protected $fillable = [
         'delivery_type',
+        'item_id',
         'tax_percentage',
+        'pick_up_drop_off_partner_type', //fixed or percentage
         'pick_up_drop_off_partner_amount',
         'transport_partner_percentage',
         'platform_percentage',
+        'platform_fixed_amount',
     ];
 
     protected $casts = [
@@ -20,5 +23,11 @@ class PaymentStructure extends Model
         'delivery_partner_amount' => 'decimal:2',
         'transport_percentage' => 'decimal:2',
         'platform_percentage' => 'decimal:2',
+        'platform_fixed_amount' => 'decimal:2',
     ];
+
+    public function item()
+{
+    return $this->belongsTo(Item::class);
+}
 }

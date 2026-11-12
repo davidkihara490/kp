@@ -6,6 +6,8 @@ use App\Models\BlogPost;
 use App\Models\County;
 use App\Models\FAQ;
 use App\Models\Item;
+use App\Models\Partner;
+use App\Models\PartnerRate;
 use App\Models\PickUpAndDropOffPoint;
 use App\Models\Pricing;
 use App\Models\PricingItem;
@@ -64,11 +66,10 @@ class HomeController extends Controller
         return  view('frontend.home', compact('categories', 'totalPickUpPoints', 'countiesCovered', 'towns', 'pickUpAndDropOffPoints', 'blogPosts', 'faqs', 'counties', 'parcelTypes', 'itemCategories'));
     }
 
-
     public function calculate(Request $request)
     {
         // TODO::Add insuarance
-        $request->validate([
+        $validated  = $request->validate([
             'from_town_id' => 'required|exists:towns,id',
             'to_town_id' => 'required|exists:towns,id|different:from_town_id',
             'parcel_category_id' => 'required|exists:items,id',
@@ -87,30 +88,88 @@ class HomeController extends Controller
 
 
             $item = Item::findOrFail($request->parcel_category_id);
-            $pricing = Pricing::where('item_id', $item->id)->first();
+            $itemId = $item->id;
 
-            $pricing = PricingItem::where('pricing_id', $pricing->id)->where('source_zone_id', $fromZoneId)
-                ->where('destination_zone_id', $toZoneId)->first();
+            $partners = Partner::query()
+                ->where('verification_status', 'verified')
+                ->whereHas('partnerRates', function ($q) use ($fromZoneId, $itemId, $toZoneId) {
+                    $q->where('source_zone_id', $fromZoneId)
+                        ->where('destination_zone_id', $toZoneId)
+                        ->where('item_id', $itemId);
+                    // ->where('status', 'active');
+                })
+                ->with(['partnerRates' => function ($q) use ($fromZoneId, $itemId, $toZoneId) {
+                    $q->where('source_zone_id', $fromZoneId)
+                        ->where('destination_zone_id', $toZoneId)
+                        ->where('item_id', $itemId);
+                    // ->where('status', 'active');
+                }])
+                ->get()
 
-            if (!$pricing) {
-                return;
+                ->map(function ($partner) {
+                    $rate = $partner->partnerRates->first();
+
+                    return [
+                        'id'             => $partner->id,
+                        'name'           => $partner->company_name,
+                        // 'logo'        => $partner->logo ? asset($partner->logo) : null,
+                        // 'description' => $partner->description,
+                        // 'estimated_days' => $rate->estimated_days ?? null,
+                        'price'          => (float) ($rate->cost ?? 0),
+                    ];
+                })
+
+                ->filter(fn($p) => $p['price'] > 0)
+                ->sortBy('price')
+                ->values();
+
+
+            // $pricing = Pricing::where('item_id', $item->id)->first();
+
+            // $pricing = PricingItem::where('pricing_id', $pricing->id)->where('source_zone_id', $fromZoneId)
+            //     ->where('destination_zone_id', $toZoneId)->first();
+
+            // if (!$pricing) {
+            //     return;
+            // }
+
+            // $basePrice = (float) ($pricing->cost ?? 0);
+            // $tax_amount = round($basePrice * 0.16, 2);
+            // // $total_amount = round($basePrice + $tax_amount, 2);
+            // $total_amount = ceil($basePrice + $tax_amount);
+            // $calculatedPrice = $total_amount;
+
+            // return response()->json([
+            //     'success' => true,
+            //     'from_town' => $fromTown->name,
+            //     'to_town' => $toTown->name,
+            //     'from_town_id' => $fromTown->id,
+            //     'to_town_id' => $toTown->id,
+            //     'parcel_category_id' => $request->parcel_category_id,
+            //     'cost' => $basePrice,
+            //     'total' => $calculatedPrice,
+            // ]);
+
+
+            if ($partners->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No transport partner currently serves this route for the selected parcel category.',
+                    'from_town_id'       => $fromTown->id,
+                    'to_town_id'         => $toTown->id,
+                    'parcel_category_id' => $validated['parcel_category_id'],
+                    'partners'           => [],
+                ]);
             }
-
-            $basePrice = (float) ($pricing->cost ?? 0);
-            $tax_amount = round($basePrice * 0.16, 2);
-            // $total_amount = round($basePrice + $tax_amount, 2);
-            $total_amount = ceil($basePrice + $tax_amount);
-            $calculatedPrice = $total_amount;
 
             return response()->json([
                 'success' => true,
-                'from_town' => $fromTown->name,
-                'to_town' => $toTown->name,
-                'from_town_id' => $fromTown->id,
-                'to_town_id' => $toTown->id,
-                'parcel_category_id' => $request->parcel_category_id,
-                'cost' => $basePrice,
-                'total' => $calculatedPrice,
+                'from_town_id'       => $fromTown->id,
+                'to_town_id'         => $toTown->id,
+                'parcel_category_id' => $validated['parcel_category_id'],
+                'from_town_name'     => $fromTown->name,
+                'to_town_name'       => $toTown->name,
+                'partners'           => $partners,
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -127,6 +186,7 @@ class HomeController extends Controller
             'from_town_id' => 'required|exists:towns,id',
             'to_town_id' => 'required|exists:towns,id|different:from_town_id',
             'parcel_category_id' => 'required|exists:items,id',
+            'transport_partner_id' => 'required|exists:partners,id',
         ]);
 
         try {
@@ -140,20 +200,20 @@ class HomeController extends Controller
             $toZoneId = $toZone->zone_id;
 
             $item = Item::findOrFail($request->parcel_category_id);
-            $pricing = Pricing::where('item_id', $item->id)->first();
+            $itemId = $item->id;
 
-            $pricing = PricingItem::where('pricing_id', $pricing->id)->where('source_zone_id', $fromZoneId)
-                ->where('destination_zone_id', $toZoneId)->first();
-
-            if (!$pricing) {
-                return;
-            }
+            $pricing = PartnerRate::where([
+                'partner_id' => $request->transpoort_partner_id,
+                'source_zone_id' => $fromZoneId,
+                'destination_zone_id' => $toZoneId,
+                'item_id' => $itemId
+            ])->first();
 
             $basePrice = (float) ($pricing->cost ?? 0);
             $tax_amount = round($basePrice * 0.16, 2);
-            // $total_amount = round($basePrice + $tax_amount, 2);
             $total_amount = ceil($basePrice + $tax_amount);
             $calculatedPrice = $total_amount;
+
 
             return response()->json([
                 'success' => true,
@@ -165,6 +225,33 @@ class HomeController extends Controller
                 'cost' => $basePrice,
                 'total' => $calculatedPrice,
             ]);
+
+
+            // $pricing = Pricing::where('item_id', $item->id)->first();
+
+            // $pricing = PricingItem::where('pricing_id', $pricing->id)->where('source_zone_id', $fromZoneId)
+            //     ->where('destination_zone_id', $toZoneId)->first();
+
+            // if (!$pricing) {
+            //     return;
+            // }
+
+            // $basePrice = (float) ($pricing->cost ?? 0);
+            // $tax_amount = round($basePrice * 0.16, 2);
+            // // $total_amount = round($basePrice + $tax_amount, 2);
+            // $total_amount = ceil($basePrice + $tax_amount);
+            // $calculatedPrice = $total_amount;
+
+            // return response()->json([
+            //     'success' => true,
+            //     'from_town' => $fromTown->name,
+            //     'to_town' => $toTown->name,
+            //     'from_town_id' => $fromTown->id,
+            //     'to_town_id' => $toTown->id,
+            //     'parcel_category_id' => $request->parcel_category_id,
+            //     'cost' => $basePrice,
+            //     'total' => $calculatedPrice,
+            // ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -320,4 +407,14 @@ class HomeController extends Controller
         abort_unless(file_exists($path), 404);
         return response()->file($path);
     }
+
+
+    // public function getTransportPartners()
+    // {
+    //     try {
+    //         $transportPartners = Partner
+    //     } catch (\Throwable $th) {
+    //         //throw $th;
+    //     }
+    // }
 }

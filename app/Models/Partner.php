@@ -154,6 +154,9 @@ class Partner extends Model
         return $this->morphMany(Parcel::class, 'creator');
     }
 
+    public function partnerRates(){
+        return $this->hasMany(PartnerRate::class);
+    }
     public function suspend(): void
     {
         DB::transaction(function () {

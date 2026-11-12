@@ -18,11 +18,17 @@ class Item extends Model
         'status'
     ];
 
-    public function subCategory(){
+    public function subCategory()
+    {
         return $this->belongsTo(SubCategory::class);
     }
     public function pricing()
-{
-    return $this->hasOne(Pricing::class);
-}
+    {
+        return $this->hasOne(Pricing::class);
+    }
+
+    public function paymentStructures()
+    {
+        return $this->hasMany(PaymentStructure::class);
+    }
 }

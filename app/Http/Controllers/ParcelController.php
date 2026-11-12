@@ -24,6 +24,7 @@ class ParcelController extends Controller
         $toTownId = $request->query('to_town_id');
         $parcelWeight = $request->query('weight');
         $price = $request->query('price');
+        $transportPartnerId = $request->query('partner_id');
 
         $price = $price / 1.16;
 
@@ -32,7 +33,8 @@ class ParcelController extends Controller
         $pickupPoints = PickUpAndDropOffPoint::with('town')->where('status', 'active')->where('town_id', $fromTownId)->get();
         $dropoffPoints = PickUpAndDropOffPoint::with('town')->where('status', 'active')->where('town_id', $toTownId)->get();
 
-        // $categories = Item::where('status', true)->get();
+        $selectedPartner = Partner::findOrFail($transportPartnerId);
+
         $categories = Item::where('status', true)
             ->whereHas('pricing.items', function ($query) {
                 $query->whereNotNull('cost')
@@ -41,7 +43,7 @@ class ParcelController extends Controller
             ->get();
 
         $towns = Town::with('subCounty.county')->orderBy('name')->get();
-        return view('frontend.book', compact('parcelCategoryId', 'categories', 'towns', 'fromTownId', 'toTownId', 'parcelWeight', 'price', 'pickupPoints', 'dropoffPoints'));
+        return view('frontend.book', compact('transportPartnerId', 'selectedPartner', 'parcelCategoryId', 'categories', 'towns', 'fromTownId', 'toTownId', 'parcelWeight', 'price', 'pickupPoints', 'dropoffPoints'));
     }
 
     // In your controller method

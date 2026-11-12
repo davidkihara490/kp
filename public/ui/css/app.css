@@ -1838,3 +1838,119 @@ footer::before {
         transform: translateY(0);
     }
 }
+
+
+/* Transport partner cards inside the quote result */
+.partners-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.partner-option {
+    display: block;
+    cursor: pointer;
+    margin: 0;
+}
+
+.partner-radio {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.partner-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1rem;
+    border: 2px solid var(--border-color, #e9ecef);
+    border-radius: 14px;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+
+.partner-option:hover .partner-card {
+    border-color: var(--primary-color, #008f40);
+    background: #f8fdf9;
+}
+
+.partner-option.selected .partner-card {
+    border-color: var(--primary-color, #008f40);
+    background: #e8f5e9;
+    box-shadow: 0 4px 12px rgba(0, 143, 64, 0.12);
+}
+
+.partner-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.partner-logo,
+.partner-logo-placeholder {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.partner-logo-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-light, #e8f5e9);
+    color: var(--primary-color, #008f40);
+    font-size: 1.25rem;
+}
+
+.partner-info {
+    min-width: 0;
+}
+
+.partner-name {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #0b1e33;
+}
+
+.partner-desc {
+    margin: 2px 0 0;
+    font-size: 0.78rem;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.partner-eta {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.partner-price {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.partner-price .price-label {
+    display: block;
+    font-size: 0.7rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.partner-price .price-amount {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--primary-color, #008f40);
+}
