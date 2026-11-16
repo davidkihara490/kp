@@ -60,6 +60,86 @@
                     <strong>Click "Save Rates" when done.</strong>
                 </div>
 
+                <!-- Excel Bulk Upload -->
+                <div class="excel-upload-card mb-4">
+                    <div class="excel-upload-header">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="bi bi-file-earmark-excel me-2"></i> Bulk Upload via Excel
+                        </h6>
+                    </div>
+                    <div class="excel-upload-body">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label">Download Template</label>
+                                <button type="button"
+                                        class="btn btn-success w-100"
+                                        wire:click="downloadTemplate"
+                                        wire:loading.attr="disabled"
+                                        wire:target="downloadTemplate">
+                                    <span wire:loading.remove wire:target="downloadTemplate">
+                                        <i class="bi bi-download me-1"></i> Download Excel Template
+                                    </span>
+                                    <span wire:loading wire:target="downloadTemplate">
+                                        <span class="spinner-border spinner-border-sm me-1"></span> Generating...
+                                    </span>
+                                </button>
+                                <small class="text-muted d-block mt-1">
+                                    Pre-filled with all zone pairs for <strong>{{ $item->name }}</strong>.
+                                </small>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Upload Filled Excel</label>
+                                <input type="file"
+                                       class="form-control"
+                                       wire:model="excel_file"
+                                       accept=".xlsx,.xls,.csv">
+                                @error('excel_file')
+                                <span class="text-danger d-block small mt-1">{{ $message }}</span>
+                                @enderror
+                                <div wire:loading wire:target="excel_file" class="text-info small mt-1">
+                                    <span class="spinner-border spinner-border-sm"></span> Uploading...
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="button"
+                                        class="btn btn-primary w-100"
+                                        wire:click="importExcel"
+                                        wire:loading.attr="disabled"
+                                        wire:target="importExcel,excel_file"
+                                        @if(!$excel_file) disabled @endif>
+                                    <span wire:loading.remove wire:target="importExcel">
+                                        <i class="bi bi-upload me-1"></i> Import Excel
+                                    </span>
+                                    <span wire:loading wire:target="importExcel">
+                                        <span class="spinner-border spinner-border-sm me-1"></span> Importing...
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+
+                        @if(!empty($import_errors))
+                        <div class="alert alert-warning mt-3 mb-0">
+                            <strong>Import Warnings:</strong>
+                            <ul class="mb-0 ps-3">
+                                @foreach($import_errors as $err)
+                                <li>{{ $err }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        @endif
+
+                        <small class="text-muted d-block mt-3">
+                            Columns: <code>item_id</code>, <code>source_zone_id</code>, <code>source_zone_name</code>,
+                            <code>destination_zone_id</code>, <code>destination_zone_name</code>, <code>cost</code>, <code>extra</code>.
+                            Fill in <strong>cost</strong> then upload. Imported values <strong>overwrite</strong> matching cells in the grid;
+                            other cells are left untouched. You must click <strong>Save Rates</strong> to persist.
+                        </small>
+                    </div>
+                </div>
+
                 <!-- Bulk Apply Tool -->
                 <div class="bulk-tool mb-4">
                     <div class="row g-3 align-items-end">
@@ -178,6 +258,33 @@
                     border-radius: 8px;
                     font-size: 0.9rem;
                     color: #155724;
+                }
+
+                /* Excel upload card */
+                .excel-upload-card {
+                    background: white;
+                    border-radius: 16px;
+                    overflow: hidden;
+                    border: 1px solid #e9ecef;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                }
+
+                .excel-upload-header {
+                    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+                    padding: 14px 20px;
+                    border-bottom: 1px solid #e9ecef;
+                    color: #1565c0;
+                }
+
+                .excel-upload-body {
+                    padding: 20px;
+                }
+
+                .excel-upload-body .form-label {
+                    font-weight: 600;
+                    font-size: 0.85rem;
+                    color: #495057;
+                    margin-bottom: 4px;
                 }
 
                 .bulk-tool {

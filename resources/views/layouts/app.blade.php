@@ -12,7 +12,7 @@
     @yield('meta')
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('favicon.jpeg') }}">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     
     <!-- Styles -->
     @include('layouts.partials.styles')

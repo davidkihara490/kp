@@ -22,8 +22,8 @@
     <!-- Favicon -->
     <link
         rel="icon"
-        type="image/jpeg"
-        href="{{ asset('favicon.jpeg') }}"
+        type="image/png"
+        href="{{ asset('favicon.png') }}"
     >
 
     <!-- Fonts -->

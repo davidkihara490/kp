@@ -88,7 +88,7 @@
                             </div>
 
                             <!-- Categories -->
-                            <div class="booking-field">
+                            <!-- <div class="booking-field">
                                 <label><i class="bi bi-box-fill me-1 text-success"></i> Parcel Category</label>
                                 <div class="searchable-select-container">
                                     <div class="searchable-select" id="parcelCategorySelect">
@@ -113,7 +113,7 @@
                                     </div>
                                     <input type="hidden" id="parcelCategory" name="parcelCategory" required>
                                 </div>
-                            </div>
+                            </div> -->
 
                             {{--<div class="booking-field">
                                 <label><i class="bi bi-box me-1"></i> Parcel Weight (KGS)</label>
@@ -122,7 +122,7 @@
 
                             <div class="booking-action">
                                 <button class="btn btn-primary quote-btn" type="submit">
-                                    <i class="bi bi-box-seam me-2"></i> Book
+                                    <i class="bi bi-box-seam me-2"></i> Next
                                 </button>
                                 <button type="button" class="btn btn-outline-secondary clear-btn" id="clearForm">
                                     <i class="bi bi-arrow-counterclockwise"></i> Clear

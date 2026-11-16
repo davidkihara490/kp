@@ -162,15 +162,48 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="parcel-amount">KSh {{ number_format($parcel->total_amount ?? 0, 2) }}</span>
-                                    <br>
                                     @php
-                                    $paymentBadge = $this->getPaymentStatusBadge($parcel->payment_status ?? 'pending');
+                                    $paymentStatus = $parcel->payment_status ?? 'pending';
+                                    $amount = number_format($parcel->total_amount ?? 0, 2);
+
+                                    // Determine button style + label + clickable state
+                                    [$btnClass, $btnLabel, $btnIcon, $clickable] = match (true) {
+                                    $paymentStatus === 'paid' =>
+                                    ['pay-btn pay-btn-paid', 'Paid', 'bi-check-circle-fill', false],
+
+                                    $paymentStatus === 'refunded' =>
+                                    ['pay-btn pay-btn-refunded', 'Refunded', 'bi-arrow-return-left', false],
+
+                                    $paymentStatus === 'partially_paid' =>
+                                    ['pay-btn pay-btn-partial', 'Pay balance', 'bi-wallet2', true],
+
+                                    $paymentStatus === 'failed' =>
+                                    ['pay-btn pay-btn-failed', 'Retry payment', 'bi-arrow-repeat', true],
+
+                                    // pending / null / anything else
+                                    default =>
+                                    ['pay-btn pay-btn-pay', 'Pay', 'bi-credit-card-fill', true],
+                                    };
                                     @endphp
-                                    <span class="status-badge status-{{ $paymentBadge['color'] }}" style="font-size: 0.65rem;">
-                                        <i class="{{ $paymentBadge['icon'] }} me-1"></i>
-                                        {{ ucfirst(str_replace('_', ' ', $parcel->payment_status ?? 'Pending')) }}
-                                    </span>
+
+                                    @if($clickable)
+                                    <button type="button"
+                                        class="{{ $btnClass }}"
+                                        wire:click="payForParcel({{ $parcel->id }})"
+                                        title="{{ $btnLabel }}">
+                                        <span class="pay-btn-amount">KSh {{ $amount }}</span>
+                                        <span class="pay-btn-action">
+                                            <i class="bi {{ $btnIcon }}"></i> {{ $btnLabel }}
+                                        </span>
+                                    </button>
+                                    @else
+                                    <button type="button" class="{{ $btnClass }}" disabled title="{{ $btnLabel }}">
+                                        <span class="pay-btn-amount">KSh {{ $amount }}</span>
+                                        <span class="pay-btn-action">
+                                            <i class="bi {{ $btnIcon }}"></i> {{ $btnLabel }}
+                                        </span>
+                                    </button>
+                                    @endif
                                 </td>
 
                                 <td>
@@ -1843,6 +1876,126 @@
                 .timeline-header {
                     flex-direction: column;
                     align-items: flex-start;
+                }
+            }
+        </style>
+
+        <style>
+            /* ===== PAY BUTTON (Amount column) ===== */
+            .pay-btn {
+                display: inline-flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 2px;
+                padding: 8px 14px;
+                border-radius: 10px;
+                font-weight: 600;
+                font-size: 0.8rem;
+                line-height: 1.15;
+                border: none;
+                cursor: pointer;
+                transition: var(--transition);
+                white-space: nowrap;
+                min-width: 110px;
+                text-align: center;
+            }
+
+            .pay-btn .pay-btn-amount {
+                font-size: 0.92rem;
+                font-weight: 700;
+                letter-spacing: 0.2px;
+            }
+
+            .pay-btn .pay-btn-action {
+                font-size: 0.7rem;
+                font-weight: 500;
+                opacity: 0.92;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .pay-btn .pay-btn-action i {
+                font-size: 0.72rem;
+            }
+
+            /* Payable — primary green */
+            .pay-btn-pay {
+                background: var(--primary-color);
+                color: #fff;
+                box-shadow: 0 2px 6px rgba(0, 143, 64, 0.25);
+            }
+
+            .pay-btn-pay:hover {
+                background: var(--primary-dark);
+                transform: translateY(-1px);
+                box-shadow: 0 6px 14px rgba(0, 143, 64, 0.35);
+            }
+
+            /* Partially paid — amber */
+            .pay-btn-partial {
+                background: #f59e0b;
+                color: #fff;
+                box-shadow: 0 2px 6px rgba(245, 158, 11, 0.25);
+            }
+
+            .pay-btn-partial:hover {
+                background: #d97706;
+                transform: translateY(-1px);
+                box-shadow: 0 6px 14px rgba(245, 158, 11, 0.35);
+            }
+
+            /* Failed — red */
+            .pay-btn-failed {
+                background: #dc3545;
+                color: #fff;
+                box-shadow: 0 2px 6px rgba(220, 53, 69, 0.25);
+            }
+
+            .pay-btn-failed:hover {
+                background: #b02a37;
+                transform: translateY(-1px);
+                box-shadow: 0 6px 14px rgba(220, 53, 69, 0.35);
+            }
+
+            /* Paid — solid green, disabled */
+            .pay-btn-paid {
+                background: #e8f5e9;
+                color: var(--primary-color);
+                border: 1.5px solid var(--primary-color);
+                cursor: not-allowed;
+                opacity: 1;
+            }
+
+            .pay-btn-paid[disabled] {
+                opacity: 1;
+            }
+
+            /* Refunded — grey, disabled */
+            .pay-btn-refunded {
+                background: #e9ecef;
+                color: #6c757d;
+                border: 1.5px solid #ced4da;
+                cursor: not-allowed;
+                opacity: 1;
+            }
+
+            .pay-btn-refunded[disabled] {
+                opacity: 1;
+            }
+
+            /* Responsive tweak */
+            @media (max-width: 768px) {
+                .pay-btn {
+                    width: 100%;
+                    min-width: 0;
+                    padding: 8px 10px;
+                    font-size: 0.75rem;
+                }
+
+                .pay-btn .pay-btn-amount {
+                    font-size: 0.85rem;
                 }
             }
         </style>

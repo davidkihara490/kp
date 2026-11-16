@@ -78,48 +78,65 @@
         // ============================================
         // BOOKING ENGINE
         // ============================================
+        // $('#townQuoteForm').on('submit', function(e) {
+        //     e.preventDefault();
+
+        //     const fromTown = $('#fromTown').val();
+        //     const toTown = $('#toTown').val();
+        //     const parcelCategory = $('#parcelCategory').val();
+
+        //     if (!fromTown || !toTown || !parcelCategory) {
+        //         showAlert('Please fill in all required fields', 'warning', '#quoteResult');
+        //         return;
+        //     }
+
+        //     const submitBtn = $(this).find('button[type="submit"]');
+        //     const originalText = submitBtn.html();
+        //     submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status"></span> Searching partners...');
+
+        //     $.ajax({
+        //         url: '/api/calculate-quote',
+        //         method: 'POST',
+        //         data: {
+        //             from_town_id: fromTown,
+        //             to_town_id: toTown,
+        //             parcel_category_id: parcelCategory,
+        //             _token: $('meta[name="csrf-token"]').attr('content')
+        //         },
+        //         success: function(response) {
+        //             console.log(response);
+        //             if (!response.success || !response.partners || response.partners.length === 0) {
+        //                 showAlert(response.message || 'No transport partners available for this route.', 'warning', '#quoteResult');
+        //                 return;
+        //             }
+        //             displayPartnerOptions(response);
+        //         },
+        //         error: function(xhr) {
+        //             let message = 'An error occurred while fetching transport partners.';
+        //             if (xhr.responseJSON?.message) message = xhr.responseJSON.message;
+        //             showAlert(message, 'danger', '#quoteResult');
+        //         },
+        //         complete: function() {
+        //             submitBtn.prop('disabled', false).html(originalText);
+        //         }
+        //     });
+        // });
+
         $('#townQuoteForm').on('submit', function(e) {
             e.preventDefault();
-
             const fromTown = $('#fromTown').val();
             const toTown = $('#toTown').val();
-            const parcelCategory = $('#parcelCategory').val();
 
-            if (!fromTown || !toTown || !parcelCategory) {
-                showAlert('Please fill in all required fields', 'warning', '#quoteResult');
+            if (!fromTown || !toTown ) {
+                showAlert('Please select pickup town, delivery town and parcel category.', 'warning', '#quoteResult');
                 return;
             }
 
-            const submitBtn = $(this).find('button[type="submit"]');
-            const originalText = submitBtn.html();
-            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status"></span> Searching partners...');
+            const url = `{{ route('online-booking') }}` +
+                `?from_town_id=${fromTown}` +
+                `&to_town_id=${toTown}`;
 
-            $.ajax({
-                url: '/api/calculate-quote',
-                method: 'POST',
-                data: {
-                    from_town_id: fromTown,
-                    to_town_id: toTown,
-                    parcel_category_id: parcelCategory,
-                    _token: $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    console.log(response);
-                    if (!response.success || !response.partners || response.partners.length === 0) {
-                        showAlert(response.message || 'No transport partners available for this route.', 'warning', '#quoteResult');
-                        return;
-                    }
-                    displayPartnerOptions(response);
-                },
-                error: function(xhr) {
-                    let message = 'An error occurred while fetching transport partners.';
-                    if (xhr.responseJSON?.message) message = xhr.responseJSON.message;
-                    showAlert(message, 'danger', '#quoteResult');
-                },
-                complete: function() {
-                    submitBtn.prop('disabled', false).html(originalText);
-                }
-            });
+            window.location.href = url;
         });
 
         $('#clearForm').on('click', function() {
@@ -136,126 +153,126 @@
         // --------------------------------------------
         // Render selectable transport partner cards
         // --------------------------------------------
-        function displayPartnerOptions(data) {
-            const fromText = $('#fromTownSelect .selected-text').text();
-            const toText = $('#toTownSelect .selected-text').text();
+    //     function displayPartnerOptions(data) {
+    //         const fromText = $('#fromTownSelect .selected-text').text();
+    //         const toText = $('#toTownSelect .selected-text').text();
 
-            const cardsHtml = data.partners.map(function(partner, index) {
-                const logo = partner.logo ?
-                    `<img src="${partner.logo}" alt="${partner.name}" class="partner-logo">` :
-                    `<div class="partner-logo-placeholder"><i class="bi bi-truck"></i></div>`;
+    //         const cardsHtml = data.partners.map(function(partner, index) {
+    //             const logo = partner.logo ?
+    //                 `<img src="${partner.logo}" alt="${partner.name}" class="partner-logo">` :
+    //                 `<div class="partner-logo-placeholder"><i class="bi bi-truck"></i></div>`;
 
-                const eta = partner.estimated_days ?
-                    `<span class="partner-eta"><i class="bi bi-clock me-1"></i>~${partner.estimated_days} day${partner.estimated_days > 1 ? 's' : ''}</span>` :
-                    '';
+    //             const eta = partner.estimated_days ?
+    //                 `<span class="partner-eta"><i class="bi bi-clock me-1"></i>~${partner.estimated_days} day${partner.estimated_days > 1 ? 's' : ''}</span>` :
+    //                 '';
 
-                const description = partner.description ?
-                    `<p class="partner-desc">${partner.description}</p>` :
-                    '';
+    //             const description = partner.description ?
+    //                 `<p class="partner-desc">${partner.description}</p>` :
+    //                 '';
 
-                return `
-            <label class="partner-option" for="partner_${partner.id}">
-                <input type="radio"
-                       name="selectedPartner"
-                       id="partner_${partner.id}"
-                       value="${partner.id}"
-                       data-price="${partner.price}"
-                       data-name="${partner.name}"
-                       class="partner-radio"
-                       ${index === 0 ? 'checked' : ''}>
-                <div class="partner-card">
-                    <div class="partner-brand">
-                        ${logo}
-                        <div class="partner-info">
-                            <h6 class="partner-name">${partner.name}</h6>
-                            ${description}
-                            ${eta}
-                        </div>
-                    </div>
-                    <div class="partner-price">
-                        <span class="price-label">KES</span>
-                        <span class="price-amount">${Number(partner.price).toLocaleString()}</span>
-                    </div>
-                </div>
-            </label>
-        `;
-            }).join('');
+    //             return `
+    //         <label class="partner-option" for="partner_${partner.id}">
+    //             <input type="radio"
+    //                    name="selectedPartner"
+    //                    id="partner_${partner.id}"
+    //                    value="${partner.id}"
+    //                    data-price="${partner.price}"
+    //                    data-name="${partner.name}"
+    //                    class="partner-radio"
+    //                    ${index === 0 ? 'checked' : ''}>
+    //             <div class="partner-card">
+    //                 <div class="partner-brand">
+    //                     ${logo}
+    //                     <div class="partner-info">
+    //                         <h6 class="partner-name">${partner.name}</h6>
+    //                         ${description}
+    //                         ${eta}
+    //                     </div>
+    //                 </div>
+    //                 <div class="partner-price">
+    //                     <span class="price-label">KES</span>
+    //                     <span class="price-amount">${Number(partner.price).toLocaleString()}</span>
+    //                 </div>
+    //             </div>
+    //         </label>
+    //     `;
+    //         }).join('');
 
-            const html = `
-        <div class="quote-result-card">
-            <div class="quote-header">
-                <span class="quote-badge">AVAILABLE TRANSPORT PARTNERS</span>
-                <button type="button" class="btn-close" id="closeQuote"></button>
-            </div>
-            <div class="quote-body">
-                <div class="quote-route">
-                    <div class="route-point text-primary">
-                        <i class="bi bi-geo-alt-fill"></i>
-                        <span>${fromText}</span>
-                    </div>
-                    <div class="route-arrow"><i class="bi bi-arrow-right"></i></div>
-                    <div class="route-point text-danger">
-                        <i class="bi bi-geo-alt-fill"></i>
-                        <span>${toText}</span>
-                    </div>
-                </div>
+    //         const html = `
+    //     <div class="quote-result-card">
+    //         <div class="quote-header">
+    //             <span class="quote-badge">AVAILABLE TRANSPORT PARTNERS</span>
+    //             <button type="button" class="btn-close" id="closeQuote"></button>
+    //         </div>
+    //         <div class="quote-body">
+    //             <div class="quote-route">
+    //                 <div class="route-point text-primary">
+    //                     <i class="bi bi-geo-alt-fill"></i>
+    //                     <span>${fromText}</span>
+    //                 </div>
+    //                 <div class="route-arrow"><i class="bi bi-arrow-right"></i></div>
+    //                 <div class="route-point text-danger">
+    //                     <i class="bi bi-geo-alt-fill"></i>
+    //                     <span>${toText}</span>
+    //                 </div>
+    //             </div>
 
-                <div class="partners-list">
-                    ${cardsHtml}
-                </div>
+    //             <div class="partners-list">
+    //                 ${cardsHtml}
+    //             </div>
 
-                <div class="quote-message">
-                    <i class="bi bi-info-circle-fill text-primary"></i>
-                    <p>Select a transport partner above, then proceed to book your parcel online.</p>
-                </div>
+    //             <div class="quote-message">
+    //                 <i class="bi bi-info-circle-fill text-primary"></i>
+    //                 <p>Select a transport partner above, then proceed to book your parcel online.</p>
+    //             </div>
 
-                <div class="quote-actions">
-                    <a href="{{ route('points') }}" class="btn btn-outline-primary">
-                        <i class="bi bi-geo-alt me-1"></i> Find Station
-                    </a>
-                    <button type="button" class="btn btn-primary quote-btn" id="proceedWithPartner">
-                        <i class="bi bi-box-seam me-1"></i> Book With Selected Partner
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
+    //             <div class="quote-actions">
+    //                 <a href="{{ route('points') }}" class="btn btn-outline-primary">
+    //                     <i class="bi bi-geo-alt me-1"></i> Find Station
+    //                 </a>
+    //                 <button type="button" class="btn btn-primary quote-btn" id="proceedWithPartner">
+    //                     <i class="bi bi-box-seam me-1"></i> Book With Selected Partner
+    //                 </button>
+    //             </div>
+    //         </div>
+    //     </div>
+    // `;
 
-            $('#quoteResult').html(html).addClass('show');
+    //         $('#quoteResult').html(html).addClass('show');
 
-            // Highlight the selected card
-            $('#quoteResult').on('change', '.partner-radio', function() {
-                $('.partner-option').removeClass('selected');
-                $(this).closest('.partner-option').addClass('selected');
-            });
-            $('.partner-option').first().addClass('selected');
+    //         // Highlight the selected card
+    //         $('#quoteResult').on('change', '.partner-radio', function() {
+    //             $('.partner-option').removeClass('selected');
+    //             $(this).closest('.partner-option').addClass('selected');
+    //         });
+    //         $('.partner-option').first().addClass('selected');
 
-            $('#closeQuote').on('click', function() {
-                $('#quoteResult').removeClass('show').empty();
-            });
+    //         $('#closeQuote').on('click', function() {
+    //             $('#quoteResult').removeClass('show').empty();
+    //         });
 
-            $('#proceedWithPartner').on('click', function() {
-                const selected = $('#quoteResult .partner-radio:checked');
-                if (!selected.length) {
-                    showAlert('Please select a transport partner.', 'warning', '#quoteResult');
-                    return;
-                }
+    //         $('#proceedWithPartner').on('click', function() {
+    //             const selected = $('#quoteResult .partner-radio:checked');
+    //             if (!selected.length) {
+    //                 showAlert('Please select a transport partner.', 'warning', '#quoteResult');
+    //                 return;
+    //             }
 
-                const partnerId = selected.val();
-                const partnerName = selected.data('name');
-                const price = selected.data('price');
+    //             const partnerId = selected.val();
+    //             const partnerName = selected.data('name');
+    //             const price = selected.data('price');
 
-                const bookingUrl = `{{ route('online-booking') }}` +
-                    `?from_town_id=${data.from_town_id}` +
-                    `&to_town_id=${data.to_town_id}` +
-                    `&category=${data.parcel_category_id}` +
-                    `&partner_id=${encodeURIComponent(partnerId)}` +
-                    `&partner_name=${encodeURIComponent(partnerName)}` +
-                    `&price=${encodeURIComponent(price)}`;
+    //             const bookingUrl = `{{ route('online-booking') }}` +
+    //                 `?from_town_id=${data.from_town_id}` +
+    //                 `&to_town_id=${data.to_town_id}` +
+    //                 `&category=${data.parcel_category_id}` +
+    //                 `&partner_id=${encodeURIComponent(partnerId)}` +
+    //                 `&partner_name=${encodeURIComponent(partnerName)}` +
+    //                 `&price=${encodeURIComponent(price)}`;
 
-                window.location.href = bookingUrl;
-            });
-        }
+    //             window.location.href = bookingUrl;
+    //         });
+    //     }
 
         // function displayQuoteResult(data) {
         //     const fromText = $('#fromTownSelect .selected-text').text();

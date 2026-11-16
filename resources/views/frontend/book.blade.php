@@ -5,135 +5,149 @@
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Karibu Parcels - Book Your Parcel</title>
-    <!-- Bootstrap 5 + Icons -->
+    <title>Karibu Parcels — Book Your Parcel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/png" href="{{ asset('favicon.jpeg') }}">
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #008f40;
+            --primary: #008f40;
             --primary-dark: #007a36;
             --primary-light: #e8f5e9;
-            --accent-color: #ff3519;
-            --accent-dark: #e62e15;
-            --light-bg: #f8f9fa;
-            --dark-bg: #212529;
-            --text-dark: #343a40;
-            --text-light: #6c757d;
-            --border-color: #e9ecef;
-            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --accent: #ff3519;
+            --text-dark: #0b1e33;
+            --text-muted: #64748b;
+            --border: #e9edf2;
+            --bg: #f5f7fa;
+            --shadow-md: 0 4px 14px rgba(0, 0, 0, .06);
+            --shadow-lg: 0 20px 40px rgba(0, 0, 0, .08);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: #f5f7fa;
+            background: var(--bg);
             color: var(--text-dark);
-            padding-top: 80px;
+            padding: 24px 16px 60px;
         }
 
-        .booking-container {
-            max-width: 1100px;
-            margin: 2rem auto;
-            background: white;
-            border-radius: 28px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-            padding: 2rem 2rem 2.5rem;
-            border: 1px solid var(--border-color);
+        .wizard {
+            max-width: 1080px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
         }
 
-        .step-indicators {
+        .wizard-header {
+            padding: 24px 32px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .wizard-header h3 {
+            font-weight: 800;
+            font-size: 1.35rem;
+            margin: 0;
+        }
+
+        .wizard-header .subtitle {
+            color: var(--text-muted);
+            font-size: .9rem;
+            margin-top: 2px;
+        }
+
+        .steps {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 2.5rem;
+            padding: 24px 40px 8px;
             position: relative;
-            padding: 0 10px;
         }
 
-        .step-indicators::before {
+        .steps::before {
             content: '';
             position: absolute;
-            top: 28px;
-            left: 40px;
-            right: 40px;
+            top: 46px;
+            left: 60px;
+            right: 60px;
             height: 3px;
-            background: var(--border-color);
+            background: var(--border);
             z-index: 0;
         }
 
-        .step-badge {
+        .step {
+            position: relative;
+            z-index: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
-            z-index: 1;
             flex: 1;
         }
 
         .step-circle {
-            width: 48px;
-            height: 48px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
-            background: white;
-            border: 3px solid var(--border-color);
+            background: #f1f5f9;
+            border: 3px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--text-light);
-            transition: var(--transition);
-            background: #f0f2f5;
+            color: var(--text-muted);
+            transition: .25s ease;
         }
 
-        .step-badge.active .step-circle {
-            border-color: var(--primary-color);
-            background: var(--primary-color);
-            color: white;
-            box-shadow: 0 6px 14px rgba(0, 143, 64, 0.25);
+        .step.active .step-circle {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+            box-shadow: 0 6px 18px rgba(0, 143, 64, .28);
         }
 
-        .step-badge.completed .step-circle {
-            border-color: var(--primary-color);
-            background: var(--primary-color);
-            color: white;
+        .step.done .step-circle {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
         }
 
         .step-label {
             margin-top: 8px;
-            font-size: 0.8rem;
+            font-size: .78rem;
             font-weight: 600;
-            color: var(--text-light);
+            color: var(--text-muted);
             text-align: center;
         }
 
-        .step-badge.active .step-label,
-        .step-badge.completed .step-label {
-            color: var(--primary-color);
+        .step.active .step-label,
+        .step.done .step-label {
+            color: var(--primary);
+        }
+
+        .wizard-body {
+            padding: 24px 32px 32px;
         }
 
         .step-panel {
             display: none;
-            animation: fadeIn 0.3s ease;
+            animation: fade .25s ease;
         }
 
         .step-panel.active {
             display: block;
         }
 
-        @keyframes fadeIn {
+        @keyframes fade {
             from {
-                opacity: 0.5;
-                transform: translateY(8px);
+                opacity: .4;
+                transform: translateY(6px);
             }
 
             to {
@@ -142,535 +156,385 @@
             }
         }
 
+        .section-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
         .form-label {
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: .85rem;
             color: var(--text-dark);
+            margin-bottom: 6px;
         }
 
         .form-control,
         .form-select {
-            border: 2px solid var(--border-color);
-            border-radius: 14px;
-            padding: 12px 16px;
-            font-size: 0.95rem;
-            transition: var(--transition);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: .92rem;
         }
 
         .form-control:focus,
         .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(0, 143, 64, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 .2rem rgba(0, 143, 64, .12);
+        }
+
+        .btn {
+            border-radius: 50px;
+            font-weight: 600;
+            padding: 10px 24px;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border: none;
-            padding: 12px 30px;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: var(--transition);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 143, 64, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(0, 143, 64, .28);
         }
 
         .btn-outline-secondary {
-            border-radius: 50px;
-            padding: 12px 30px;
             border-width: 2px;
         }
 
         .btn-success {
             background: linear-gradient(135deg, #28a745, #1e7e34);
             border: none;
-            padding: 12px 30px;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: var(--transition);
         }
 
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.25);
-        }
-
-        .btn-danger {
-            border-radius: 50px;
-            padding: 8px 16px;
-            font-weight: 600;
-        }
-
-        .step-actions {
+        .actions {
             display: flex;
-            justify-content: space-between;
-            margin-top: 2rem;
-            gap: 12px;
+            gap: 10px;
+            margin-top: 24px;
         }
 
-        .step-actions .btn {
+        .actions .btn {
             flex: 1;
         }
 
-        .review-summary {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 2px solid var(--border-color);
-        }
-
-        .review-summary h6 {
-            color: var(--primary-color);
-            font-weight: 600;
-            margin-bottom: 1rem;
-            border-bottom: 2px solid var(--primary-light);
-            padding-bottom: 0.5rem;
-        }
-
-        .review-summary .row {
-            margin-bottom: 0.5rem;
-        }
-
-        .review-summary .label {
-            color: var(--text-light);
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .review-summary .value {
-            font-weight: 500;
-            color: var(--text-dark);
-        }
-
-        .confirmation-section {
-            background: var(--primary-light);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
-            border: 2px solid var(--primary-color);
-        }
-
-        .confirmation-section .form-check-label {
-            font-weight: 500;
-        }
-
-        .login-prompt {
-            background: #f0f7ff;
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border-left: 5px solid var(--primary-color);
-        }
-
-        .login-prompt .btn-link {
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-
-        .whatsapp-float {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 1000;
-        }
-
-        .whatsapp-button {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #25d366, #128C7E);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);
-            transition: var(--transition);
-        }
-
-        .whatsapp-button:hover {
-            transform: scale(1.08);
-            color: white;
-        }
-
-        .modal-content {
-            border-radius: 24px;
-            border: none;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .modal-header {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        .modal-footer {
-            border-top: none;
-        }
-
-        .price-display {
-            background: var(--primary-light);
-            border-radius: 12px;
-            padding: 1rem 1.5rem;
-            border: 2px solid var(--primary-color);
-        }
-
-        .price-display .label {
-            font-weight: 500;
-            color: var(--text-light);
-        }
-
-        .price-display .amount {
-            font-weight: 700;
-            font-size: 1.3rem;
-            color: var(--primary-color);
-        }
-
-        .user-info-bar {
-            background: var(--primary-light);
-            border-radius: 12px;
-            padding: 0.75rem 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid var(--primary-color);
-        }
-
-        .user-info-bar .user-name {
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        .user-info-bar .logout-btn {
-            cursor: pointer;
-            color: var(--accent-color);
-            font-size: 0.9rem;
-        }
-
-        .user-info-bar .logout-btn:hover {
-            text-decoration: underline;
-        }
-
-        .user-info-bar .guest-text {
-            color: var(--text-light);
-            font-weight: 500;
-        }
-
-        .station-list {
-            max-height: 270px;
-            overflow-y: auto;
-            border: 2px solid #e9edf2;
-            border-radius: 20px;
-            padding: 0.75rem 0.25rem 0.25rem 0.25rem;
-            background: #fafcff;
-            scroll-behavior: smooth;
-        }
-
-        .station-list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .station-list::-webkit-scrollbar-track {
-            background: #eef2f6;
-            border-radius: 10px;
-        }
-
-        .station-list::-webkit-scrollbar-thumb {
-            background: #b9c4d0;
-            border-radius: 10px;
-        }
-
-        .station-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            margin: 0 0.25rem 0.25rem 0.25rem;
-            border-radius: 16px;
-            background: white;
-            border: 1.5px solid transparent;
-            transition: all 0.15s;
-            cursor: pointer;
-        }
-
-        .station-item:hover {
-            background: #f2f7ff;
-            border-color: #dbe7f5;
-        }
-
-        .station-item.selected {
-            background: #e7f3e7;
-            border-color: #008f40;
-            box-shadow: 0 2px 8px rgba(0, 143, 64, 0.08);
-        }
-
-        .station-item .form-check-input {
-            margin-top: 4px;
-            flex-shrink: 0;
-            width: 1.2rem;
-            height: 1.2rem;
-            border-radius: 50%;
-            border: 2px solid #cbd5e1;
-            transition: 0.15s;
-            cursor: pointer;
-        }
-
-        .station-item .form-check-input:checked {
-            background-color: #008f40;
-            border-color: #008f40;
-        }
-
-        .station-item .station-info {
-            flex: 1;
-            line-height: 1.4;
-        }
-
-        .station-item .station-name {
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: #0b1e33;
-        }
-
-        .station-item .station-address {
-            font-size: 0.82rem;
-            color: #475569;
-            margin-top: 2px;
-        }
-
-        .station-item .station-meta {
-            font-size: 0.75rem;
-            color: #64748b;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem 1.2rem;
-            margin-top: 6px;
-        }
-
-        .station-item .station-meta i {
-            margin-right: 4px;
-            width: 16px;
-        }
-
-        /* ---- Transport Partner (display only) ---- */
-        .partner-display {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            padding: 1rem 1.25rem;
-            border: 2px solid var(--primary-color);
-            border-radius: 16px;
-            background: var(--primary-light);
-            box-shadow: 0 4px 12px rgba(0, 143, 64, 0.08);
-        }
-
-        .partner-display .partner-brand {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            flex: 1;
-            min-width: 0;
-        }
-
-        .partner-display .partner-logo,
-        .partner-display .partner-logo-placeholder {
-            width: 48px;
-            height: 48px;
-            border-radius: 10px;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-
-        .partner-display .partner-logo-placeholder {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #fff;
-            color: var(--primary-color);
-            font-size: 1.35rem;
-            border: 1px solid var(--primary-color);
-        }
-
-        .partner-display .partner-info {
-            min-width: 0;
-        }
-
-        .partner-display .partner-name {
-            margin: 0;
-            font-weight: 700;
-            font-size: 1rem;
-            color: #0b1e33;
-        }
-
-        .partner-display .partner-desc {
-            margin: 2px 0 0;
-            font-size: 0.8rem;
-            color: #475569;
-        }
-
-        .partner-display .partner-eta {
-            display: inline-block;
-            margin-top: 4px;
-            font-size: 0.75rem;
-            color: #475569;
-        }
-
-        .partner-display .partner-price {
-            text-align: right;
-            flex-shrink: 0;
-        }
-
-        .partner-display .partner-price .price-label {
-            display: block;
-            font-size: 0.7rem;
-            color: #475569;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .partner-display .partner-price .price-amount {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--primary-color);
-        }
-
-        .partner-empty-state {
-            padding: 1.5rem;
-            text-align: center;
-            color: var(--text-light);
-            font-size: 0.9rem;
-            border: 2px dashed var(--border-color);
-            border-radius: 16px;
-            background: #fafcff;
-        }
-
-        /* Item cards */
+        /* Item card */
         .item-card {
-            background: #f8f9fa;
+            background: #fafcff;
+            border: 2px solid var(--border);
             border-radius: 16px;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-            border: 2px solid var(--border-color);
+            padding: 18px;
+            margin-bottom: 14px;
             position: relative;
-            transition: var(--transition);
         }
 
-        .item-card:hover {
-            border-color: var(--primary-color);
-            box-shadow: var(--shadow-md);
-        }
-
-        .item-card .item-number {
+        .item-card .item-badge {
             position: absolute;
-            top: -12px;
+            top: -10px;
             left: 16px;
-            background: var(--primary-color);
-            color: white;
-            padding: 0.25rem 0.75rem;
+            background: var(--primary);
+            color: #fff;
+            padding: 2px 12px;
             border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .4px;
         }
 
-        .item-card .remove-item-btn {
+        .item-card .remove-btn {
             position: absolute;
             top: 8px;
             right: 8px;
             background: none;
             border: none;
-            color: var(--accent-color);
-            font-size: 1.2rem;
+            color: var(--accent);
+            font-size: 1.1rem;
             cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 50%;
-            transition: var(--transition);
-        }
-
-        .item-card .remove-item-btn:hover {
-            background: #fee2e2;
-            transform: scale(1.1);
         }
 
         .add-item-btn {
             width: 100%;
             padding: 12px;
-            border: 2px dashed var(--border-color);
-            border-radius: 16px;
+            border: 2px dashed var(--border);
+            border-radius: 14px;
             background: transparent;
-            color: var(--text-light);
-            font-weight: 500;
-            transition: var(--transition);
+            color: var(--text-muted);
+            font-weight: 600;
             cursor: pointer;
         }
 
         .add-item-btn:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
+            border-color: var(--primary);
+            color: var(--primary);
             background: var(--primary-light);
         }
 
-        .item-insurance-label {
-            font-size: 0.85rem;
-            font-weight: 500;
+        /* Partner cards */
+        .partner-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            cursor: pointer;
+            background: #fff;
+            transition: .15s ease;
+            margin-bottom: 12px;
         }
 
-        .item-pod-label {
-            font-size: 0.85rem;
-            font-weight: 500;
+        .partner-card:hover {
+            border-color: #c7dbd3;
+            background: #fbfefc;
         }
 
-        .pod-payment-hint {
-            display: block;
+        .partner-card.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            box-shadow: 0 4px 14px rgba(0, 143, 64, .12);
+        }
+
+        .partner-logo {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .partner-logo-placeholder {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .partner-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .partner-name {
+            font-weight: 700;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .partner-desc {
+            font-size: .82rem;
+            color: var(--text-muted);
+            margin: 2px 0 0;
+        }
+
+        .partner-route {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: .8rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .partner-route i {
+            color: var(--primary);
+        }
+
+        .partner-price {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .partner-price .total {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 1.15rem;
+        }
+
+        .partner-price .small-note {
+            font-size: .7rem;
+            color: var(--text-muted);
+        }
+
+        .partner-radio {
+            display: none;
+        }
+
+        /* Stations */
+        .station-list {
+            max-height: 260px;
+            overflow-y: auto;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: .5rem;
+            background: #fafcff;
+        }
+
+        .station-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px 12px;
+            margin-bottom: 4px;
+            border-radius: 12px;
+            background: #fff;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .station-item:hover {
+            background: #f2f7ff;
+        }
+
+        .station-item.selected {
+            background: var(--primary-light);
+            border-color: var(--primary);
+        }
+
+        .station-item .form-check-input {
             margin-top: 4px;
-            font-size: 0.8rem;
-            color: #b45309;
-            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .station-item .form-check-input:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .station-name {
+            font-weight: 600;
+            font-size: .92rem;
+        }
+
+        .station-address {
+            font-size: .8rem;
+            color: var(--text-muted);
+        }
+
+        .station-meta {
+            font-size: .74rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            display: flex;
+            gap: .9rem;
+            flex-wrap: wrap;
+        }
+
+        /* Review */
+        .review-card {
+            background: #fff;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-bottom: 14px;
+        }
+
+        .review-card h6 {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: .95rem;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-light);
+            margin-bottom: 14px;
+        }
+
+        .review-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: .9rem;
+            padding: 4px 0;
+        }
+
+        .review-row .label {
+            color: var(--text-muted);
+        }
+
+        .review-row.total {
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: var(--primary);
+        }
+
+        .review-card .item-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .review-card .item-line:last-child {
+            border-bottom: none;
+        }
+
+        .login-prompt {
+            background: #f0f7ff;
+            border-left: 4px solid var(--primary);
+            padding: 14px 18px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .terms-box {
+            background: var(--primary-light);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-top: 16px;
+        }
+
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+        }
+
+        .modal-header,
+        .modal-footer {
+            border: none;
         }
 
         @media (max-width: 640px) {
-            .booking-container {
-                padding: 1.5rem;
+
+            .wizard-header,
+            .wizard-body {
+                padding-left: 18px;
+                padding-right: 18px;
             }
 
-            .step-indicators {
-                padding: 0;
+            .steps {
+                padding: 18px 18px 6px;
             }
 
-            .step-indicators::before {
-                left: 20px;
-                right: 20px;
+            .steps::before {
+                left: 30px;
+                right: 30px;
             }
 
             .step-circle {
-                width: 40px;
-                height: 40px;
-                font-size: 0.9rem;
+                width: 38px;
+                height: 38px;
+                font-size: .85rem;
             }
 
-            .user-info-bar {
-                flex-direction: column;
-                gap: 0.5rem;
-                text-align: center;
+            .partner-card {
+                flex-wrap: wrap;
             }
 
-            .station-item {
-                padding: 0.65rem 0.75rem;
-            }
-
-            .item-card {
-                padding: 1rem;
-            }
-
-            .partner-display {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .partner-display .partner-price {
+            .partner-price {
+                width: 100%;
                 text-align: left;
             }
         }
@@ -678,1664 +542,944 @@
 </head>
 
 <body>
-    <div class="container">
-        <div class="booking-container">
-            <h3 class="mb-1 fw-bold"><i class="bi bi-box-seam me-2 text-primary"></i>Book your parcel</h3>
-            <p class="text-muted mb-4">Fill in the details below – 3 easy steps</p>
-
-            <!-- User Info Bar -->
-            <div class="user-info-bar" id="userInfoBar">
-                <div id="userInfoDisplay">
-                    <span class="guest-text"><i class="bi bi-person-circle me-2"></i>You are browsing as a guest</span>
-                </div>
-
-                <div id="guestTopActions">
-                    <button type="button" class="btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
-                        <i class="bi bi-box-arrow-in-right me-1"></i> Login
-                    </button>
-                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">
-                        <i class="bi bi-person-plus me-1"></i> Register
-                    </button>
-                </div>
-
-                <div id="customerTopActions" class="d-none">
-                    <button type="button" class="btn btn-outline-danger btn-sm" id="logoutBtnTop">
-                        <i class="bi bi-box-arrow-right me-1"></i> Logout
-                    </button>
-                </div>
+    <div class="wizard">
+        <div class="wizard-header">
+            <div>
+                <h3><i class="bi bi-box-seam me-2" style="color:var(--primary)"></i>Book your parcel</h3>
+                <div class="subtitle">Complete in 5 quick steps</div>
             </div>
-
-            <!-- Step indicators -->
-            <div class="step-indicators">
-                <div class="step-badge active" id="stepIndicator1">
-                    <div class="step-circle">1</div>
-                    <div class="step-label">Parcel details</div>
-                </div>
-                <div class="step-badge" id="stepIndicator2">
-                    <div class="step-circle">2</div>
-                    <div class="step-label">Sender & receiver</div>
-                </div>
-                <div class="step-badge" id="stepIndicator3">
-                    <div class="step-circle">3</div>
-                    <div class="step-label">Review & Confirm</div>
-                </div>
+            <div id="authArea">
+                <button type="button" class="btn btn-outline-secondary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </button>
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">
+                    <i class="bi bi-person-plus"></i> Register
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm d-none" id="logoutBtn">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
             </div>
-
-            <!-- Main Form -->
-            <form action="{{ route('booking.store') }}" method="POST" id="bookingForm">
-                @csrf
-
-                <!-- STEP 1: Parcel details -->
-                <div class="step-panel active" id="step1">
-                    <h5 class="fw-semibold mb-3"><i class="bi bi-geo-alt me-2 text-primary"></i>Pickup & dropoff locations</h5>
-                    <div class="row g-4">
-
-                        <!-- Pickup Section -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">From Town <span class="text-danger">*</span></label>
-                                <input type="number" name="sender_town_id" value="{{ $fromTownId }}" class="d-none">
-                                <select class="form-select" name="sender_town_id" id="fromTown" disabled>
-                                    <option value="">Select pickup town</option>
-                                    @foreach($towns as $town)
-                                    <option value="{{ $town->id }}" {{ (isset($fromTownId) && $fromTownId == $town->id) ? 'selected' : '' }}>
-                                        {{ $town->name }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <label class="fw-semibold mb-2"><i class="bi bi-box-arrow-up text-primary me-1"></i> Pickup Station <span class="text-danger">*</span></label>
-                            <div class="station-list" id="pickupStationList">
-                                @if(isset($pickupPoints) && count($pickupPoints) > 0)
-                                @foreach($pickupPoints as $point)
-                                <div class="station-item" data-id="{{ $point->id }}" data-type="pickup">
-                                    <input type="radio" class="form-check-input" name="pickupStation" value="{{ $point->id }}">
-                                    <div class="station-info">
-                                        <div class="station-name">{{ $point->name }}</div>
-                                        <div class="station-address">{{ $point->address ?? $point->location ?? '' }}</div>
-                                        <div class="station-meta">
-                                            @if($point->contact_phone_number ?? false)
-                                            <span><i class="bi bi-telephone"></i>{{ $point->contact_phone_number }}</span>
-                                            @endif
-                                            @if($point->hours ?? false)
-                                            <span><i class="bi bi-clock"></i>{{ $point->hours }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                                @endforeach
-                                @else
-                                <div class="text-muted p-3">No pickup stations available</div>
-                                @endif
-                            </div>
-                            <input type="hidden" name="sender_pick_up_drop_off_point_id" id="pickupPointHidden" value="">
-                        </div>
-
-                        <!-- Dropoff Section -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">To Town <span class="text-danger">*</span></label>
-                                <input type="number" name="receiver_town_id" value="{{ $toTownId }}" class="d-none">
-                                <select class="form-select" name="receiver_town_id" id="toTown" disabled>
-                                    <option value="">Select delivery town</option>
-                                    @foreach($towns as $town)
-                                    <option value="{{ $town->id }}" {{ (isset($toTownId) && $toTownId == $town->id) ? 'selected' : '' }}>
-                                        {{ $town->name }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <label class="fw-semibold mb-2"><i class="bi bi-box-arrow-down text-danger me-1"></i> Dropoff Station <span class="text-danger">*</span></label>
-                            <div class="station-list" id="dropoffStationList">
-                                @if(isset($dropoffPoints) && count($dropoffPoints) > 0)
-                                @foreach($dropoffPoints as $point)
-                                <div class="station-item" data-id="{{ $point->id }}" data-type="dropoff">
-                                    <input type="radio" class="form-check-input" name="dropoffStation" value="{{ $point->id }}">
-                                    <div class="station-info">
-                                        <div class="station-name">{{ $point->name }}</div>
-                                        <div class="station-address">{{ $point->address ?? $point->location ?? '' }}</div>
-                                        <div class="station-meta">
-                                            @if($point->contact_phone_number ?? false)
-                                            <span><i class="bi bi-telephone"></i>{{ $point->contact_phone_number }}</span>
-                                            @endif
-                                            @if($point->hours ?? false)
-                                            <span><i class="bi bi-clock"></i>{{ $point->hours }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                                @endforeach
-                                @else
-                                <div class="text-muted p-3">No dropoff stations available</div>
-                                @endif
-                            </div>
-                            <input type="hidden" name="delivery_pick_up_drop_off_point_id" id="dropoffPointHidden" value="">
-                        </div>
-                    </div>
-
-                    <!-- ============================================ -->
-                    <!-- TRANSPORT PARTNER — READ-ONLY DISPLAY -->
-                    <!-- ============================================ -->
-                    <div class="mt-4">
-                        <h5 class="fw-semibold mb-3">
-                            <i class="bi bi-truck me-2 text-primary"></i>Transport Partner
-                        </h5>
-                        <p class="text-muted small mb-3">
-                            Selected on the previous page. Prices from this partner are used to calculate your item totals.
-                        </p>
-
-                        {{-- ALWAYS render this so JS can read it, even when no partner exists --}}
-                        <input type="hidden"
-                            name="transport_partner_id"
-                            id="transportPartnerId"
-                            value="{{ $selectedPartner->id ?? '' }}">
-
-                        @if(!empty($selectedPartner))
-                        <div class="partner-display">
-                            <div class="partner-brand">
-                                @if(!empty($selectedPartner->logo))
-                                <img src="{{ asset($selectedPartner->logo) }}"
-                                    alt="{{ $selectedPartner->company_name }}"
-                                    class="partner-logo">
-                                @else
-                                <div class="partner-logo-placeholder"><i class="bi bi-truck"></i></div>
-                                @endif
-                                <div class="partner-info">
-                                    <h6 class="partner-name">{{ $selectedPartner->company_name }}</h6>
-                                    @if(!empty($selectedPartner->description))
-                                    <p class="partner-desc">{{ $selectedPartner->description }}</p>
-                                    @endif
-                                    @if(!empty($selectedPartner->estimated_days))
-                                    <span class="partner-eta">
-                                        <i class="bi bi-clock me-1"></i>~{{ $selectedPartner->estimated_days }}
-                                        day{{ $selectedPartner->estimated_days > 1 ? 's' : '' }}
-                                    </span>
-                                    @endif
-                                </div>
-                            </div>
-                            @if(!empty($selectedPartner->price))
-                            <div class="partner-price">
-                                <span class="price-label">From</span>
-                                <span class="price-amount">KES {{ number_format($selectedPartner->price) }}</span>
-                            </div>
-                            @endif
-                        </div>
-                        @else
-                        <div class="partner-empty-state">
-                            <i class="bi bi-exclamation-circle me-2"></i>No transport partner has been selected for this route.
-                        </div>
-                        @endif
-                    </div>
-
-                    <!-- Items Section -->
-                    <div class="mt-4">
-                        <h5 class="fw-semibold mb-3"><i class="bi bi-cube me-2 text-primary"></i>Items in this shipment</h5>
-
-                        <div id="itemsContainer">
-                            <!-- Item 1 (default) -->
-                            <div class="item-card" data-item-index="0">
-                                <span class="item-number">Item #1</span>
-                                <button type="button" class="remove-item-btn" onclick="removeItem(0)" style="display: none;">
-                                    <i class="bi bi-x-circle-fill"></i>
-                                </button>
-                                <div class="row g-3">
-                                    <div class="col-md-3">
-                                        <label class="form-label">Parcel category <span class="text-danger">*</span></label>
-                                        <select class="form-select" name="items[0][parcel_category_id]" required>
-                                            @foreach($categories as $category)
-                                            <option value="{{ $category->id }}" data-price="{{ $price }}" {{ $category->id == $parcelCategoryId ? 'selected' : '' }}>
-                                                {{ $category->name }}
-                                            </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Parcel type <span class="text-danger">*</span></label>
-                                        <select class="form-select" name="items[0][parcel_type]" required>
-                                            <option value="document">Document</option>
-                                            <option value="package" selected>Package</option>
-                                            <option value="envelope">Envelope</option>
-                                            <option value="box">Box</option>
-                                            <option value="pallet">Pallet</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Package type <span class="text-danger">*</span></label>
-                                        <select class="form-select" name="items[0][package_type]" required>
-                                            <option value="regular">Regular</option>
-                                            <option value="fragile">Fragile</option>
-                                            <option value="perishable">Perishable</option>
-                                            <option value="valuable">Valuable</option>
-                                            <option value="hazardous">Hazardous</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Declared Value (KES) <span class="text-danger pod-required-star" style="display:none;">*</span></label>
-                                        <input type="number" class="form-control item-declared-value" name="items[0][declared_value]" placeholder="e.g., 5000" min="0" step="1" value="0">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Content description <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" name="items[0][content_description]" placeholder="Describe this item" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Special notes <span class="pod-required-star" style="display:none; color: #dc3545;">*</span></label>
-                                        <input type="text" class="form-control item-special-notes" name="items[0][special_notes]" placeholder="Any special notes for this item">
-                                        <small class="text-muted pod-payment-hint" style="display:none;">
-                                            <i class="bi bi-cash-coin me-1"></i>Please provide payment details (amount to collect, payment method, etc.)
-                                        </small>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input item-insurance" type="checkbox" name="items[0][insurance_required]" value="1" id="insurance0">
-                                            <label class="form-check-label item-insurance-label" for="insurance0">
-                                                Add insurance for this item (2% of declared value) - <span class="text-muted">KES <span class="item-insurance-amount" id="insuranceAmount0">0</span></span>
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input item-payment-on-delivery" type="checkbox" name="items[0][payment_on_delivery]" value="1" id="pod0">
-                                            <label class="form-check-label item-pod-label" for="pod0">
-                                                Customer will pay on delivery
-                                                <span class="text-muted small d-block mt-1">
-                                                    <i class="bi bi-info-circle me-1"></i>
-                                                    If checked, <strong>declared value</strong> and <strong>special notes</strong> (with payment details) become mandatory.
-                                                </span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <div class="row g-2">
-                                            <div class="col-md-3">
-                                                <small class="text-muted">Base Price:</small>
-                                                <div class="fw-bold text-primary" id="itemBasePrice0">KES 0</div>
-                                                <input type="hidden" name="items[0][base_price]" id="itemBasePriceHidden0" value="0">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <small class="text-muted">Insurance:</small>
-                                                <div class="fw-bold text-success" id="itemInsurance0">KES 0</div>
-                                                <input type="hidden" name="items[0][item_insurance_amount]" id="itemInsuranceHidden0" value="0">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <small class="text-muted">Tax (16%):</small>
-                                                <div class="fw-bold text-warning" id="itemTax0">KES 0</div>
-                                                <input type="hidden" name="items[0][tax_amount]" id="itemTaxHidden0" value="0">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <small class="text-muted">Total:</small>
-                                                <div class="fw-bold text-success" id="itemTotal0">KES 0</div>
-                                                <input type="hidden" name="items[0][item_total]" id="itemTotalHidden0" value="0">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button type="button" class="add-item-btn mt-2" id="addItemBtn">
-                            <i class="bi bi-plus-circle me-2"></i>Add another item
-                        </button>
-                    </div>
-
-                    <!-- Price Display -->
-                    <div class="col-12 mt-4">
-                        <div class="price-display d-flex justify-content-between align-items-center">
-                            <span class="label">Estimated Total:</span>
-                            <span class="amount" id="estimatedTotal">KES {{ $price }}</span>
-                        </div>
-                    </div>
-
-                    <div class="step-actions">
-                        <button type="button" class="btn btn-primary" id="toStep2">Next <i class="bi bi-arrow-right ms-1"></i></button>
-                    </div>
-                </div>
-
-                <!-- STEP 2: Sender & Receiver -->
-                <div class="step-panel" id="step2">
-                    <h5 class="fw-semibold mb-3"><i class="bi bi-people me-2 text-primary"></i>Sender & receiver details</h5>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <h6 class="fw-semibold text-primary"><i class="bi bi-person me-1"></i>Sender</h6>
-                            <div class="mb-2">
-                                <label class="form-label">Full name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="sender_name" id="senderName" placeholder="John Mwangi" required>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label">Phone <span class="text-danger">*</span></label>
-                                <input type="tel" class="form-control" name="sender_phone" id="senderPhone" placeholder="0712345678" required>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label">Email</label>
-                                <input type="email" class="form-control" name="sender_email" id="senderEmail" placeholder="john@example.com">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="fw-semibold text-danger"><i class="bi bi-person me-1"></i>Receiver</h6>
-                            <div class="mb-2">
-                                <label class="form-label">Full name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="receiver_name" id="receiverName" placeholder="Jane Akinyi" required>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label">Phone <span class="text-danger">*</span></label>
-                                <input type="tel" class="form-control" name="receiver_phone" id="receiverPhone" placeholder="0722334455" required>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label">Email</label>
-                                <input type="email" class="form-control" name="receiver_email" id="receiverEmail" placeholder="jane@example.com">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="step-actions">
-                        <button type="button" class="btn btn-outline-secondary" id="backToStep1"><i class="bi bi-arrow-left me-1"></i> Back</button>
-                        <button type="button" class="btn btn-primary" id="toStep3">Review & Confirm <i class="bi bi-arrow-right ms-1"></i></button>
-                    </div>
-                </div>
-
-                <!-- STEP 3: Review & Confirm -->
-                <div class="step-panel" id="step3">
-                    <h5 class="fw-semibold mb-3"><i class="bi bi-clipboard-check me-2 text-primary"></i>Review & Confirm</h5>
-
-                    <div class="login-prompt d-flex justify-content-between align-items-center flex-wrap" id="authPrompt">
-                        <div>
-                            <i class="bi bi-person-circle me-2 fs-4"></i>
-                            <span class="fw-semibold" id="authStatusText">You are browsing as a guest</span>
-                            <span class="text-muted" id="authActionText"> - Please login or register to complete booking</span>
-                        </div>
-                        <div id="authButtons">
-                            <button type="button" class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal"><i class="bi bi-box-arrow-in-right"></i> Login</button>
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal"><i class="bi bi-person-plus"></i> Register</button>
-                        </div>
-                        <div id="loggedInActions" style="display: none;">
-                            <span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Logged in as <span id="loggedInName">User</span></span>
-                            <button type="button" class="btn btn-outline-danger btn-sm ms-2" id="logoutBtn"><i class="bi bi-box-arrow-right"></i> Logout</button>
-                        </div>
-                    </div>
-
-                    <div class="review-summary">
-                        <h6><i class="bi bi-box me-2"></i>Parcel Details</h6>
-                        <div class="row">
-                            <div class="col-md-6"><span class="label">Pickup Station:</span> <span class="value" id="revPickup">-</span></div>
-                            <div class="col-md-6"><span class="label">Dropoff Station:</span> <span class="value" id="revDropoff">-</span></div>
-                            <div class="col-md-6"><span class="label">From:</span> <span class="value" id="revFrom">-</span></div>
-                            <div class="col-md-6"><span class="label">To:</span> <span class="value" id="revTo">-</span></div>
-                            <div class="col-md-6"><span class="label">Transport Partner:</span> <span class="value" id="revTransportPartner">-</span></div>
-                        </div>
-                    </div>
-
-                    <div class="review-summary">
-                        <h6><i class="bi bi-cube me-2"></i>Items</h6>
-                        <div id="reviewItems"></div>
-                    </div>
-
-                    <div class="review-summary">
-                        <h6><i class="bi bi-cash me-2"></i>Summary</h6>
-                        <div class="row">
-                            <div class="col-md-6"><span class="label">Total Insurance Amount:</span> <span class="value" id="revTotalInsurance">KES 0</span></div>
-                            <div class="col-12 mt-2"><span class="label">Total Amount:</span> <span class="value fw-bold text-success" id="revTotal">KES 0</span></div>
-                        </div>
-                    </div>
-
-                    <div class="review-summary">
-                        <h6><i class="bi bi-person me-2"></i>Sender Details</h6>
-                        <div class="row">
-                            <div class="col-md-6"><span class="label">Name:</span> <span class="value" id="revSender">-</span></div>
-                            <div class="col-md-6"><span class="label">Phone:</span> <span class="value" id="revSenderPhone">-</span></div>
-                            <div class="col-md-6"><span class="label">Email:</span> <span class="value" id="revSenderEmail">-</span></div>
-                        </div>
-                    </div>
-
-                    <div class="review-summary">
-                        <h6><i class="bi bi-person me-2"></i>Receiver Details</h6>
-                        <div class="row">
-                            <div class="col-md-6"><span class="label">Name:</span> <span class="value" id="revReceiver">-</span></div>
-                            <div class="col-md-6"><span class="label">Phone:</span> <span class="value" id="revReceiverPhone">-</span></div>
-                            <div class="col-md-6"><span class="label">Email:</span> <span class="value" id="revReceiverEmail">-</span></div>
-                        </div>
-                    </div>
-
-                    <input type="hidden" name="booking_type" value="instant">
-                    <input type="hidden" name="booking_source" value="web">
-                    <input type="hidden" name="payment_method" value="mpesa">
-                    <input type="hidden" name="payment_status" value="pending">
-                    <input type="hidden" name="total_amount" id="totalAmount" value="0">
-                    <input type="hidden" name="total_insurance_amount" id="totalInsuranceHidden" value="0">
-                    <input type="hidden" name="customer_id" id="customerId" value="">
-
-                    <div class="confirmation-section">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="termsCheck" name="terms" required>
-                            <label class="form-check-label" for="termsCheck">
-                                <strong>I confirm that all the information provided above is correct.</strong><br>
-                                <span class="text-muted small">By checking this box, you agree to our <a target="__blank" href="{{ route('terms') }}" class="text-primary">terms of service</a> and <a target="__blank" href="{{ route('policy') }}" class="text-primary">privacy policy</a> and confirm that you are authorized to send this parcel.</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="step-actions">
-                        <button type="button" class="btn btn-outline-secondary" id="backToStep2"><i class="bi bi-arrow-left me-1"></i> Back</button>
-                        <button type="submit" class="btn btn-success" id="saveParcelBtn" disabled>
-                            <i class="bi bi-lock me-1"></i> Please Login to Book
-                        </button>
-                    </div>
-                </div>
-            </form>
         </div>
-    </div>
 
-    <div class="whatsapp-float">
-        <a href="#" class="whatsapp-button" target="_blank"><i class="fab fa-whatsapp"></i></a>
+        <div class="steps" id="stepIndicators">
+            <div class="step active" data-step="1">
+                <div class="step-circle">1</div>
+                <div class="step-label">Items</div>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-circle">2</div>
+                <div class="step-label">Courier</div>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-circle">3</div>
+                <div class="step-label">Stations & Details</div>
+            </div>
+            <div class="step" data-step="4">
+                <div class="step-circle">4</div>
+                <div class="step-label">Review</div>
+            </div>
+            <div class="step" data-step="5">
+                <div class="step-circle">5</div>
+                <div class="step-label">Pay</div>
+            </div>
+        </div>
+
+        @if($items->isEmpty())
+        <div class="alert alert-warning">
+            No parcel categories are currently available. Please contact support.
+        </div>
+        @endif
+
+        <form id="bookingForm" class="wizard-body" method="POST" action="{{ route('booking.store') }}">
+            @csrf
+            <input type="hidden" name="sender_town_id" value="{{ $fromTownId }}">
+            <input type="hidden" name="receiver_town_id" value="{{ $toTownId }}">
+            <input type="hidden" name="transport_partner_id" id="transportPartnerId" value="">
+            <input type="hidden" name="booking_type" value="instant">
+            <input type="hidden" name="booking_source" value="web">
+            <input type="hidden" name="payment_method" value="mpesa">
+            <input type="hidden" name="payment_status" value="pending">
+            <input type="hidden" name="sender_pick_up_drop_off_point_id" id="pickupPointHidden" value="">
+            <input type="hidden" name="delivery_pick_up_drop_off_point_id" id="dropoffPointHidden" value="">
+
+            <!-- STEP 1: Items -->
+            <div class="step-panel active" data-panel="1">
+                <div class="section-title"><i class="bi bi-cube"></i> Add items to your shipment</div>
+                <!-- <p class="text-muted mb-3" style="font-size:.88rem">
+                Route: <strong id="routeLabel">{{ $towns->firstWhere('id', $fromTownId)?->name ?? '—' }}</strong>
+                <i class="bi bi-arrow-right"></i>
+                <strong>{{ $towns->firstWhere('id', $toTownId)?->name ?? '—' }}</strong>
+            </p> -->
+
+                <div id="itemsContainer"></div>
+                <button type="button" class="add-item-btn" id="addItemBtn">
+                    <i class="bi bi-plus-circle me-1"></i> Add another item
+                </button>
+
+                <div class="actions">
+                    <button type="button" class="btn btn-primary" data-next>Next <i class="bi bi-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Courier (transport partner) -->
+            <div class="step-panel" data-panel="2">
+                <div class="section-title"><i class="bi bi-truck"></i> Choose your courier</div>
+                <div id="partnerLoading" class="text-center text-muted py-4 d-none">
+                    <div class="spinner-border text-success"></div>
+                    <div class="mt-2" style="font-size:.9rem">Fetching couriers for your route…</div>
+                </div>
+                <div id="partnersList"></div>
+                <div id="partnersEmpty" class="text-center text-muted py-4 d-none">
+                    <i class="bi bi-exclamation-circle" style="font-size:1.6rem"></i>
+                    <p class="mt-2 mb-0">No courier currently serves this route for the selected items.</p>
+                </div>
+
+                <div class="actions">
+                    <button type="button" class="btn btn-outline-secondary" data-prev><i class="bi bi-arrow-left"></i> Back</button>
+                    <button type="button" class="btn btn-primary" data-next disabled id="toStep3">Next <i class="bi bi-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Stations & Details -->
+            <div class="step-panel" data-panel="3">
+                <div class="section-title"><i class="bi bi-geo-alt"></i> Pickup, dropoff & contact details</div>
+
+                <div class="row g-4 mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-box-arrow-up text-success me-1"></i>Pickup station</label>
+                        <div class="station-list" id="pickupStationList">
+                            @forelse($pickupPoints as $point)
+                            <div class="station-item" data-id="{{ $point->id }}" data-type="pickup">
+                                <input type="radio" class="form-check-input" name="pickupStation" value="{{ $point->id }}">
+                                <div>
+                                    <div class="station-name">{{ $point->name }}</div>
+                                    <div class="station-address">{{ $point->address ?? $point->location ?? '' }}</div>
+                                    <div class="station-meta">
+                                        @if($point->contact_phone_number ?? false)
+                                        <span><i class="bi bi-telephone"></i>{{ $point->contact_phone_number }}</span>
+                                        @endif
+                                        @if($point->hours ?? false)
+                                        <span><i class="bi bi-clock"></i>{{ $point->hours }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            @empty
+                            <div class="text-muted p-3">No pickup stations available.</div>
+                            @endforelse
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-box-arrow-down text-danger me-1"></i>Dropoff station</label>
+                        <div class="station-list" id="dropoffStationList">
+                            @forelse($dropoffPoints as $point)
+                            <div class="station-item" data-id="{{ $point->id }}" data-type="dropoff">
+                                <input type="radio" class="form-check-input" name="dropoffStation" value="{{ $point->id }}">
+                                <div>
+                                    <div class="station-name">{{ $point->name }}</div>
+                                    <div class="station-address">{{ $point->address ?? $point->location ?? '' }}</div>
+                                    <div class="station-meta">
+                                        @if($point->contact_phone_number ?? false)
+                                        <span><i class="bi bi-telephone"></i>{{ $point->contact_phone_number }}</span>
+                                        @endif
+                                        @if($point->hours ?? false)
+                                        <span><i class="bi bi-clock"></i>{{ $point->hours }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            @empty
+                            <div class="text-muted p-3">No dropoff stations available.</div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-success mb-2"><i class="bi bi-person"></i> Sender</h6>
+                        <div class="mb-2"><label class="form-label">Full name *</label>
+                            <input type="text" class="form-control" name="sender_name" id="senderName" required>
+                        </div>
+                        <div class="mb-2"><label class="form-label">Phone *</label>
+                            <input type="tel" class="form-control" name="sender_phone" id="senderPhone" required>
+                        </div>
+                        <div><label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="sender_email" id="senderEmail">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-danger mb-2"><i class="bi bi-person"></i> Receiver</h6>
+                        <div class="mb-2"><label class="form-label">Full name *</label>
+                            <input type="text" class="form-control" name="receiver_name" id="receiverName" required>
+                        </div>
+                        <div class="mb-2"><label class="form-label">Phone *</label>
+                            <input type="tel" class="form-control" name="receiver_phone" id="receiverPhone" required>
+                        </div>
+                        <div><label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="receiver_email" id="receiverEmail">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button type="button" class="btn btn-outline-secondary" data-prev><i class="bi bi-arrow-left"></i> Back</button>
+                    <button type="button" class="btn btn-primary" data-next>Next <i class="bi bi-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- STEP 4: Review -->
+            <div class="step-panel" data-panel="4">
+                <div class="section-title"><i class="bi bi-clipboard-check"></i> Review your booking</div>
+                <div id="reviewContent"></div>
+
+                <div class="actions">
+                    <button type="button" class="btn btn-outline-secondary" data-prev><i class="bi bi-arrow-left"></i> Back</button>
+                    <button type="button" class="btn btn-primary" data-next>Continue to payment <i class="bi bi-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- STEP 5: Pay -->
+            <div class="step-panel" data-panel="5">
+                <div class="section-title"><i class="bi bi-credit-card"></i> Confirm & pay</div>
+
+                <div id="authPrompt" class="login-prompt">
+                    <div>
+                        <i class="bi bi-person-circle me-2"></i>
+                        <strong id="authStatusText">You are browsing as a guest</strong>
+                        <span class="text-muted" id="authActionText"> — please login or register to complete booking</span>
+                    </div>
+                    <div id="authButtons">
+                        <button type="button" class="btn btn-outline-secondary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
+                    </div>
+                    <div id="loggedInActions" class="d-none">
+                        <span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Logged in as <span id="loggedInName">User</span></span>
+                        <button type="button" class="btn btn-outline-danger btn-sm ms-2" id="logoutBtn2">Logout</button>
+                    </div>
+                </div>
+
+                <div id="paymentReview" class="review-card"></div>
+
+                <div class="terms-box">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="termsCheck" name="terms" value="1" required>
+                        <label class="form-check-label" for="termsCheck">
+                            <strong>I confirm the information is correct and I accept the terms.</strong><br>
+                            <span class="text-muted small">
+                                You agree to our <a href="{{ route('terms') }}" target="_blank">terms of service</a>
+                                and <a href="{{ route('policy') }}" target="_blank">privacy policy</a>.
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button type="button" class="btn btn-outline-secondary" data-prev><i class="bi bi-arrow-left"></i> Back</button>
+                    <button type="submit" class="btn btn-success" id="submitBtn" disabled>
+                        <i class="bi bi-lock"></i> Please login to book
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 
     <!-- Login Modal -->
-    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal fade" id="loginModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="loginModalLabel"><i class="bi bi-box-arrow-in-right me-2 text-primary"></i>Login</h5>
+                    <h5 class="modal-title fw-bold">Login</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div id="loginMessage" class="alert" style="display: none;"></div>
-                    <form id="loginForm">
-                        <div class="mb-3">
-                            <label class="form-label">Email address</label>
-                            <input type="email" class="form-control" id="loginEmail" placeholder="name@example.com" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <input type="password" class="form-control" id="loginPassword" placeholder="••••••••" required>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="rememberMe">
-                                <label class="form-check-label small" for="rememberMe">Remember me</label>
-                            </div>
-                            <a href="#" class="small text-primary">Forgot password?</a>
-                        </div>
-                    </form>
+                    <div id="loginMessage" class="alert d-none"></div>
+                    <div class="mb-3"><label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="loginEmail" required>
+                    </div>
+                    <div><label class="form-label">Password</label>
+                        <input type="password" class="form-control" id="loginPassword" required>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="loginSubmitBtn">
-                        <span id="loginBtnText">Login</span>
-                        <span id="loginBtnSpinner" class="spinner-border spinner-border-sm" style="display: none;" role="status"></span>
-                    </button>
+                    <button type="button" class="btn btn-primary" id="loginSubmitBtn">Login</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Register Modal -->
-    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal fade" id="registerModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="registerModalLabel"><i class="bi bi-person-plus me-2 text-primary"></i>Register</h5>
+                    <h5 class="modal-title fw-bold">Register</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div id="registerMessage" class="alert" style="display: none;"></div>
-                    <form id="registerForm">
-                        <div class="mb-3">
-                            <label class="form-label">Full name</label>
-                            <input type="text" class="form-control" id="regName" placeholder="John Mwangi" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Email address</label>
-                            <input type="email" class="form-control" id="regEmail" placeholder="name@example.com" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Phone number</label>
-                            <input type="tel" class="form-control" id="regPhone" placeholder="0712345678" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <input type="password" class="form-control" id="regPassword" placeholder="••••••••" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Confirm password</label>
-                            <input type="password" class="form-control" id="regConfirmPassword" placeholder="••••••••" required>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="regTerms" required>
-                            <label class="form-check-label small" for="regTerms">I agree to the <a href="#" class="text-primary">terms and conditions</a></label>
-                        </div>
-                    </form>
+                    <div id="registerMessage" class="alert d-none"></div>
+                    <div class="mb-2"><label class="form-label">Full name</label>
+                        <input type="text" class="form-control" id="regName" required>
+                    </div>
+                    <div class="mb-2"><label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="regEmail" required>
+                    </div>
+                    <div class="mb-2"><label class="form-label">Phone</label>
+                        <input type="tel" class="form-control" id="regPhone" required>
+                    </div>
+                    <div class="mb-2"><label class="form-label">Password</label>
+                        <input type="password" class="form-control" id="regPassword" required>
+                    </div>
+                    <div class="mb-2"><label class="form-label">Confirm password</label>
+                        <input type="password" class="form-control" id="regConfirmPassword" required>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="registerSubmitBtn">
-                        <span id="registerBtnText">Create account</span>
-                        <span id="registerBtnSpinner" class="spinner-border spinner-border-sm" style="display: none;" role="status"></span>
-                    </button>
+                    <button type="button" class="btn btn-primary" id="registerSubmitBtn">Create account</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         (() => {
             'use strict';
 
-            let currentStep = 1;
-            let isLoggedIn = false;
-            let currentUser = null;
-            let selectedPickup = null;
-            let selectedDropoff = null;
-            let itemCounter = 1;
-            const basePrice = Number(@json((float) $price));
-
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
-
+            // ---------- Config ----------
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
             const endpoints = {
+                partners: @json(route('api.booking.partners')),
                 login: @json(url('/customer/login?type=api')),
                 register: @json(url('/customer/register')),
                 checkAuth: @json(url('/customer/check-auth')),
                 logout: @json(url('/customer/logout')),
-                getCost: @json(url('api/booking/get-cost')),
+            };
+            const fromTownId = @json((int) $fromTownId ? : null);
+            const toTownId = @json((int) $toTownId ? : null);
+
+            // ---------- State ----------
+            const state = {
+                step: 1,
+                items: [],
+                itemSeq: 0,
+                partners: [],
+                selectedPartner: null,
+                selectedPickup: null,
+                selectedDropoff: null,
+                user: null,
+                priceData: null,
             };
 
-            const selectedTransportPartner = {
-               partner: @json($selectedPartner),
-            }
+            const el = id => document.getElementById(id);
+            const money = n => 'KES ' + Number(n || 0).toLocaleString(undefined, {
+                maximumFractionDigits: 0
+            });
 
-            const element = (id) => document.getElementById(id);
-
-            const stepPanels = {
-                1: element('step1'),
-                2: element('step2'),
-                3: element('step3'),
-            };
-
-            const indicators = {
-                1: element('stepIndicator1'),
-                2: element('stepIndicator2'),
-                3: element('stepIndicator3'),
-            };
-
-            function escapeHtml(value) {
-                const div = document.createElement('div');
-                div.textContent = value ?? '';
-                return div.innerHTML;
-            }
-
-            function normalizeCustomer(data) {
-                return data?.user ?? data?.customer ?? null;
-            }
-
-            function customerPhone(customer) {
-                return customer?.phone ?? customer?.phone_number ?? '';
-            }
-
-            function showMessage(container, message, type = 'danger') {
-                container.className = `alert alert-${type}`;
-                container.textContent = message;
-                container.style.display = 'block';
-            }
-
-            function hideMessage(container) {
-                container.style.display = 'none';
-                container.textContent = '';
-            }
-
-            function setButtonLoading(button, textElement, spinnerElement, loading) {
-                button.disabled = loading;
-                textElement.style.display = loading ? 'none' : 'inline';
-                spinnerElement.style.display = loading ? 'inline-block' : 'none';
-            }
-
-            async function parseResponse(response) {
-                const contentType = response.headers.get('content-type') ?? '';
-                const payload = contentType.includes('application/json') ?
-                    await response.json() : {
-                        message: await response.text()
-                    };
-
-                if (!response.ok) {
-                    if (payload.errors) {
-                        const messages = Object.values(payload.errors).flat();
-                        throw new Error(messages.join(' '));
-                    }
-                    throw new Error(payload.message || `Request failed with status ${response.status}.`);
-                }
-                return payload;
-            }
-
-            // ---- Read selected partner ID from the hidden input ----
-            function getTransportPartnerId() {
-                const el = document.getElementById('transportPartnerId');
-                return el ? String(el.value || '').trim() : '';
-            }
-
-            function getTransportPartnerName() {
-                const el = document.querySelector('.partner-display .partner-name');
-                return el ? el.textContent.trim() : '—';
-            }
-
-            // ---- POD toggling ----
-            function togglePodFields(item, enabled) {
-                const declaredInput = item.querySelector('.item-declared-value');
-                const notesInput = item.querySelector('.item-special-notes');
-                const stars = item.querySelectorAll('.pod-required-star');
-                const hint = item.querySelector('.pod-payment-hint');
-
-                if (enabled) {
-                    if (declaredInput) {
-                        declaredInput.setAttribute('required', 'required');
-                        declaredInput.placeholder = 'Required: declared value (e.g., 5000)';
-                    }
-                    if (notesInput) {
-                        notesInput.setAttribute('required', 'required');
-                        notesInput.placeholder = 'Enter payment details (amount, method, etc.)';
-                    }
-                    stars.forEach(s => s.style.display = 'inline');
-                    if (hint) hint.style.display = 'block';
-                } else {
-                    if (declaredInput) {
-                        declaredInput.removeAttribute('required');
-                        declaredInput.placeholder = 'e.g., 5000';
-                    }
-                    if (notesInput) {
-                        notesInput.removeAttribute('required');
-                        notesInput.placeholder = 'Any special notes for this item';
-                    }
-                    stars.forEach(s => s.style.display = 'none');
-                    if (hint) hint.style.display = 'none';
-                }
-            }
-
-            // ---- Fetch price from backend (sends transport_partner_id) ----
-            async function fetchCategoryPrice(item) {
-                const categorySelect = item.querySelector('select[name*="parcel_category_id"]');
-                if (!categorySelect) return;
-
-                const categoryId = categorySelect.value;
-                const fromTown = document.getElementById('fromTown').value;
-                const toTown = document.getElementById('toTown').value;
-
-                const transportPartnerId = selectedTransportPartner.partner.id;
-
-                if (!categoryId || !fromTown || !toTown) {
-                    const selectedOption = categorySelect.options[categorySelect.selectedIndex];
-                    if (selectedOption && selectedOption.dataset.price) {
-                        item.dataset.fetchedPrice = selectedOption.dataset.price;
-                    }
-                    return;
-                }
-
-                const itemIndex = item.dataset.itemIndex;
-                const basePriceEl = document.getElementById(`itemBasePrice${itemIndex}`);
-
-                try {
-                    if (basePriceEl) basePriceEl.textContent = '...';
-
-                    const response = await fetch(endpoints.getCost, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                        credentials: 'same-origin',
-                        body: JSON.stringify({
-                            parcel_category_id: categoryId,
-                            from_town_id: fromTown,
-                            to_town_id: toTown,
-                            transport_partner_id: transportPartnerId,
-                        }),
-                    });
-
-                    const data = await parseResponse(response);
-                    const fetchedPrice = Number(data.cost) || 0;
-                    item.dataset.fetchedPrice = fetchedPrice;
-                    if (basePriceEl) basePriceEl.textContent = `KES ${fetchedPrice}`;
-                } catch (error) {
-                    console.error('Error fetching category price:', error);
-                    const selectedOption = categorySelect.options[categorySelect.selectedIndex];
-                    const fallback = selectedOption?.dataset?.price || basePrice;
-                    item.dataset.fetchedPrice = fallback;
-                    if (basePriceEl) basePriceEl.textContent = `KES ${fallback}`;
-                }
-
-                calculateTotal();
-                if (currentStep === 3) updateReviewDetails();
-            }
-
-            // ---- Item management ----
-            function addItem() {
-                const container = element('itemsContainer');
-                const index = itemCounter;
-                itemCounter++;
-
-                const firstCategorySelect = container.querySelector('select[name*="parcel_category_id"]');
-                const categoryOptions = firstCategorySelect ? firstCategorySelect.innerHTML : '';
-
-                const itemHtml = `
-    <div class="item-card" data-item-index="${index}">
-      <span class="item-number">Item #${index + 1}</span>
-      <button type="button" class="remove-item-btn" onclick="removeItem(${index})">
-        <i class="bi bi-x-circle-fill"></i>
-      </button>
-      <div class="row g-3">
-        <div class="col-md-3">
-          <label class="form-label">Parcel category <span class="text-danger">*</span></label>
-          <select class="form-select" name="items[${index}][parcel_category_id]" required>
-            ${categoryOptions}
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Parcel type <span class="text-danger">*</span></label>
-          <select class="form-select" name="items[${index}][parcel_type]" required>
-            <option value="document">Document</option>
-            <option value="package" selected>Package</option>
-            <option value="envelope">Envelope</option>
-            <option value="box">Box</option>
-            <option value="pallet">Pallet</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Package type <span class="text-danger">*</span></label>
-          <select class="form-select" name="items[${index}][package_type]" required>
-            <option value="regular">Regular</option>
-            <option value="fragile">Fragile</option>
-            <option value="perishable">Perishable</option>
-            <option value="valuable">Valuable</option>
-            <option value="hazardous">Hazardous</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Declared Value (KES) <span class="text-danger pod-required-star" style="display:none;">*</span></label>
-          <input type="number" class="form-control item-declared-value" name="items[${index}][declared_value]" placeholder="e.g., 5000" min="0" step="1" value="0">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Content description <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" name="items[${index}][content_description]" placeholder="Describe this item" required>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Special notes <span class="pod-required-star" style="display:none; color: #dc3545;">*</span></label>
-          <input type="text" class="form-control item-special-notes" name="items[${index}][special_notes]" placeholder="Any special notes for this item">
-          <small class="text-muted pod-payment-hint" style="display:none;">
-            <i class="bi bi-cash-coin me-1"></i>Please provide payment details (amount to collect, payment method, etc.)
-          </small>
-        </div>
-        <div class="col-md-12">
-          <div class="form-check mb-2">
-            <input class="form-check-input item-insurance" type="checkbox" name="items[${index}][insurance_required]" value="1" id="insurance${index}">
-            <label class="form-check-label item-insurance-label" for="insurance${index}">
-              Add insurance for this item (2% of declared value) - <span class="text-muted">KES <span class="item-insurance-amount" id="insuranceAmount${index}">0</span></span>
-            </label>
-          </div>
-          <div class="form-check">
-            <input class="form-check-input item-payment-on-delivery" type="checkbox" name="items[${index}][payment_on_delivery]" value="1" id="pod${index}">
-            <label class="form-check-label item-pod-label" for="pod${index}">
-              Customer will pay on delivery
-              <span class="text-muted small d-block mt-1">
-                <i class="bi bi-info-circle me-1"></i>
-                If checked, <strong>declared value</strong> and <strong>special notes</strong> (with payment details) become mandatory.
-              </span>
-            </label>
-          </div>
-        </div>
-        <div class="col-md-12">
-          <div class="row g-2">
-            <div class="col-md-3">
-              <small class="text-muted">Base Price:</small>
-              <div class="fw-bold text-primary" id="itemBasePrice${index}">KES 0</div>
-              <input type="hidden" name="items[${index}][base_price]" id="itemBasePriceHidden${index}" value="0">
-            </div>
-            <div class="col-md-3">
-              <small class="text-muted">Insurance:</small>
-              <div class="fw-bold text-success" id="itemInsurance${index}">KES 0</div>
-              <input type="hidden" name="items[${index}][item_insurance_amount]" id="itemInsuranceHidden${index}" value="0">
-            </div>
-            <div class="col-md-3">
-              <small class="text-muted">Tax (16%):</small>
-              <div class="fw-bold text-warning" id="itemTax${index}">KES 0</div>
-              <input type="hidden" name="items[${index}][tax_amount]" id="itemTaxHidden${index}" value="0">
-            </div>
-            <div class="col-md-3">
-              <small class="text-muted">Total:</small>
-              <div class="fw-bold text-success" id="itemTotal${index}">KES 0</div>
-              <input type="hidden" name="items[${index}][item_total]" id="itemTotalHidden${index}" value="0">
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-                container.insertAdjacentHTML('beforeend', itemHtml);
-
-                const newItem = container.querySelector(`.item-card[data-item-index="${index}"]`);
-                const declaredValueInput = newItem.querySelector('.item-declared-value');
-                const insuranceCheckbox = newItem.querySelector('.item-insurance');
-                const podCheckbox = newItem.querySelector('.item-payment-on-delivery');
-                const categorySelect = newItem.querySelector('select[name*="parcel_category_id"]');
-                const parcelTypeSelect = newItem.querySelector('select[name*="parcel_type"]');
-                const packageTypeSelect = newItem.querySelector('select[name*="package_type"]');
-
-                declaredValueInput.addEventListener('input', () => {
-                    calculateTotal();
-                    if (currentStep === 3) updateReviewDetails();
+            // ---------- Step navigation ----------
+            function setStep(n) {
+                state.step = n;
+                document.querySelectorAll('.step-panel').forEach(p => p.classList.toggle('active', +p.dataset.panel === n));
+                document.querySelectorAll('.step').forEach(s => {
+                    const k = +s.dataset.step;
+                    s.classList.toggle('active', k === n);
+                    s.classList.toggle('done', k < n);
                 });
-
-                insuranceCheckbox.addEventListener('change', () => {
-                    calculateTotal();
-                    if (currentStep === 3) updateReviewDetails();
-                });
-
-                if (podCheckbox) {
-                    podCheckbox.addEventListener('change', () => {
-                        togglePodFields(newItem, podCheckbox.checked);
-                        calculateTotal();
-                        if (currentStep === 3) updateReviewDetails();
-                    });
-                }
-
-                [categorySelect, parcelTypeSelect, packageTypeSelect].forEach(select => {
-                    select.addEventListener('change', () => {
-                        if (select === categorySelect) {
-                            fetchCategoryPrice(newItem);
-                        }
-                        calculateTotal();
-                        if (currentStep === 3) updateReviewDetails();
-                    });
-                });
-
-                fetchCategoryPrice(newItem);
-                updateRemoveButtons();
-                calculateTotal();
-            }
-
-            window.removeItem = function(index) {
-                const container = element('itemsContainer');
-                const items = container.querySelectorAll('.item-card');
-
-                if (items.length <= 1) {
-                    alert('You must have at least one item.');
-                    return;
-                }
-
-                const itemToRemove = container.querySelector(`.item-card[data-item-index="${index}"]`);
-                if (itemToRemove) {
-                    itemToRemove.remove();
-                    renumberItems();
-                    updateRemoveButtons();
-                    calculateTotal();
-                    if (currentStep === 3) updateReviewDetails();
-                }
-            };
-
-            function renumberItems() {
-                const container = element('itemsContainer');
-                const items = container.querySelectorAll('.item-card');
-
-                items.forEach((item, idx) => {
-                    const numberSpan = item.querySelector('.item-number');
-                    if (numberSpan) numberSpan.textContent = `Item #${idx + 1}`;
-                    item.dataset.itemIndex = idx;
-
-                    const inputs = item.querySelectorAll('select, input');
-                    inputs.forEach(input => {
-                        const name = input.getAttribute('name');
-                        if (name) {
-                            const newName = name.replace(/items\[\d+\]/, `items[${idx}]`);
-                            input.setAttribute('name', newName);
-                        }
-                    });
-
-                    const insuranceCheckbox = item.querySelector('.item-insurance');
-                    if (insuranceCheckbox) {
-                        insuranceCheckbox.id = `insurance${idx}`;
-                        const label = item.querySelector(`label[for^="insurance"]`);
-                        if (label) label.setAttribute('for', `insurance${idx}`);
-                    }
-
-                    const insuranceAmountSpan = item.querySelector('.item-insurance-amount');
-                    if (insuranceAmountSpan) insuranceAmountSpan.id = `insuranceAmount${idx}`;
-
-                    const podCheckbox = item.querySelector('.item-payment-on-delivery');
-                    if (podCheckbox) {
-                        podCheckbox.id = `pod${idx}`;
-                        const podLabel = item.querySelector(`label[for^="pod"]`);
-                        if (podLabel) podLabel.setAttribute('for', `pod${idx}`);
-                    }
-                });
-            }
-
-            function updateRemoveButtons() {
-                const container = element('itemsContainer');
-                const items = container.querySelectorAll('.item-card');
-                const removeButtons = container.querySelectorAll('.remove-item-btn');
-
-                removeButtons.forEach(btn => {
-                    btn.style.display = items.length <= 1 ? 'none' : 'block';
-                });
-            }
-
-            // ---- Stations ----
-            function initializeStations() {
-                const pickupItems = document.querySelectorAll('#pickupStationList .station-item');
-                pickupItems.forEach((item) => {
-                    const radio = item.querySelector('input[type="radio"]');
-                    if (!radio) return;
-
-                    item.addEventListener('click', function(e) {
-                        if (e.target.tagName === 'INPUT' && e.target.type === 'radio') return;
-                        const radioInput = this.querySelector('input[type="radio"]');
-                        if (radioInput) {
-                            radioInput.checked = true;
-                            radioInput.dispatchEvent(new Event('change'));
-                        }
-                    });
-
-                    radio.addEventListener('change', function(e) {
-                        e.stopPropagation();
-                        const parent = this.closest('.station-list');
-                        parent.querySelectorAll('.station-item').forEach(it => it.classList.remove('selected'));
-                        const item = this.closest('.station-item');
-                        if (this.checked) {
-                            item.classList.add('selected');
-                            const id = parseInt(this.value);
-                            selectedPickup = id;
-                            element('pickupPointHidden').value = id;
-                        } else {
-                            item.classList.remove('selected');
-                            selectedPickup = null;
-                            element('pickupPointHidden').value = '';
-                        }
-                        if (currentStep === 3) updateReviewDetails();
-                    });
-                });
-
-                const dropoffItems = document.querySelectorAll('#dropoffStationList .station-item');
-                dropoffItems.forEach((item) => {
-                    const radio = item.querySelector('input[type="radio"]');
-                    if (!radio) return;
-
-                    item.addEventListener('click', function(e) {
-                        if (e.target.tagName === 'INPUT' && e.target.type === 'radio') return;
-                        const radioInput = this.querySelector('input[type="radio"]');
-                        if (radioInput) {
-                            radioInput.checked = true;
-                            radioInput.dispatchEvent(new Event('change'));
-                        }
-                    });
-
-                    radio.addEventListener('change', function(e) {
-                        e.stopPropagation();
-                        const parent = this.closest('.station-list');
-                        parent.querySelectorAll('.station-item').forEach(it => it.classList.remove('selected'));
-                        const item = this.closest('.station-item');
-                        if (this.checked) {
-                            item.classList.add('selected');
-                            const id = parseInt(this.value);
-                            selectedDropoff = id;
-                            element('dropoffPointHidden').value = id;
-                        } else {
-                            item.classList.remove('selected');
-                            selectedDropoff = null;
-                            element('dropoffPointHidden').value = '';
-                        }
-                        if (currentStep === 3) updateReviewDetails();
-                    });
-                });
-
-                setTimeout(() => {
-                    const firstPickup = document.querySelector('#pickupStationList .station-item');
-                    if (firstPickup) {
-                        const radio = firstPickup.querySelector('input[type="radio"]');
-                        if (radio && !radio.checked) {
-                            radio.checked = true;
-                            radio.dispatchEvent(new Event('change'));
-                        }
-                    }
-                    const firstDropoff = document.querySelector('#dropoffStationList .station-item');
-                    if (firstDropoff) {
-                        const radio = firstDropoff.querySelector('input[type="radio"]');
-                        if (radio && !radio.checked) {
-                            radio.checked = true;
-                            radio.dispatchEvent(new Event('change'));
-                        }
-                    }
-                }, 100);
-            }
-
-            function updateUIForLoggedInUser(customer) {
-                if (!customer) {
-                    updateUIForLoggedOutUser();
-                    return;
-                }
-
-                const safeName = escapeHtml(customer.name || 'Customer');
-                const safeEmail = escapeHtml(customer.email || '');
-
-                element('userInfoDisplay').innerHTML = `
-          <span class="user-name">
-            <i class="bi bi-person-check-fill me-2"></i>Welcome, ${safeName}!
-          </span>
-          ${safeEmail ? `<span class="text-muted ms-2 small">(${safeEmail})</span>` : ''}
-        `;
-
-                element('guestTopActions').classList.add('d-none');
-                element('customerTopActions').classList.remove('d-none');
-
-                element('authStatusText').textContent = `You are logged in as ${customer.name || 'Customer'}`;
-                element('authActionText').textContent = '';
-                element('authButtons').style.display = 'none';
-                element('loggedInActions').style.display = 'inline-block';
-                element('loggedInName').textContent = customer.name || 'Customer';
-
-                element('saveParcelBtn').disabled = false;
-                element('saveParcelBtn').innerHTML = '<i class="bi bi-check-circle me-1"></i> Confirm & Book';
-                element('customerId').value = customer.id ?? '';
-
-                if (customer.name) element('senderName').value = customer.name;
-                if (customer.email) element('senderEmail').value = customer.email;
-                if (customerPhone(customer)) element('senderPhone').value = customerPhone(customer);
-
-                currentUser = customer;
-                isLoggedIn = true;
-            }
-
-            function updateUIForLoggedOutUser() {
-                element('userInfoDisplay').innerHTML = `
-          <span class="guest-text">
-            <i class="bi bi-person-circle me-2"></i>You are browsing as a guest
-          </span>
-        `;
-
-                element('guestTopActions').classList.remove('d-none');
-                element('customerTopActions').classList.add('d-none');
-
-                element('authStatusText').textContent = 'You are browsing as a guest';
-                element('authActionText').textContent = ' - Please login or register to complete booking';
-                element('authButtons').style.display = 'inline-block';
-                element('loggedInActions').style.display = 'none';
-
-                element('saveParcelBtn').disabled = true;
-                element('saveParcelBtn').innerHTML = '<i class="bi bi-lock me-1"></i> Please Login to Book';
-                element('customerId').value = '';
-
-                currentUser = null;
-                isLoggedIn = false;
-            }
-
-            async function handleLogin(event) {
-                event?.preventDefault();
-
-                const email = element('loginEmail').value.trim();
-                const password = element('loginPassword').value;
-                const message = element('loginMessage');
-                const button = element('loginSubmitBtn');
-
-                hideMessage(message);
-
-                if (!email || !password) {
-                    showMessage(message, 'Please enter your email address and password.', 'warning');
-                    return;
-                }
-
-                setButtonLoading(button, element('loginBtnText'), element('loginBtnSpinner'), true);
-
-                try {
-                    const response = await fetch(endpoints.login, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                        credentials: 'same-origin',
-                        body: JSON.stringify({
-                            email,
-                            password,
-                            remember: element('rememberMe').checked,
-                        }),
-                    });
-
-                    const data = await parseResponse(response);
-                    const customer = normalizeCustomer(data);
-
-                    if (!data.success || !customer) {
-                        throw new Error(data.message || 'Login succeeded, but customer details were not returned.');
-                    }
-
-                    updateUIForLoggedInUser(customer);
-                    updateReviewDetails();
-                    showMessage(message, data.message || 'Login successful.', 'success');
-
-                    bootstrap.Modal.getOrCreateInstance(element('loginModal')).hide();
-                    element('loginForm').reset();
-                    hideMessage(message);
-                } catch (error) {
-                    console.error('Login error:', error);
-                    showMessage(message, error.message || 'Login failed. Please try again.', 'danger');
-                } finally {
-                    setButtonLoading(button, element('loginBtnText'), element('loginBtnSpinner'), false);
-                }
-            }
-
-            async function handleRegister(event) {
-                event?.preventDefault();
-
-                const name = element('regName').value.trim();
-                const email = element('regEmail').value.trim();
-                const phone = element('regPhone').value.trim();
-                const password = element('regPassword').value;
-                const passwordConfirmation = element('regConfirmPassword').value;
-                const termsAccepted = element('regTerms').checked;
-                const message = element('registerMessage');
-                const button = element('registerSubmitBtn');
-
-                hideMessage(message);
-
-                if (!name || !email || !phone || !password || !passwordConfirmation) {
-                    showMessage(message, 'Please fill in all required fields.', 'warning');
-                    return;
-                }
-
-                if (password !== passwordConfirmation) {
-                    showMessage(message, 'Passwords do not match.', 'warning');
-                    return;
-                }
-
-                if (password.length < 8) {
-                    showMessage(message, 'Password must contain at least 8 characters.', 'warning');
-                    return;
-                }
-
-                if (!/^(0|254|\+254)[0-9]{9}$/.test(phone)) {
-                    showMessage(message, 'Please enter a valid Kenyan phone number, for example 0712345678.', 'warning');
-                    return;
-                }
-
-                if (!termsAccepted) {
-                    showMessage(message, 'Please agree to the terms and conditions.', 'warning');
-                    return;
-                }
-
-                setButtonLoading(button, element('registerBtnText'), element('registerBtnSpinner'), true);
-
-                try {
-                    const response = await fetch(endpoints.register, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                        credentials: 'same-origin',
-                        body: JSON.stringify({
-                            name,
-                            email,
-                            phone,
-                            password,
-                            password_confirmation: passwordConfirmation,
-                            terms: true,
-                        }),
-                    });
-
-                    const data = await parseResponse(response);
-                    const customer = normalizeCustomer(data);
-
-                    if (!data.success || !customer) {
-                        throw new Error(data.message || 'Registration succeeded, but customer details were not returned.');
-                    }
-
-                    updateUIForLoggedInUser(customer);
-                    updateReviewDetails();
-                    showMessage(message, data.message || 'Registration successful.', 'success');
-
-                    bootstrap.Modal.getOrCreateInstance(element('registerModal')).hide();
-                    element('registerForm').reset();
-                    hideMessage(message);
-                } catch (error) {
-                    console.error('Registration error:', error);
-                    showMessage(message, error.message || 'Registration failed. Please try again.', 'danger');
-                } finally {
-                    setButtonLoading(button, element('registerBtnText'), element('registerBtnSpinner'), false);
-                }
-            }
-
-            async function checkLoginStatus() {
-                try {
-                    const response = await fetch(endpoints.checkAuth, {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                        credentials: 'same-origin',
-                    });
-
-                    const data = await parseResponse(response);
-                    const customer = normalizeCustomer(data);
-
-                    if (data.authenticated && customer) {
-                        updateUIForLoggedInUser(customer);
-                    } else {
-                        updateUIForLoggedOutUser();
-                    }
-                } catch (error) {
-                    console.error('Authentication check failed:', error);
-                    updateUIForLoggedOutUser();
-                }
-            }
-
-            async function handleLogout() {
-                try {
-                    const response = await fetch(endpoints.logout, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                        credentials: 'same-origin',
-                    });
-
-                    await parseResponse(response);
-                } catch (error) {
-                    console.error('Logout error:', error);
-                } finally {
-                    updateUIForLoggedOutUser();
-                    element('loginForm').reset();
-                    element('registerForm').reset();
-                }
-            }
-
-            function updateStep(step) {
-                Object.values(stepPanels).forEach((panel) => panel.classList.remove('active'));
-                stepPanels[step]?.classList.add('active');
-
-                for (let index = 1; index <= 3; index++) {
-                    indicators[index].classList.remove('active', 'completed');
-
-                    if (index < step) indicators[index].classList.add('completed');
-                    if (index === step) indicators[index].classList.add('active');
-                }
-
-                currentStep = step;
-
-                if (step === 3) {
-                    updateReviewDetails();
-                }
-
                 window.scrollTo({
                     top: 0,
                     behavior: 'smooth'
                 });
             }
 
-            function calculateItemCost(item, index) {
-                const declaredValue = Number.parseFloat(item.querySelector('.item-declared-value')?.value) || 0;
-                const insuranceRequired = item.querySelector('.item-insurance')?.checked || false;
-                const insuranceAmount = insuranceRequired ? declaredValue * 0.02 : 0;
-
-                let basePrice = 100;
-                if (item.dataset.fetchedPrice !== undefined) {
-                    basePrice = Number(item.dataset.fetchedPrice) || 0;
-                } else {
-                    const categorySelect = item.querySelector('select[name*="parcel_category_id"]');
-                    if (categorySelect) {
-                        const selectedOption = categorySelect.options[categorySelect.selectedIndex];
-                        const categoryPrice = selectedOption?.dataset?.price;
-                        if (categoryPrice && !isNaN(parseFloat(categoryPrice))) {
-                            basePrice = parseFloat(categoryPrice);
-                        }
-                    }
-                }
-
-                const packageType = item.querySelector('select[name*="package_type"]');
-                if (packageType) {
-                    const type = packageType.value;
-                    switch (type) {
-                        case 'fragile':
-                        case 'valuable':
-                            basePrice *= 1.2;
-                            break;
-                        case 'hazardous':
-                            basePrice *= 1.5;
-                            break;
-                        case 'perishable':
-                            basePrice *= 1.3;
-                            break;
-                    }
-                }
-
-                basePrice = Math.round(basePrice * 100) / 100;
-                const taxAmount = (basePrice + insuranceAmount) * 0.16;
-                const total = basePrice + insuranceAmount + taxAmount;
-
-                return {
-                    basePrice: Math.round(basePrice),
-                    insuranceAmount: Math.round(insuranceAmount),
-                    taxAmount: Math.round(taxAmount),
-                    total: Math.round(total),
-                    declaredValue: Math.round(declaredValue)
-                };
-            }
-
-            function updateItemCostDisplay(item, index) {
-                const costs = calculateItemCost(item, index);
-
-                const basePriceEl = document.getElementById(`itemBasePrice${index}`);
-                const insuranceEl = document.getElementById(`itemInsurance${index}`);
-                const taxEl = document.getElementById(`itemTax${index}`);
-                const totalEl = document.getElementById(`itemTotal${index}`);
-
-                if (basePriceEl) basePriceEl.textContent = `KES ${costs.basePrice}`;
-                if (insuranceEl) insuranceEl.textContent = `KES ${costs.insuranceAmount}`;
-                if (taxEl) taxEl.textContent = `KES ${costs.taxAmount}`;
-                if (totalEl) totalEl.textContent = `KES ${costs.total}`;
-
-                document.getElementById(`itemBasePriceHidden${index}`).value = costs.basePrice;
-                document.getElementById(`itemInsuranceHidden${index}`).value = costs.insuranceAmount;
-                document.getElementById(`itemTaxHidden${index}`).value = costs.taxAmount;
-                document.getElementById(`itemTotalHidden${index}`).value = costs.total;
-            }
-
-            function calculateTotal() {
-                const items = document.querySelectorAll('.item-card');
-                let totalInsuranceAmount = 0;
-                let totalDeclaredValue = 0;
-                let grandTotal = 0;
-
-                items.forEach((item, idx) => {
-                    updateItemCostDisplay(item, idx);
-
-                    const declaredValue = Number.parseFloat(item.querySelector('.item-declared-value')?.value) || 0;
-                    const insuranceRequired = item.querySelector('.item-insurance')?.checked || false;
-                    const insuranceAmount = insuranceRequired ? declaredValue * 0.02 : 0;
-
-                    totalDeclaredValue += declaredValue;
-                    totalInsuranceAmount += insuranceAmount;
-
-                    const itemTotal = Number.parseFloat(document.getElementById(`itemTotalHidden${idx}`)?.value) || 0;
-                    grandTotal += itemTotal;
-
-                    const insuranceSpan = item.querySelector('.item-insurance-amount');
-                    if (insuranceSpan) insuranceSpan.textContent = insuranceAmount.toFixed(0);
-                });
-
-                element('estimatedTotal').textContent = `KES ${grandTotal.toFixed(0)}`;
-                element('totalAmount').value = grandTotal.toFixed(2);
-                element('totalInsuranceHidden').value = totalInsuranceAmount.toFixed(2);
-
-                return {
-                    grandTotal,
-                    totalInsuranceAmount,
-                    totalDeclaredValue,
-                    itemCount: items.length
-                };
-            }
-
-            function selectedText(selectId) {
-                const select = element(selectId);
-                return select.options[select.selectedIndex]?.text?.trim() || '—';
-            }
-
-            function getStationName(id) {
-                if (!id) return '—';
-                const allStations = [...document.querySelectorAll('#pickupStationList .station-item, #dropoffStationList .station-item')];
-                for (let item of allStations) {
-                    if (parseInt(item.dataset.id) === id) {
-                        const nameEl = item.querySelector('.station-name');
-                        if (nameEl) {
-                            const badgeEl = nameEl.querySelector('.badge-pickup');
-                            if (badgeEl) badgeEl.remove();
-                            return nameEl.textContent.trim() || '—';
-                        }
-                    }
-                }
-                return '—';
-            }
-
-            function updateReviewDetails() {
-                element('revFrom').textContent = selectedText('fromTown');
-                element('revTo').textContent = selectedText('toTown');
-                element('revPickup').textContent = getStationName(selectedPickup);
-                element('revDropoff').textContent = getStationName(selectedDropoff);
-                element('revTransportPartner').textContent = getTransportPartnerName();
-
-                const itemsContainer = element('itemsContainer');
-                const items = itemsContainer.querySelectorAll('.item-card');
-                let itemsHtml = '';
-
-                items.forEach((item, idx) => {
-                    const categoryName = item.querySelector('select[name*="parcel_category_id"] option:checked')?.textContent || '—';
-                    const parcelType = item.querySelector('select[name*="parcel_type"] option:checked')?.textContent || '—';
-                    const packageType = item.querySelector('select[name*="package_type"] option:checked')?.textContent || '—';
-                    const content = item.querySelector('input[name*="content_description"]')?.value || '—';
-                    const value = item.querySelector('input[name*="declared_value"]')?.value || '0';
-                    const notes = item.querySelector('input[name*="special_notes"]')?.value || '';
-                    const insuranceChecked = item.querySelector('.item-insurance')?.checked || false;
-                    const insuranceAmount = insuranceChecked ? Number(value) * 0.02 : 0;
-                    const podChecked = item.querySelector('.item-payment-on-delivery')?.checked || false;
-
-                    itemsHtml += `
-            <div class="row mb-3">
-              <div class="col-12">
-                <strong>Item #${idx + 1}:</strong> 
-                ${content}
-                <br>
-                <small class="text-muted">
-                  Category: ${categoryName} | Type: ${parcelType} | Package: ${packageType} | Value: KES ${value}
-                  ${insuranceChecked ? `| <span class="text-success">Insurance: KES ${insuranceAmount.toFixed(0)}</span>` : '| <span class="text-muted">No insurance</span>'}
-                  ${podChecked ? `| <span class="text-danger">Payment on Delivery</span>` : ''}
-                  ${notes ? `| Notes: ${notes}` : ''}
-                </small>
-              </div>
+            // ---------- Items ----------
+            function itemTemplate(idx) {
+                return `
+        <div class="item-card" data-idx="${idx}">
+            <span class="item-badge">ITEM #${idx + 1}</span>
+            <button type="button" class="remove-btn" data-remove><i class="bi bi-x-circle-fill"></i></button>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Parcel category *</label>
+                    <select class="form-select" name="items[${idx}][parcel_category_id]" required>
+                        @foreach($items as $item)
+                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label">Package type *</label>
+                    <select class="form-select" name="items[${idx}][package_type]" required>
+                        <option value="regular">Regular</option>
+                        <option value="fragile">Fragile</option>
+                        <option value="perishable">Perishable</option>
+                        <option value="valuable">Valuable</option>
+                        <option value="hazardous">Hazardous</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Content description *</label>
+                    <input type="text" class="form-control" name="items[${idx}][content_description]" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Special notes</label>
+                    <input type="text" class="form-control" name="items[${idx}][special_notes]">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Declared value (KES)</label>
+                    <input type="number" min="0" step="1" value="0" class="form-control"
+                           name="items[${idx}][declared_value]" data-declared>
+                </div>
+                <div class="col-md-6 d-flex flex-column justify-content-end">
+                    <div class="form-check mb-1">
+                        <input class="form-check-input" type="checkbox"
+                               name="items[${idx}][insurance_required]" value="1" id="ins${idx}" data-insurance>
+                        <label class="form-check-label" for="ins${idx}" style="font-size:.85rem">
+                            Add insurance (2% of declared value)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox"
+                               name="items[${idx}][payment_on_delivery]" value="1" id="pod${idx}" data-pod>
+                        <label class="form-check-label" for="pod${idx}" style="font-size:.85rem">
+                            Customer will pay on delivery
+                        </label>
+                    </div>
+                </div>
             </div>
-          `;
+        </div>`;
+            }
+
+            const homeCategory = @json($parcelCategoryId ?? null);
+
+            function addItem() {
+                const idx = state.itemSeq++;
+                state.items.push(idx);
+                el('itemsContainer').insertAdjacentHTML('beforeend', itemTemplate(idx));
+
+                // Pre-select the home-page category on item #1
+                if (idx === 0 && homeCategory) {
+                    const sel = el('itemsContainer')
+                        .querySelector(`.item-card[data-idx="0"] [name*="[parcel_category_id]"]`);
+                    if (sel) sel.value = String(homeCategory);
+                }
+                refreshRemoveButtons();
+            }
+
+            function refreshRemoveButtons() {
+                const cards = el('itemsContainer').querySelectorAll('.item-card');
+                cards.forEach(c => {
+                    const btn = c.querySelector('[data-remove]');
+                    btn.style.display = cards.length <= 1 ? 'none' : 'block';
                 });
-
-                element('reviewItems').innerHTML = itemsHtml || '<div class="text-muted">No items</div>';
-
-                const totals = calculateTotal();
-                element('revTotalInsurance').textContent = `KES ${totals.totalInsuranceAmount.toFixed(0)}`;
-                element('revTotal').textContent = `KES ${totals.grandTotal.toFixed(0)}`;
-
-                element('revSender').textContent = element('senderName').value.trim() || '—';
-                element('revSenderPhone').textContent = element('senderPhone').value.trim() || '—';
-                element('revSenderEmail').textContent = element('senderEmail').value.trim() || '—';
-                element('revReceiver').textContent = element('receiverName').value.trim() || '—';
-                element('revReceiverPhone').textContent = element('receiverPhone').value.trim() || '—';
-                element('revReceiverEmail').textContent = element('receiverEmail').value.trim() || '—';
             }
 
-            function validKenyanPhone(phone) {
-                return /^(0|254|\+254)[0-9]{9}$/.test(phone);
-            }
-
-            function validateItems() {
-                const items = document.querySelectorAll('.item-card');
-                let isValid = true;
-
-                items.forEach((item, idx) => {
-                    const content = item.querySelector('input[name*="content_description"]');
-                    const podCheckbox = item.querySelector('.item-payment-on-delivery');
-                    const declaredInput = item.querySelector('.item-declared-value');
-                    const notesInput = item.querySelector('.item-special-notes');
-
-                    if (!content?.value.trim()) {
-                        alert(`Item #${idx + 1}: Please describe the content.`);
-                        isValid = false;
-                        return;
+            function bindItemEvents(root) {
+                root.addEventListener('click', e => {
+                    const rm = e.target.closest('[data-remove]');
+                    if (rm) {
+                        const card = rm.closest('.item-card');
+                        card.remove();
+                        const idx = +card.dataset.idx;
+                        state.items = state.items.filter(i => i !== idx);
+                        // Re-index remaining items so names align
+                        reindexItems();
+                        refreshRemoveButtons();
                     }
+                });
+            }
 
-                    if (podCheckbox?.checked) {
-                        const declaredValue = Number.parseFloat(declaredInput?.value) || 0;
-                        if (declaredValue <= 0) {
-                            alert(`Item #${idx + 1}: Declared value is required and must be greater than 0 because "Customer will pay on delivery" is checked.`);
-                            isValid = false;
-                            return;
+            function reindexItems() {
+                const cards = el('itemsContainer').querySelectorAll('.item-card');
+                state.items = [];
+                cards.forEach((card, i) => {
+                    const oldIdx = +card.dataset.idx;
+                    card.dataset.idx = i;
+                    card.querySelector('.item-badge').textContent = `ITEM #${i + 1}`;
+                    card.querySelectorAll('[name]').forEach(input => {
+                        input.name = input.name.replace(/items\[\d+\]/, `items[${i}]`);
+                    });
+                    card.querySelectorAll('label[for^="ins"]').forEach(l => l.htmlFor = 'ins' + i);
+                    card.querySelectorAll('label[for^="pod"]').forEach(l => l.htmlFor = 'pod' + i);
+                    card.querySelectorAll('input[id^="ins"]').forEach(l => l.id = 'ins' + i);
+                    card.querySelectorAll('input[id^="pod"]').forEach(l => l.id = 'pod' + i);
+                    state.items.push(i);
+                });
+            }
+
+            // ---------- Validate items ----------
+            function itemsPayloadForPricing() {
+                const payload = [];
+                el('itemsContainer').querySelectorAll('.item-card').forEach(card => {
+                    const cat = card.querySelector('[name*="[parcel_category_id]"]').value;
+                    const declared = parseFloat(card.querySelector('[data-declared]').value) || 0;
+                    const insured = card.querySelector('[data-insurance]').checked;
+                    payload.push({
+                        item_id: +cat,
+                        declared_value: declared,
+                        insurance_required: insured
+                    });
+                });
+                return payload;
+            }
+
+            function validateStep1() {
+                const cards = el('itemsContainer').querySelectorAll('.item-card');
+                for (const card of cards) {
+                    const idx = +card.dataset.idx + 1;
+                    const desc = card.querySelector('[name*="[content_description]"]');
+                    if (!desc.value.trim()) {
+                        alert(`Item #${idx}: Please enter a content description.`);
+                        desc.focus();
+                        return false;
+                    }
+                    const pod = card.querySelector('[data-pod]');
+                    if (pod.checked) {
+                        const declared = parseFloat(card.querySelector('[data-declared]').value) || 0;
+                        const notes = card.querySelector('[name*="[special_notes]"]');
+                        if (declared <= 0) {
+                            alert(`Item #${idx}: Declared value must be > 0 for payment on delivery.`);
+                            return false;
                         }
-
-                        if (!notesInput?.value.trim()) {
-                            alert(`Item #${idx + 1}: Special notes are required because "Customer will pay on delivery" is checked. Please enter payment details (amount to collect, payment method, etc.).`);
-                            isValid = false;
-                            return;
+                        if (!notes.value.trim()) {
+                            alert(`Item #${idx}: Special notes (payment details) required for payment on delivery.`);
+                            notes.focus();
+                            return false;
                         }
                     }
-                });
-
-                return isValid;
+                }
+                return true;
             }
 
-            function bindEvents() {
-                element('loginSubmitBtn').addEventListener('click', handleLogin);
-                element('loginForm').addEventListener('submit', handleLogin);
-                element('registerSubmitBtn').addEventListener('click', handleRegister);
-                element('registerForm').addEventListener('submit', handleRegister);
-                element('logoutBtn').addEventListener('click', handleLogout);
-                element('logoutBtnTop').addEventListener('click', handleLogout);
+            // ---------- Fetch couriers (step 2) ----------
+            async function loadPartners() {
+                el('partnerLoading').classList.remove('d-none');
+                el('partnersList').innerHTML = '';
+                el('partnersEmpty').classList.add('d-none');
+                el('toStep3').disabled = true;
 
-                element('addItemBtn').addEventListener('click', addItem);
+                try {
+                    const res = await fetch(endpoints.partners, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: JSON.stringify({
+                            from_town_id: fromTownId,
+                            to_town_id: toTownId,
+                            items: itemsPayloadForPricing(),
+                        }),
+                    });
+                    const data = await res.json();
 
-                document.querySelectorAll('.item-declared-value').forEach(input => {
-                    input.addEventListener('input', () => {
-                        calculateTotal();
-                        if (currentStep === 3) updateReviewDetails();
+                    if (!data.success || !Array.isArray(data.partners) || !data.partners.length) {
+                        el('partnersEmpty').classList.remove('d-none');
+                        return;
+                    }
+
+                    state.partners = data.partners;
+                    renderPartners(data);
+                } catch (err) {
+                    console.error(err);
+                    el('partnersEmpty').classList.remove('d-none');
+                } finally {
+                    el('partnerLoading').classList.add('d-none');
+                }
+            }
+
+            function renderPartners(data) {
+                const fromName = data.from_town_name || '';
+                const toName = data.to_town_name || '';
+
+                el('partnersList').innerHTML = data.partners.map(p => {
+                    const logo = p.logo ?
+                        `<img src="${p.logo}" alt="${p.name}" class="partner-logo">` :
+                        `<div class="partner-logo-placeholder"><i class="bi bi-truck"></i></div>`;
+                    return `
+            <label class="partner-card" data-partner-id="${p.id}">
+                <input type="radio" class="partner-radio" name="partnerChoice" value="${p.id}">
+                ${logo}
+                <div class="partner-main">
+                    <h6 class="partner-name">${escapeHtml(p.name)}</h6>
+                    ${p.description ? `<p class="partner-desc">${escapeHtml(p.description)}</p>` : ''}
+                    <div class="partner-route">
+                        <i class="bi bi-geo-alt-fill"></i> ${escapeHtml(fromName)}
+                        <i class="bi bi-arrow-right"></i>
+                        <i class="bi bi-geo-alt-fill"></i> ${escapeHtml(toName)}
+                    </div>
+                </div>
+                <div class="partner-price">
+                    <div class="total">${money(p.total)}</div>
+                    <div class="small-note">includes fees & tax</div>
+                </div>
+            </label>`;
+                }).join('');
+
+                el('partnersList').querySelectorAll('.partner-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        el('partnersList').querySelectorAll('.partner-card').forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        const radio = card.querySelector('input[type=radio]');
+                        radio.checked = true;
+                        const id = +radio.value;
+                        state.selectedPartner = state.partners.find(p => p.id === id);
+                        el('transportPartnerId').value = id;
+                        el('toStep3').disabled = false;
                     });
                 });
 
-                document.querySelectorAll('.item-insurance').forEach(checkbox => {
-                    checkbox.addEventListener('change', () => {
-                        calculateTotal();
-                        if (currentStep === 3) updateReviewDetails();
-                    });
-                });
+                // Auto-select first
+                const first = el('partnersList').querySelector('.partner-card');
+                if (first) first.click();
+            }
 
-                document.querySelectorAll('.item-payment-on-delivery').forEach(checkbox => {
-                    checkbox.addEventListener('change', () => {
-                        togglePodFields(checkbox.closest('.item-card'), checkbox.checked);
-                        calculateTotal();
-                        if (currentStep === 3) updateReviewDetails();
-                    });
-                });
-
-                document.querySelectorAll('select[name*="parcel_category_id"]').forEach(select => {
-                    select.addEventListener('change', () => {
-                        const item = select.closest('.item-card');
-                        if (item) fetchCategoryPrice(item);
-                    });
-                });
-
-                element('toStep2').addEventListener('click', () => {
-                    if (!selectedPickup || !selectedDropoff) {
-                        alert('Please select both a pickup and a dropoff station.');
-                        return;
-                    }
-
-                    if (!getTransportPartnerId()) {
-                        alert('No transport partner has been selected for this route. Please go back and select one.');
-                        return;
-                    }
-
-                    if (!validateItems()) {
-                        return;
-                    }
-
-                    updateStep(2);
-                });
-
-                element('backToStep1').addEventListener('click', () => updateStep(1));
-                element('backToStep2').addEventListener('click', () => updateStep(2));
-
-                element('toStep3').addEventListener('click', () => {
-                    const senderName = element('senderName').value.trim();
-                    const senderPhone = element('senderPhone').value.trim();
-                    const receiverName = element('receiverName').value.trim();
-                    const receiverPhone = element('receiverPhone').value.trim();
-
-                    if (!senderName || !senderPhone || !receiverName || !receiverPhone) {
-                        alert('Please enter the sender and receiver names and phone numbers.');
-                        return;
-                    }
-
-                    if (!validKenyanPhone(senderPhone)) {
-                        alert('Please enter a valid sender phone number, for example 0712345678.');
-                        return;
-                    }
-
-                    if (!validKenyanPhone(receiverPhone)) {
-                        alert('Please enter a valid receiver phone number, for example 0712345678.');
-                        return;
-                    }
-
-                    updateStep(3);
-                });
-
-                ['senderName', 'senderPhone', 'senderEmail',
-                    'receiverName', 'receiverPhone', 'receiverEmail',
-                    'fromTown', 'toTown'
-                ].forEach((id) => {
-                    ['input', 'change'].forEach((eventName) => {
-                        element(id).addEventListener(eventName, () => {
-                            if (currentStep === 3) updateReviewDetails();
+            // ---------- Stations ----------
+            function bindStations() {
+                ['pickupStationList', 'dropoffStationList'].forEach(listId => {
+                    const list = el(listId);
+                    list.querySelectorAll('.station-item').forEach(item => {
+                        const radio = item.querySelector('input[type=radio]');
+                        item.addEventListener('click', e => {
+                            if (e.target === radio) return;
+                            radio.checked = true;
+                            radio.dispatchEvent(new Event('change'));
+                        });
+                        radio.addEventListener('change', () => {
+                            list.querySelectorAll('.station-item').forEach(x => x.classList.remove('selected'));
+                            item.classList.add('selected');
+                            const id = +radio.value;
+                            if (listId === 'pickupStationList') {
+                                state.selectedPickup = id;
+                                el('pickupPointHidden').value = id;
+                            } else {
+                                state.selectedDropoff = id;
+                                el('dropoffPointHidden').value = id;
+                            }
                         });
                     });
                 });
 
-                element('bookingForm').addEventListener('submit', (event) => {
-                    if (!isLoggedIn || !currentUser) {
-                        event.preventDefault();
-                        alert('Please login or register before booking the parcel.');
-                        bootstrap.Modal.getOrCreateInstance(element('loginModal')).show();
+                // Auto-select first if present
+                const firstPickup = el('pickupStationList').querySelector('.station-item input');
+                if (firstPickup) {
+                    firstPickup.checked = true;
+                    firstPickup.dispatchEvent(new Event('change'));
+                }
+                const firstDrop = el('dropoffStationList').querySelector('.station-item input');
+                if (firstDrop) {
+                    firstDrop.checked = true;
+                    firstDrop.dispatchEvent(new Event('change'));
+                }
+            }
+
+            function validateStep3() {
+                if (!state.selectedPickup) {
+                    alert('Please select a pickup station.');
+                    return false;
+                }
+                if (!state.selectedDropoff) {
+                    alert('Please select a dropoff station.');
+                    return false;
+                }
+                const sName = el('senderName').value.trim();
+                const sPhone = el('senderPhone').value.trim();
+                const rName = el('receiverName').value.trim();
+                const rPhone = el('receiverPhone').value.trim();
+                if (!sName || !sPhone || !rName || !rPhone) {
+                    alert('Please fill sender and receiver name and phone.');
+                    return false;
+                }
+                if (!/^(0|254|\+254)[0-9]{9}$/.test(sPhone)) {
+                    alert('Invalid sender phone.');
+                    return false;
+                }
+                if (!/^(0|254|\+254)[0-9]{9}$/.test(rPhone)) {
+                    alert('Invalid receiver phone.');
+                    return false;
+                }
+                return true;
+            }
+
+            // ---------- Review ----------
+            function renderReview() {
+                const p = state.selectedPartner;
+                const totals = p?.breakdown?.totals || {};
+                const items = el('itemsContainer').querySelectorAll('.item-card');
+
+                let itemsHtml = '';
+                items.forEach((card, i) => {
+                    const cat = card.querySelector('[name*="[parcel_category_id]"] option:checked').textContent;
+                    const desc = card.querySelector('[name*="[content_description]"]').value;
+                    const declared = card.querySelector('[data-declared]').value;
+                    const insured = card.querySelector('[data-insurance]').checked;
+                    const pod = card.querySelector('[data-pod]').checked;
+                    itemsHtml += `
+                <div class="item-line">
+                    <div>
+                        <strong>Item #${i + 1}:</strong> ${escapeHtml(desc)}<br>
+                        <small class="text-muted">${escapeHtml(cat)} • Declared: KES ${declared}
+                        ${insured ? ' • <span class="text-success">Insured</span>' : ''}
+                        ${pod ? ' • <span class="text-danger">POD</span>' : ''}</small>
+                    </div>
+                </div>`;
+                });
+
+                el('reviewContent').innerHTML = `
+            <div class="review-card">
+                <h6><i class="bi bi-truck me-1"></i> Courier</h6>
+                <div class="review-row"><span class="label">Partner</span><span>${escapeHtml(p?.name || '—')}</span></div>
+            </div>
+            <div class="review-card">
+                <h6><i class="bi bi-geo-alt me-1"></i> Route & Stations</h6>
+                <div class="review-row"><span class="label">Pickup</span><span>${stationName(state.selectedPickup)}</span></div>
+                <div class="review-row"><span class="label">Dropoff</span><span>${stationName(state.selectedDropoff)}</span></div>
+            </div>
+            <div class="review-card">
+                <h6><i class="bi bi-cube me-1"></i> Items</h6>
+                ${itemsHtml || '<div class="text-muted">No items</div>'}
+            </div>
+            <div class="review-card">
+                <h6><i class="bi bi-cash-coin me-1"></i> Price breakdown</h6>
+                <div class="review-row"><span class="label">Courier price</span><span>${money(totals.courier_price)}</span></div>
+                <div class="review-row"><span class="label">PUDO fees</span><span>${money(totals.pudo_amount)}</span></div>
+                <div class="review-row"><span class="label">Transport fees</span><span>${money(totals.transport_fee)}</span></div>
+                <div class="review-row"><span class="label">Platform fees</span><span>${money(totals.platform_amount)}</span></div>
+                <div class="review-row"><span class="label">Insurance</span><span>${money(totals.insurance)}</span></div>
+                <div class="review-row"><span class="label">Tax</span><span>${money(totals.tax_amount)}</span></div>
+                <div class="review-row total"><span>Total</span><span>${money(totals.total)}</span></div>
+            </div>`;
+            }
+
+            function renderPaymentReview() {
+                const p = state.selectedPartner;
+                const totals = p?.breakdown?.totals || {};
+                el('paymentReview').innerHTML = `
+            <h6><i class="bi bi-check2-circle me-1"></i> Booking summary</h6>
+            <div class="review-row"><span class="label">Courier</span><span>${escapeHtml(p?.name || '—')}</span></div>
+            <div class="review-row"><span class="label">Pickup</span><span>${stationName(state.selectedPickup)}</span></div>
+            <div class="review-row"><span class="label">Dropoff</span><span>${stationName(state.selectedDropoff)}</span></div>
+            <div class="review-row total"><span>Total payable</span><span>${money(totals.total)}</span></div>
+            <p class="text-muted small mt-2 mb-0">Payment via M-Pesa. You will be prompted after confirming.</p>`;
+            }
+
+            function stationName(id) {
+                if (!id) return '—';
+                const s = document.querySelector(`.station-item[data-id="${id}"] .station-name`);
+                return s ? s.textContent.trim() : '—';
+            }
+
+            function escapeHtml(s) {
+                const d = document.createElement('div');
+                d.textContent = s ?? '';
+                return d.innerHTML;
+            }
+
+            // ---------- Auth ----------
+            function setAuthState(user) {
+                state.user = user;
+                const isIn = !!user;
+                if (isIn) {
+                    el('authArea').querySelector('#logoutBtn').classList.remove('d-none');
+                    el('authArea').querySelectorAll('[data-bs-target="#loginModal"],[data-bs-target="#registerModal"]').forEach(b => b.classList.add('d-none'));
+                    el('authStatusText').textContent = `Logged in as ${user.name}`;
+                    el('authActionText').textContent = '';
+                    el('authButtons').classList.add('d-none');
+                    el('loggedInActions').classList.remove('d-none');
+                    el('loggedInName').textContent = user.name;
+                    el('submitBtn').disabled = false;
+                    el('submitBtn').innerHTML = '<i class="bi bi-check-circle"></i> Confirm & Book';
+                    if (user.name) el('senderName').value = user.name;
+                    if (user.email) el('senderEmail').value = user.email;
+                    if (user.phone) el('senderPhone').value = user.phone;
+                } else {
+                    el('authArea').querySelector('#logoutBtn').classList.add('d-none');
+                    el('authArea').querySelectorAll('[data-bs-target="#loginModal"],[data-bs-target="#registerModal"]').forEach(b => b.classList.remove('d-none'));
+                    el('authStatusText').textContent = 'You are browsing as a guest';
+                    el('authActionText').textContent = ' — please login or register to complete booking';
+                    el('authButtons').classList.remove('d-none');
+                    el('loggedInActions').classList.add('d-none');
+                    el('submitBtn').disabled = true;
+                    el('submitBtn').innerHTML = '<i class="bi bi-lock"></i> Please login to book';
+                }
+            }
+
+            async function checkAuth() {
+                try {
+                    const r = await fetch(endpoints.checkAuth, {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const d = await r.json();
+                    if (d.authenticated && (d.user || d.customer)) {
+                        setAuthState(d.user || d.customer);
+                    } else {
+                        setAuthState(null);
+                    }
+                } catch {
+                    setAuthState(null);
+                }
+            }
+
+            async function login() {
+                const email = el('loginEmail').value.trim();
+                const password = el('loginPassword').value;
+                const msg = el('loginMessage');
+                msg.classList.add('d-none');
+                try {
+                    const r = await fetch(endpoints.login, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: JSON.stringify({
+                            email,
+                            password
+                        })
+                    });
+                    const d = await r.json();
+                    if (!r.ok || !d.success) throw new Error(d.message || 'Login failed');
+                    const user = d.user || d.customer;
+                    setAuthState(user);
+                    bootstrap.Modal.getInstance(el('loginModal'))?.hide();
+                } catch (e) {
+                    msg.className = 'alert alert-danger';
+                    msg.textContent = e.message;
+                    msg.classList.remove('d-none');
+                }
+            }
+
+            async function register() {
+                const body = {
+                    name: el('regName').value.trim(),
+                    email: el('regEmail').value.trim(),
+                    phone: el('regPhone').value.trim(),
+                    password: el('regPassword').value,
+                    password_confirmation: el('regConfirmPassword').value,
+                    terms: true,
+                };
+                const msg = el('registerMessage');
+                msg.classList.add('d-none');
+                try {
+                    const r = await fetch(endpoints.register, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: JSON.stringify(body)
+                    });
+                    const d = await r.json();
+                    if (!r.ok || !d.success) throw new Error(d.message || 'Registration failed');
+                    const user = d.user || d.customer;
+                    setAuthState(user);
+                    bootstrap.Modal.getInstance(el('registerModal'))?.hide();
+                } catch (e) {
+                    msg.className = 'alert alert-danger';
+                    msg.textContent = e.message;
+                    msg.classList.remove('d-none');
+                }
+            }
+
+            async function logout() {
+                try {
+                    await fetch(endpoints.logout, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                    });
+                } finally {
+                    setAuthState(null);
+                }
+            }
+
+            // ---------- Submit guard ----------
+            function bindSubmit() {
+                el('bookingForm').addEventListener('submit', e => {
+                    if (!state.user) {
+                        e.preventDefault();
+                        alert('Please login or register before booking.');
                         return;
                     }
-
-                    if (!element('termsCheck').checked) {
-                        event.preventDefault();
-                        alert('Please confirm the parcel information and accept the terms.');
+                    if (!el('termsCheck').checked) {
+                        e.preventDefault();
+                        alert('Please accept the terms.');
                         return;
                     }
-
-                    if (!getTransportPartnerId()) {
-                        event.preventDefault();
-                        alert('No transport partner is associated with this booking. Please go back and select one.');
-                        updateStep(1);
+                    if (!state.selectedPartner) {
+                        e.preventDefault();
+                        alert('Please select a courier.');
                         return;
                     }
-
-                    if (!validateItems()) {
-                        event.preventDefault();
-                        return;
-                    }
-
-                    element('customerId').value = currentUser.id ?? '';
-                    calculateTotal();
-                    element('saveParcelBtn').disabled = true;
-                    element('saveParcelBtn').innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Booking parcel...';
+                    el('submitBtn').disabled = true;
+                    el('submitBtn').innerHTML = '<span class="spinner-border spinner-border-sm"></span> Booking…';
                 });
             }
 
-            // ---- Initialize ----
-            function init() {
-                initializeStations();
-                bindEvents();
-                updateStep(1);
-                calculateTotal();
-                checkLoginStatus();
-                updateRemoveButtons();
+            // ---------- Init ----------
+            document.addEventListener('DOMContentLoaded', () => {
+                    const hasCategories = @json($items->isNotEmpty());
+    if (!hasCategories) {
+        document.querySelectorAll('[data-next]').forEach(b => b.disabled = true);
+        return; // stop the wizard from initializing further
+    }
+    
+                // Items
+                bindItemEvents(el('itemsContainer'));
+                addItem();
+                el('addItemBtn').addEventListener('click', addItem);
 
-                const firstItem = document.querySelector('.item-card');
-                if (firstItem) fetchCategoryPrice(firstItem);
-            }
+                // Next / Prev
+                document.querySelectorAll('[data-next]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const cur = state.step;
+                        if (cur === 1) {
+                            if (!validateStep1()) return;
+                            setStep(2);
+                            loadPartners();
+                        } else if (cur === 2) {
+                            if (!state.selectedPartner) {
+                                alert('Please select a courier.');
+                                return;
+                            }
+                            setStep(3);
+                        } else if (cur === 3) {
+                            if (!validateStep3()) return;
+                            renderReview();
+                            setStep(4);
+                        } else if (cur === 4) {
+                            renderPaymentReview();
+                            setStep(5);
+                        }
+                    });
+                });
+                document.querySelectorAll('[data-prev]').forEach(btn => {
+                    btn.addEventListener('click', () => setStep(Math.max(1, state.step - 1)));
+                });
 
-            document.addEventListener('DOMContentLoaded', init);
+                // Stations
+                bindStations();
+
+                // Auth
+                checkAuth();
+                el('loginSubmitBtn').addEventListener('click', login);
+                el('registerSubmitBtn').addEventListener('click', register);
+                el('logoutBtn').addEventListener('click', logout);
+                el('logoutBtn2').addEventListener('click', logout);
+
+                bindSubmit();
+            });
         })();
     </script>
-
 </body>
 
 </html>

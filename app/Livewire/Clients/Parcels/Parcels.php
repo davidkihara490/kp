@@ -165,6 +165,38 @@ class Parcels extends Component
 
     // ===== PAYMENT METHODS =====
 
+    /**
+ * Load a parcel and immediately open the payment modal.
+ * Triggered from the "Pay" button on the parcels list.
+ */
+public function payForParcel($parcelId): void
+{
+    if (!$parcelId) {
+        return;
+    }
+
+    // Load the parcel (populates $selectedParcel + its relations)
+    $this->viewParcel($parcelId);
+
+    if (!$this->selectedParcel) {
+        return;
+    }
+
+    // Don't open the payment modal for settled parcels
+    if (in_array($this->selectedParcel->payment_status, ['paid', 'refunded'], true)) {
+        $this->setPaymentResponse('info', 'This parcel has already been ' .
+            ($this->selectedParcel->payment_status === 'paid' ? 'paid.' : 'refunded.'));
+        return;
+    }
+
+    // IMPORTANT: do NOT set $this->showParcelDetail = false here.
+    // The payment modal is rendered inside the detail-modal block, so
+    // closing the detail modal removes the payment modal from the DOM.
+    $this->showParcelDetail = true;
+
+    $this->openPaymentModal();
+}
+
     public function openPaymentModal()
     {
         Log::info('Opening payment modal', ['parcel_id' => $this->selectedParcel?->id]);
