@@ -167,9 +167,3 @@ Token-specific actions (logout, refresh, change password) can also return the co
 ```json
 {"status":false,"message":"Validation failed.","errors":{"login":["These credentials do not match our records."]}}
 ```
-
-## Backend setup for the integration environment
-
-Install the controller at `app/Http/Controllers/api/v1/Auth/AuthController.php`. It uses the supplied route declarations and resource namespaces. Configure Sanctum personal access tokens and the User model's partner relationship. The `users` password broker must point to the App User provider and its reset-token repository. Configure the broker's expiry and throttle, mail transport and sender, and the User model's password-reset notification support. Laravel's default notification expects a named `password.reset` route that displays a reset form. A custom notification URL may instead open your app or a frontend form that submits the email, token and new password to the POST endpoint. Verify delivery with a staging mailbox and finish one reset before handing credentials to the mobile team.
-
-The supplied route file defines password login and email-based password recovery. Registration, OTP verification and resend operations require their own route contracts if added to the app.
