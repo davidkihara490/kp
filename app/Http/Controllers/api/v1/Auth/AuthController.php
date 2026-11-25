@@ -36,10 +36,10 @@ class AuthController extends Controller
         // Determine whether the login is an email or a phone number
         $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone_number';
 
-        $user = User::where($field, $login)->with('partner')->first();
+        $user = User::with('partner')->where($field, $login)->first();
 
         if (! $user || ! Hash::check($request->input('password'), $user->password)) {
-            throw ValidationException::withMessages([
+            return $this->validationError([
                 'login' => [__('auth.failed')],
             ]);
         }
@@ -51,13 +51,15 @@ class AuthController extends Controller
             ], 403);
         }
 
-        $token = $user->createToken($request->input('device_name', 'api-token'))->plainTextToken;
+        $token = $user->createToken(
+            $request->input('device_name') ?? 'api-token'
+        )->plainTextToken;
 
         return response()->json([
             'status'  => true,
             'message' => __('Login successful.'),
             'data'    => [
-                'user'       => new UserResource($user->load('partner')),
+                'user'       => new UserResource($user),
                 'token'      => $token,
                 'token_type' => 'Bearer',
             ],
@@ -95,9 +97,12 @@ class AuthController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
+
+        $user = User::with('partner')->where('id', $request->user()->id)->first();
+
         return response()->json([
             'status' => true,
-            'data'   => new UserResource($request->user()),
+            'data'   => new UserResource($user),
         ], 200);
     }
 
