@@ -464,7 +464,7 @@ class HomeController extends Controller
             'zones' => $zones,
             'pricingItems' => $pricingItems,
             'generated_date' => now()->format('F d, Y'),
-            'company_name' => 'Karibu Parcels',
+            'company_name' => 'PUDO Express',
             'logo' => public_path('logo.jpeg')
         ];
 

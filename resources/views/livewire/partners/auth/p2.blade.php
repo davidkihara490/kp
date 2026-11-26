@@ -12,7 +12,7 @@
                                 </div>
                                 <div>
                                     <h3 class="m-0 text-white">Partner Registration</h3>
-                                    <p class="m-0 text-white opacity-90">Become a Karibu Parcels Partner</p>
+                                    <p class="m-0 text-white opacity-90">Become a PUDO Express Partner</p>
                                 </div>
                             </div>
                         </div>

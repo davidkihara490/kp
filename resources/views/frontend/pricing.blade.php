@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Delivery Tariff | Karibu Parcels')
+@section('title', 'Delivery Tariff | PUDO Express')
 
 @section('meta')
     <meta name="description" content="View our nationwide delivery pricing for 0-5kg base rate and additional per kg charges across all delivery zones in Kenya.">

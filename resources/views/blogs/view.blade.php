@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $post->title . ' | Karibu Parcels Blog')
+@section('title', $post->title . ' | PUDO Express Blog')
 
 @section('meta')
     <meta name="description" content="{{ Str::limit(strip_tags($post->content), 160) }}">

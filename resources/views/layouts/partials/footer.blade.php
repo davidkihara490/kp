@@ -85,7 +85,7 @@
 
         <div class="row align-items-center">
             <div class="col-md-6">
-                <p class="mb-0">&copy; {{ date('Y') }} Karibu Parcels. All rights reserved.</p>
+                <p class="mb-0">&copy; {{ date('Y') }} PUDO Express. All rights reserved.</p>
             </div>
             <div class="col-md-6 text-md-end">
                 <p class="mb-0 small text-muted">

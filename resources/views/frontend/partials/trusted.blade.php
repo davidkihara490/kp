@@ -2,7 +2,7 @@
     <div class="container">
         <div class="section-title">
             <h2>Trusted By</h2>
-            <p class="text-muted">Karibu Parcels serves a diverse range of customers who trust us with their delivery needs</p>
+            <p class="text-muted">PUDO Express serves a diverse range of customers who trust us with their delivery needs</p>
         </div>
 
         <div class="row g-4">

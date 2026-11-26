@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'PickUp & DropOff Points | Karibu Parcels')
+@section('title', 'PickUp & DropOff Points | PUDO Express')
 
 @section('meta')
-<meta name="description" content="Find our conveniently located pickup and drop-off points across Kenya. Browse by county to find the nearest Karibu Parcels station.">
+<meta name="description" content="Find our conveniently located pickup and drop-off points across Kenya. Browse by county to find the nearest PUDO Express station.">
 @endsection
 
 @section('content')

@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Karibu Parcels · Delivery Note</title>
+    <title>PUDO Express · Delivery Note</title>
     <style>
         *, *::before, *::after {
             box-sizing: border-box;
@@ -326,7 +326,7 @@
 
     <div class="header">
         <div class="brand">
-            Karibu Parcels Limited
+            PUDO Express Limited
         </div>
         <div class="header-right">
             <div class="doc-title">{{ $parcel->parcel_id }}</div>

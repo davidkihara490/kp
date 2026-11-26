@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Terms & Conditions | Karibu Parcels')
+@section('title', 'Terms & Conditions | PUDO Express')
 
 @section('meta')
-    <meta name="description" content="Read the terms and conditions for using Karibu Parcels courier services. Learn about our policies, liabilities, and user agreements.">
+    <meta name="description" content="Read the terms and conditions for using PUDO Express courier services. Learn about our policies, liabilities, and user agreements.">
 @endsection
 
 @section('content')
@@ -11,7 +11,7 @@
     <section class="terms-hero">
         <div class="container text-center">
             <h1><i class="bi bi-file-text-fill me-2"></i> Terms & Conditions</h1>
-            <p>Please read these terms carefully before using our courier services. By accessing or using Karibu Parcels, you agree to be bound by these terms.</p>
+            <p>Please read these terms carefully before using our courier services. By accessing or using PUDO Express, you agree to be bound by these terms.</p>
         </div>
     </section>
 
@@ -26,7 +26,7 @@
 
             <div class="highlight-box mt-4">
                 <i class="bi bi-shield-check me-2" style="color: var(--primary-color);"></i>
-                By using Karibu Parcels services, you confirm that you have read, understood, and agreed to these Terms and Conditions. Thank you for trusting us with your deliveries.
+                By using PUDO Express services, you confirm that you have read, understood, and agreed to these Terms and Conditions. Thank you for trusting us with your deliveries.
             </div>
         </div>
     </div>

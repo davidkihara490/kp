@@ -199,7 +199,7 @@
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
                                                 <h6 class="mb-0 fw-semibold" style="font-size: 1rem;">Admin Verification</h6>
-                                                <p class="mb-0 text-muted" style="font-size: 0.85rem;">Karibu Parcels Approval</p>
+                                                <p class="mb-0 text-muted" style="font-size: 0.85rem;">PUDO Express Approval</p>
                                             </div>
                                             @if($adminVerified)
                                             <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 py-1 px-2"

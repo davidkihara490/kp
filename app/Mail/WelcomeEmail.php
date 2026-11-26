@@ -41,8 +41,8 @@ class WelcomeEmail extends Mailable
     {
         return new Envelope(
             subject: $this->includeVerification
-                ? 'Welcome to Karibu Parcels – Verify Your Email'
-                : 'Welcome to Karibu Parcels'
+                ? 'Welcome to PUDO Express – Verify Your Email'
+                : 'Welcome to PUDO Express'
         );
     }
 

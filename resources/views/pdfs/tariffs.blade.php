@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Karibu Parcels - Delivery Tariff</title>
+    <title>PUDO Express - Delivery Tariff</title>
     <style>
         body {
             font-family: 'DejaVu Sans', sans-serif;
@@ -168,16 +168,16 @@
 
 <body>
     <div class="header">
-        <!-- <img src="{{ asset('logo.jpeg') }}" class="logo" alt="Karibu Parcels"> -->
+        <!-- <img src="{{ asset('logo.jpeg') }}" class="logo" alt="PUDO Express"> -->
         @php
         $logoPath = public_path('logo.jpeg');
         $logoExists = file_exists($logoPath);
         @endphp
 
         @if($logoExists)
-        <img src="{{ $logoPath }}" class="logo" alt="Karibu Parcels">
+        <img src="{{ $logoPath }}" class="logo" alt="PUDO Express">
         @else
-        <div style="font-size: 24px; font-weight: bold; color: #008f40;">Karibu Parcels</div>
+        <div style="font-size: 24px; font-weight: bold; color: #008f40;">PUDO Express</div>
         @endif
         <h1>{{ $company_name }} - Delivery Tariff</h1>
         <div class="subtitle">Nationwide Delivery Pricing Matrix</div>

@@ -2,7 +2,7 @@
     <!-- About Widget -->
     <div class="sidebar-widget">
         <h5 class="widget-title">About Our Blog</h5>
-        <p class="text-muted small">Stay updated with the latest news, tips, and insights from Karibu Parcels. We share valuable information about courier services, shipping tips, and industry updates.</p>
+        <p class="text-muted small">Stay updated with the latest news, tips, and insights from PUDO Express. We share valuable information about courier services, shipping tips, and industry updates.</p>
     </div>
 
     <!-- Popular Posts Widget -->

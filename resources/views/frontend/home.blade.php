@@ -3,7 +3,7 @@
 @section('title', config('app.name') . ' - Send and receive parcels to/from town near you')
 
 @section('meta')
-<meta name="description" content="Send and receive parcels anywhere in Kenya with Karibu Parcels. Fast, reliable, and secure courier services across 38+ counties with 170+ pickup points.">
+<meta name="description" content="Send and receive parcels anywhere in Kenya with PUDO Express. Fast, reliable, and secure courier services across 38+ counties with 170+ pickup points.">
 @endsection
 
 @section('content')
@@ -308,7 +308,7 @@
 
         //             <div class="quote-message">
         //                 <i class="bi bi-info-circle-fill text-primary"></i>
-        //                 <p>Please proceed to the nearest Karibu Parcels station to send your parcel.</p>
+        //                 <p>Please proceed to the nearest PUDO Express station to send your parcel.</p>
         //             </div>
 
         //             <div class="quote-actions">

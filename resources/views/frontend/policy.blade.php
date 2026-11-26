@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Privacy Policy | Karibu Parcels')
+@section('title', 'Privacy Policy | PUDO Express')
 
 @section('meta')
-    <meta name="description" content="Learn how Karibu Parcels collects, uses, and protects your personal information. Read our privacy policy for complete transparency.">
+    <meta name="description" content="Learn how PUDO Express collects, uses, and protects your personal information. Read our privacy policy for complete transparency.">
 @endsection
 
 @section('content')
@@ -11,7 +11,7 @@
     <section class="privacy-hero">
         <div class="container text-center">
             <h1><i class="bi bi-shield-lock-fill me-2"></i> Privacy Policy</h1>
-            <p>Your privacy is important to us. This policy explains how we collect, use, and protect your personal information when you use Karibu Parcels services.</p>
+            <p>Your privacy is important to us. This policy explains how we collect, use, and protect your personal information when you use PUDO Express services.</p>
         </div>
     </section>
 
@@ -26,7 +26,7 @@
 
             <div class="highlight-box mt-4">
                 <i class="bi bi-shield-check me-2" style="color: var(--primary-color);"></i>
-                By using Karibu Parcels services, you acknowledge that you have read and understood this Privacy Policy. We value your trust and are committed to protecting your personal information.
+                By using PUDO Express services, you acknowledge that you have read and understood this Privacy Policy. We value your trust and are committed to protecting your personal information.
             </div>
         </div>
     </div>

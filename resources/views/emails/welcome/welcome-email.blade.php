@@ -6,7 +6,7 @@
         </div>
         
         <h1>Welcome, {{ $user->first_name }}! 👋</h1>
-        <p class="text-muted">We're thrilled to have you on <strong>Karibu Parcels</strong>!</p>
+        <p class="text-muted">We're thrilled to have you on <strong>PUDO Express</strong>!</p>
     </div>
 
     <div class="info-card">

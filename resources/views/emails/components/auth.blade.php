@@ -82,13 +82,13 @@
             <div class="brand-logo">
                 <i>📦</i>
             </div>
-            <h1>Karibu Parcels Partner Centre</h1>
+            <h1>PUDO Express Partner Centre</h1>
         </div>
 
         <div class="content">
             <h2>Hello {{ $name }}!</h2>
 
-            <p>We received a request to reset the password for your Karibu Parcels Partner account.</p>
+            <p>We received a request to reset the password for your PUDO Express Partner account.</p>
 
             <p>To reset your password, click the button below:</p>
 
@@ -119,8 +119,8 @@
         </div>
 
         <div class="footer">
-            <p>© {{ date('Y') }} Karibu Parcels. All rights reserved.</p>
-            <p>This email was sent to {{ $email }} regarding your Karibu Parcels Partner account.</p>
+            <p>© {{ date('Y') }} PUDO Express. All rights reserved.</p>
+            <p>This email was sent to {{ $email }} regarding your PUDO Express Partner account.</p>
             <p>For assistance, contact our support team.</p>
         </div>
     </div>

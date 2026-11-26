@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Authentication API | Karibu Parcels</title>
+    <title>Authentication API | PUDO Express</title>
 
     <style>
         * { box-sizing: border-box; }

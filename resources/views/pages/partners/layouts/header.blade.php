@@ -2,7 +2,7 @@
     <!-- Sidebar Header -->
     <div class="sidebar-header">
         <a href="/" class="brand-logo">
-            <img src="{{ asset('logo.jpeg') }}" alt="Karibu Parcels">
+            <img src="{{ asset('logo.jpeg') }}" alt="PUDO Express">
 
             <div class="brand-text">
                 <h1>{{ config('app.name') }}</h1>

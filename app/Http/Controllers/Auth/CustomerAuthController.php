@@ -126,7 +126,7 @@ class CustomerAuthController extends Controller
 
         // Redirect to dashboard
         return redirect()->route('customer.dashboard')
-            ->with('success', 'Account created successfully! Welcome to Karibu Parcels, ' . $customer->name . '!');
+            ->with('success', 'Account created successfully! Welcome to PUDO Express, ' . $customer->name . '!');
     }
 
     /**

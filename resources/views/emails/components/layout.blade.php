@@ -447,10 +447,10 @@
                     <td>
                         <div style="display: flex; align-items: center;">
                             <div class="logo-circle">
-                                <img src="{{ asset('logo.jpeg') }}" alt="Karibu Parcels" height="45" class="logo-img">
+                                <img src="{{ asset('logo.jpeg') }}" alt="PUDO Express" height="45" class="logo-img">
                             </div>
                             <div>
-                                <h1 class="email-title">Karibu Parcels</h1>
+                                <h1 class="email-title">PUDO Express</h1>
                                 <p class="email-subtitle">Delivering Smiles Across Kenya</p>
                             </div>
                         </div>
@@ -494,14 +494,14 @@
 
             <!-- Contact Information -->
             <p class="footer-text">
-                <strong>Karibu Parcels</strong><br>
+                <strong>PUDO Express</strong><br>
                 Nairobi, Kenya | +254 700 130 759<br>
                 <a href="mailto:support@karibuparcels.com">support@karibuparcels.com</a>
             </p>
 
             <!-- Copyright -->
             <p class="footer-text">
-                © {{ date('Y') }} Karibu Parcels. All rights reserved.
+                © {{ date('Y') }} PUDO Express. All rights reserved.
             </p>
 
             <!-- Footer Links -->

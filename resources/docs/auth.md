@@ -1,4 +1,4 @@
-# Karibu Parcels authentication API
+# PUDO Express authentication API
 
 Use this API to sign in to the mobile app, restore the signed-in profile, and manage passwords and device tokens. The apis use the default Laravel API prefix. Set `{{base_url}}` in Postman to your deployment origin including `/api`, for example `https://dev.karibuparcels.com/api`. Append the paths below directly. The controller namespace includes v1, but the supplied routes have no URL version segment.
 

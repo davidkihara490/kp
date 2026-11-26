@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>@yield('title', 'API Documentation') | Karibu Parcels</title>
+    <title>@yield('title', 'API Documentation') | PUDO Express</title>
 
     <style>
         * { box-sizing: border-box; }
@@ -88,7 +88,7 @@
 </head>
 <body>
     <header>
-        <a href="{{ route('docs.index') }}">Karibu Parcels Developer Docs</a>
+        <a href="{{ route('docs.index') }}">PUDO Express Developer Docs</a>
     </header>
 
     <div class="docs">

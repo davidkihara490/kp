@@ -58,9 +58,7 @@ class PartnerRates extends Component
         $query = Item::query()
             ->when($this->search, function ($q) {
                 $q->where(function ($subQ) {
-                    $subQ->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('code', 'like', '%' . $this->search . '%')
-                        ->orWhere('description', 'like', '%' . $this->search . '%');
+                    $subQ->where('name', 'like', '%' . $this->search . '%');
                 });
             })
             ->when($this->statusFilter, function ($q) {
@@ -171,8 +169,7 @@ class PartnerRates extends Component
         return Item::query()
             ->when($this->search, function ($q) {
                 $q->where(function ($subQ) {
-                    $subQ->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('code', 'like', '%' . $this->search . '%');
+                    $subQ->where('name', 'like', '%' . $this->search . '%');
                 });
             })
             ->when($this->statusFilter, function ($q) {

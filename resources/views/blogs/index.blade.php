@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Blog | Karibu Parcels - Latest News & Updates')
+@section('title', 'Blog | PUDO Express - Latest News & Updates')
 
 @section('meta')
-    <meta name="description" content="Stay updated with the latest news, tips, and insights from Karibu Parcels. Read our blog for courier tips, industry updates, and company announcements.">
+    <meta name="description" content="Stay updated with the latest news, tips, and insights from PUDO Express. Read our blog for courier tips, industry updates, and company announcements.">
 @endsection
 
 @section('content')
@@ -11,7 +11,7 @@
     <section class="page-header">
         <div class="container text-center">
             <h1 class="animate-fade-up">Our Blog</h1>
-            <p class="lead mb-4 animate-fade-up" style="animation-delay: 0.1s;">Stay updated with the latest news, tips, and insights from Karibu Parcels</p>
+            <p class="lead mb-4 animate-fade-up" style="animation-delay: 0.1s;">Stay updated with the latest news, tips, and insights from PUDO Express</p>
             @include('layouts.partials.breadcrumb', [
                 'breadcrumbs' => [
                     ['label' => 'Home', 'url' => url('/')],

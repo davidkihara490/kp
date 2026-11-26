@@ -180,7 +180,7 @@ class ViewParcel extends Component
     protected function getCompanyDetails()
     {
         return [
-            'name' => config('app.name', 'Karibu Parcels'),
+            'name' => config('app.name', 'PUDO Express'),
             'address' => 'Mashariki Breeze, Diani Beach Road, Office No.6 , Diani Beach Kwale County',
             'phone' => '+254 700 130 759',
             'email' => 'karibuparcels@gmail.com',
@@ -1565,7 +1565,7 @@ class ViewParcel extends Component
 //     {
 //         // Fetch company details from settings or config
 //         return [
-//             'name' => config('app.name', 'Karibu Parcels'),
+//             'name' => config('app.name', 'PUDO Express'),
 //             'address' => 'Mashariki Breeze, Diani Beach Road, Office No.6 , Diani Beach Kwale County',
 //             'phone' => '+254 700 130 759',
 //             'email' => 'karibuparcels@gmail.com',

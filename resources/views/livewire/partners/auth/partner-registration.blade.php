@@ -14,7 +14,7 @@
                                     </div>
                                     <div>
                                         <h3 class="mb-0 fw-bold" style="font-size: 1.1rem;">Partner Registration</h3>
-                                        <p class="mb-0 opacity-90" style="font-size: 0.75rem;">Become a Karibu Parcels Partner</p>
+                                        <p class="mb-0 opacity-90" style="font-size: 0.75rem;">Become a PUDO Express Partner</p>
                                     </div>
                                 </div>
                             </div>
@@ -138,7 +138,7 @@
                                 <i class="bi bi-people-fill me-1"></i>
                                 Select Partner Type
                             </h4>
-                            <p class="text-muted mb-2" style="font-size: 0.8rem;">Choose how you want to partner with Karibu Parcels</p>
+                            <p class="text-muted mb-2" style="font-size: 0.8rem;">Choose how you want to partner with PUDO Express</p>
                         </div>
 
                         <div class="row g-2">

@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Karibu Parcels - Professional Courier Service</title>
+    <title>PUDO Express - Professional Courier Service</title>
 
     <!-- Bootstrap 5 CSS -->
     <link

@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ asset('ui/css/app.css') }}">
     
-    <title>@yield('title', config('app.name', 'Karibu Parcels'))</title>
+    <title>@yield('title', config('app.name', 'PUDO Express'))</title>
     
     <!-- SEO Meta Tags -->
     @yield('meta')

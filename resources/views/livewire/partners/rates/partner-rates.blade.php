@@ -66,7 +66,7 @@
                                 <input type="text"
                                     class="form-control form-control-lg"
                                     wire:model.live.debounce.300ms="search"
-                                    placeholder="Search by name, code...">
+                                    placeholder="Search by item name">
                             </div>
                         </div>
                         <div class="col-md-3">

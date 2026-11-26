@@ -9,13 +9,13 @@
                         <div class="brand-section">
                             <div class="brand-logo">
                                 @if (file_exists(public_path('logo.jpeg')))
-                                <img src="{{ asset('logo.jpeg') }}" alt="Karibu Parcels" height="45" class="logo-img">
+                                <img src="{{ asset('logo.jpeg') }}" alt="PUDO Express" height="45" class="logo-img">
                                 @else
                                 <i class="bi bi-truck"></i>
                                 @endif
                             </div>
                             <div class="brand-text">
-                                <h1>Karibu Parcels Client Centre</h1>
+                                <h1>PUDO Express Client Centre</h1>
                                 <p class="tagline">Professional Courier Services</p>
                             </div>
                         </div>

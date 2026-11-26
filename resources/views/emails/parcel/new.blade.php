@@ -8,7 +8,7 @@
     </div>
 
     <h1>New Parcel Created!</h1>
-    <p class="text-muted">A new parcel has been registered with <strong>Karibu Parcels</strong></p>
+    <p class="text-muted">A new parcel has been registered with <strong>PUDO Express</strong></p>
 </div>
 
 <div class="info-card text-center" style="background: linear-gradient(135deg, rgba(40, 167, 69, 0.05), rgba(32, 201, 151, 0.05));">
@@ -156,7 +156,7 @@
 
 <!-- Sign-off -->
 <div style="margin-top: 30px;">
-    <p>Thank you for choosing Karibu Parcels,</p>
+    <p>Thank you for choosing PUDO Express,</p>
     <p><strong>The Delivery Team</strong></p>
 </div>
 @endsection

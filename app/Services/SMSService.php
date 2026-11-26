@@ -50,14 +50,14 @@ class SMSService
     {
         return $this->sendMessage(
             $phoneNumber,
-            "Hi {$name}! You have been registered as a parcel handling assistant at Karibu Parcels. Check the link on youe email for further instructions."
+            "Hi {$name}! You have been registered as a parcel handling assistant at PUDO Express. Check the link on youe email for further instructions."
         );
     }
     public function sendDriverWelcomeSMS(string $phoneNumber, string $driverName)
     {
         return $this->sendMessage(
             $phoneNumber,
-            "Hi {$driverName}! You have been successfully registered as a driver at Karibu Parcels. Check the link on your email for further instructions."
+            "Hi {$driverName}! You have been successfully registered as a driver at PUDO Express. Check the link on your email for further instructions."
         );
     }
 

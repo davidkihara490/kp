@@ -165,7 +165,7 @@ class AccountStatus extends Component
         
         $sms->send([
             'to' => $phone,
-            'message' => "Your Karibu Parcels verification code is: $code"
+            'message' => "Your PUDO Express verification code is: $code"
         ]);
         */
 

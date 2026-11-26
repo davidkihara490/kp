@@ -437,7 +437,7 @@ class Parcels extends Component
 
             /*
              * These statuses match the parcel workflow used elsewhere in your
-             * Karibu Parcels components.
+             * PUDO Express components.
              */
             'statuses' => [
                 '' => 'All Status',

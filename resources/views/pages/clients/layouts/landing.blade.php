@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name') }} — Professional Courier Service</title>
-    <meta name="description" content="Karibu Parcels - Professional courier services for individuals and businesses. Send parcels across Kenya with ease." />
+    <meta name="description" content="PUDO Express - Professional courier services for individuals and businesses. Send parcels across Kenya with ease." />
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
