@@ -15,9 +15,9 @@
                         </div>
                         <h4>Online Sellers</h4>
                         <p>Sending parcels to buyers in other towns</p>
-                        <div class="trusted-stats">
+                        <!-- <div class="trusted-stats">
                             <span class="stat-badge">2,500+ sellers</span>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -31,9 +31,9 @@
                         </div>
                         <h4>Relatives & Families</h4>
                         <p>Sending parcels to loved ones across Kenya</p>
-                        <div class="trusted-stats">
+                        <!-- <div class="trusted-stats">
                             <span class="stat-badge">10,000+ families</span>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -47,9 +47,9 @@
                         </div>
                         <h4>Institutions</h4>
                         <p>Sending documents to multiple recipients</p>
-                        <div class="trusted-stats">
+                        <!-- <div class="trusted-stats">
                             <span class="stat-badge">500+ institutions</span>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -63,9 +63,9 @@
                         </div>
                         <h4>Wholesale Companies</h4>
                         <p>Sending products to their customers</p>
-                        <div class="trusted-stats">
+                        <!-- <div class="trusted-stats">
                             <span class="stat-badge">1,200+ companies</span>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>

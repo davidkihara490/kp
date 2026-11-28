@@ -11,7 +11,7 @@
 @include('frontend.partials.hero')
 
 <!-- Stats Section -->
-@include('frontend.partials.stats')
+<!-- @include('frontend.partials.stats') -->
 
 <!-- Features Section -->
 @include('frontend.partials.features')

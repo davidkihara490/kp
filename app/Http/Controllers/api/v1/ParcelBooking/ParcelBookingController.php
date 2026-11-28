@@ -88,7 +88,11 @@ class ParcelBookingController extends Controller
     public function show(Request $request, int $parcel)
     {
         $record = $this->visible($request, $this->partner($request))->findOrFail($parcel);
-        $fields = $record->only(['sender_name', 'sender_phone', 'receiver_name', 'receiver_phone','receiver_address']);
+        $fields = $record->only(['sender_name', 'sender_phone', 'receiver_name', 'receiver_phone', 'receiver_address']);
+        $record->load([
+            'payments' => fn($query) => $query->orderByDesc('id'),
+            'payments.mpesaTransaction',
+        ]);
         return response()->json(['data' => (new BookedParcelResource($record))->resolve($request) + $fields]);
     }
 
@@ -166,7 +170,7 @@ class ParcelBookingController extends Controller
             abort_unless($leg->status === Parcel::STATUS_IN_TRANSIT && $leg->driver_id, 409);
             $warehouseLeg = $p->delivery_flow === 'warehouse' && (string) $leg->current_location === (string) $p->sender_pick_up_drop_off_point_id;
 
-            Log::info('DD'. $warehouseLeg );
+            Log::info('DD' . $warehouseLeg);
 
             $station = $warehouseLeg ? $p->warehouse_id : $p->delivery_pick_up_drop_off_point_id;
             $this->requireStation($user, $partner, $station);
